@@ -13,6 +13,7 @@
 package tech.pegasys.pantheon.ethereum.jsonrpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,6 +63,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -211,7 +216,22 @@ public abstract class AbstractEthJsonRpcHttpServiceTest {
     client.dispatcher().executorService().shutdown();
     client.connectionPool().evictAll();
     service.stop().join();
-    vertx.close();
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    FutureTask<String> task =
+        new FutureTask<>(
+            () -> {
+              vertx.close();
+              return "OK";
+            });
+    try {
+      executor.execute(task);
+      task.get();
+    } catch (InterruptedException e) {
+      fail("Error while shutting down the server");
+    } catch (ExecutionException e) {
+      fail("Error while shutting down the server");
+    }
   }
 
   protected void importBlock(final int n) {
