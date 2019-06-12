@@ -1,4 +1,4 @@
-# Copyright 2018 ConsenSys AG.
+# <!-- Documentation derived from PegaSys's pantheon project -->
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
 # the License. You may obtain a copy of the License at
@@ -10,38 +10,34 @@
 # specific language governing permissions and limitations under the License.
 
 # Project information
-site_name: Pantheon
-site_url: https://docs.pantheon.pegasys.tech/en/stable/
-site_description: Pantheon Java Ethereum client documentation.
-site_author: Pantheon community
-copyright: Pantheon and its documentation are licensed under Apache 2.0 license /
-  This <a href="https://readthedocs.org/">Readthedocs.org</a> documentation is maintained with love by <a href="https://pegasys.tech/">PegaSys</a>.
+site_name: RSK Private
+site_url: https://need.link/en/stable/
+site_description: RSK Private documentation.
+site_author: RSK community
+copyright: RSK and its documentation are licensed under Apache 2.0 license.
 
 #extra project info and template customisation
 extra:
   versions:
-    pantheon_stable: &pantheon_stable_version 1.1.1
-    quickstart: *pantheon_stable_version
+    rsk_private_stable: &rsk_private_stable_version 1.1.2
+    quickstart: *rsk_private_stable_version
   latest_version_warning:
     url_contains: /latest/
-    text: 'You are reading Pantheon development version documentation and
+    text: 'You are reading RSK Private development version documentation and
     some displayed features may not be available in the stable release.
     You can switch to stable version using the version box at screen bottom.'
   support:
-    gitter: https://gitter.im/PegaSysEng/pantheon
-    email: support@pegasys.tech
-    pegasys_website: https://pegasys.tech/
-    issues: https://pegasys1.atlassian.net/secure/Dashboard.jspa?selectPageId=10000
-  google:
-    site_verification: 'za1cLzyS6LXDGO-pMzvfQdYTZ0Zc67uZtY0asA4YXZ0'
-    tag_manager: 'GTM-5B7N84J'
+    gitter: https://badges.gitter.im/rsksmart/rskj.svg
+    email: security@rsk.co
+    rsk_website: http://www.rsk.co
+    issues: https://rsk.issues.need.link
   search:
     language: 'en'
     tokenizer: '[\s]+'
 
 # Repository
-repo_name: PegaSysEng/pantheon
-repo_url: https://github.com/PegaSysEng/pantheon/
+repo_name: rsk/rsk-private
+repo_url: https://need.public.link
 
 theme:
     name: material
@@ -61,38 +57,35 @@ nav:
         - Overview: Architecture/Overview.md
     - Getting Started:
         - Getting Started Overview: Getting-Started/Getting-Started.md
-        - Starting Pantheon: Getting-Started/Starting-Pantheon.md
-        - Running Pantheon from Docker Image: Getting-Started/Run-Docker-Image.md
+        - Starting RSK private: Getting-Started/Starting-rsk-private.md
+        - Running RSK Private from Docker Image: Getting-Started/Run-Docker-Image.md
     - Tutorials:
         - Private Network Quickstart: Tutorials/Private-Network-Quickstart.md
         - Private Network Quickstart On Azure: Tutorials/Azure/Azure-Private-Network-Quickstart.md
-        - Create a Private Network using Ethash (Pow): Tutorials/Create-Private-Network.md
-        - Create a Private Network using Clique (PoA): Tutorials/Create-Private-Clique-Network.md
         - Create a Private Network using IBFT 2.0 (PoA): Tutorials/Create-IBFT-Network.md
-        - Create a Permissioned Network: Tutorials/Create-Permissioned-Network.md
-    - Pantheon API:
-        - Overview: Pantheon-API/Pantheon-API.md
-        - JSON-RPC over HTTP or WebSockets: Pantheon-API/Using-JSON-RPC-API.md
-        - RPC Pub/Sub over WebSockets: Pantheon-API/RPC-PubSub.md
-        - GraphQL over HTTP: Pantheon-API/GraphQL.md
-        - Authentication: Pantheon-API/Authentication.md
-    - Configuring Pantheon:
-        - Network vs Node Configuration: Configuring-Pantheon/Network-vs-Node.md
-        - Configuration File: Configuring-Pantheon/Using-Configuration-File.md
-        - Configuration Items in Genesis File: Configuring-Pantheon/Config-Items.md
-        - Network ID and Chain ID: Configuring-Pantheon/NetworkID-And-ChainID.md
-        - Free Gas Networks: Configuring-Pantheon/FreeGas.md
-        - Contracts in Genesis: Configuring-Pantheon/Contracts-in-Genesis.md
-        - Node Keys: Configuring-Pantheon/Node-Keys.md
-        - Accounts for Testing: Configuring-Pantheon/Accounts-for-Testing.md
-        - Logging: Configuring-Pantheon/Logging.md
-        - Passing JVM Options: Configuring-Pantheon/Passing-JVM-Options.md
+    - RSK Private API:
+        - Overview: RSK-Private-API/RSK-Private-API.md
+        - JSON-RPC over HTTP or WebSockets: RSK-Private-API/Using-JSON-RPC-API.md
+        - RPC Pub/Sub over WebSockets: RSK-Private-API/RPC-PubSub.md
+        - GraphQL over HTTP: RSK-Private-API/GraphQL.md
+        - Authentication: RSK-Private-API/Authentication.md
+    - Configuring RSK Private:
+        - Network vs Node Configuration: Configuring-RSK-Private/Network-vs-Node.md
+        - Configuration File: Configuring-RSK-Private/Using-Configuration-File.md
+        - Configuration Items in Genesis File: Configuring-RSK-Private/Config-Items.md
+        - Network ID and Chain ID: Configuring-RSK-Private/NetworkID-And-ChainID.md
+        - Free Gas Networks: Configuring-RSK-Private/FreeGas.md
+        - Contracts in Genesis: Configuring-RSK-Private/Contracts-in-Genesis.md
+        - Node Keys: Configuring-RSK-Private/Node-Keys.md
+        - Accounts for Testing: Configuring-RSK-Private/Accounts-for-Testing.md
+        - Logging: Configuring-RSK-Private/Logging.md
+        - Passing JVM Options: Configuring-RSK-Private/Passing-JVM-Options.md
     - Networking:
-      - Bootnodes: Configuring-Pantheon/Networking/Bootnodes.md
-      - Configuring Ports: Configuring-Pantheon/Networking/Configuring-Ports.md
-      - Managing Peers: Configuring-Pantheon/Networking/Managing-Peers.md
+      - Bootnodes: Configuring-RSK-Private/Networking/Bootnodes.md
+      - Configuring Ports: Configuring-RSK-Private/Networking/Configuring-Ports.md
+      - Managing Peers: Configuring-RSK-Private/Networking/Managing-Peers.md
     - Consensus Protocols:
-      - Pantheon Consensus Protocols: Consensus-Protocols/Overview-Consensus.md
+      - RSK Private Consensus Protocols: Consensus-Protocols/Overview-Consensus.md
       - Comparing PoA Consensus Protocols: Consensus-Protocols/Comparing-PoA.md
       - Clique: Consensus-Protocols/Clique.md
       - IBFT 2.0: Consensus-Protocols/IBFT.md
@@ -107,18 +100,18 @@ nav:
         - Overview: Permissions/Permissioning-Overview.md
         - Local Permissions: Permissions/Local-Permissioning.md
         - Onchain Permissions: Permissions/Onchain-Permissioning.md
-    - Using Pantheon:
+    - Using RSK Private:
         - Transactions:
-          - Creating and Sending Transactions: Using-Pantheon/Transactions/Transactions.md
-          - Transaction Pool: Using-Pantheon/Transactions/Transaction-Pool.md
-        - Using Truffle with Pantheon: Using-Pantheon/Truffle.md
+          - Creating and Sending Transactions: Using-RSK-Private/Transactions/Transactions.md
+          - Transaction Pool: Using-RSK-Private/Transactions/Transaction-Pool.md
+        - Using Truffle with RSK Private: Using-RSK-Private/Truffle.md
         - Events and Logs:
-          - Overview: Using-Pantheon/Events-and-Logs.md
-          - Accessing Logs Using JSON-RPC API: Using-Pantheon/Accessing-Logs-Using-JSON-RPC.md
-        - Using Wallets for Account Management: Using-Pantheon/Account-Management.md
-        - Mining: Using-Pantheon/Mining.md
-        - Monitoring Pantheon: Using-Pantheon/Monitoring.md
-    - Monitoring Pantheon:
+          - Overview: Using-RSK-Private/Events-and-Logs.md
+          - Accessing Logs Using JSON-RPC API: Using-RSK-Private/Accessing-Logs-Using-JSON-RPC.md
+        - Using Wallets for Account Management: Using-RSK-Private/Account-Management.md
+        - Mining: Using-RSK-Private/Mining.md
+        - Monitoring RSK Private: Using-RSK-Private/Monitoring.md
+    - Monitoring RSK Private:
         - Alethio:
           - Overview: Alethio/Overview.md
           - Ethereum Lite Explorer: Alethio/Lite-Block-Explorer.md
@@ -126,9 +119,9 @@ nav:
     - Troubleshooting:
         - Troubleshooting: Troubleshooting/Troubleshooting.md
     - Reference:
-        - Pantheon Command Line: Reference/Pantheon-CLI-Syntax.md
-        - Pantheon API Methods: Reference/Pantheon-API-Methods.md
-        - Pantheon API Objects: Reference/Pantheon-API-Objects.md
+        - RSK Private Command Line: Reference/RSK-Private-CLI-Syntax.md
+        - RSK Private API Methods: Reference/RSK-Private-API-Methods.md
+        - RSK Private API Objects: Reference/RSK-Private-API-Objects.md
     - Resources:
         - Blog Posts and Webinars: Resources/Resources.md
 

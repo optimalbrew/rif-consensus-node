@@ -47,9 +47,8 @@ issues and PRs assigned to them.
     - Authoring or reviewing PRs on GitHub
     - Filing or commenting on issues on GitHub
     - Contributing to community discussions (e.g. meetings, Slack, email discussion forums, Stack Overflow)
-- Subscribed to [pantheon-dev@pegasys.tech]
-- Joined [Pantheon Gitter]
-- Browsed [Pantheon Wiki]
+- Joined [RSK Gitter]
+- Browsed [RSK Wiki]
 - Have read the [contributor guide]
 - Signed ICLA, as described in [CLA.md]
 
@@ -76,6 +75,7 @@ Code approvers are members that have signed an ICLA and have been granted additi
 - Approver status granted by Project Sponsor or the Open Source Circle
 
 ### Responsibilities and privileges
+
 - Includes all of the responsibilities and privileges of a Member user
 - Approver status may be a precondition to accepting large code contributions
 - Demonstrate sound technical judgement
@@ -88,16 +88,19 @@ Code approvers are members that have signed an ICLA and have been granted additi
 - May merge pull requests
 
 ## Project Manager
+
 The Project Manager role provides the user with control over management aspects of the project.  
 
-**Defined by:** PegaSys
+**Defined by:** RSK
 
 ### Requirements
+
 - Includes all of the requirements of a Member user
 - Signed ICLA, as described in [CLA.md]
 - PM status granted by Project Sponsor or the Open Source Circle
 
 ### Responsibilities and privileges
+
 - Includes all of the responsibilities and privileges of a Member user
 - Determining releases
 - Managing roadmaps and access to Circle reports
@@ -105,61 +108,72 @@ The Project Manager role provides the user with control over management aspects 
 
 
 ## Project Sponsor
+
 The Project Sponsor role provides a user with the ability to contribute additional developer resources to the project.  Project Sponsors must sign the ICLA.
 
-**Defined by:** PegaSys
+**Defined by:** RSK
 
 ### Requirements
+
 - Signed ICLA, as described in [CLA.md]
 - Project Sponsor status granted by the Open Source Circle
 
 ### Responsibilities and privileges
+
 - Includes all of the responsibilities and privileges of a Member user
 - Approval of new users to the Approver role, and access to Circle reports.
 
 ## Open Source Circle
+
 The Open Source Circle is a group that provides open source software support to projects.
-**Defined by:** PegaSys
+**Defined by:** RSK
 
 ### Requirements
+
 - Includes all of the requirements of a Member user
 - Signed ICLA, as described in [CLA.md]
 - Open Source Circle status granted by the Open Source Circle
 
 ### Responsibilities and privileges
+
 - Includes all of the responsibilities and privileges of a Project Sponsor
 - Ability to archive the project
 - Manage the CLA
 - Conduct legal reviews
 
 ## Project Evangelist
+
 The Project Evangelist role is for those who wish to promote the project to the outside world, but not actively contribute to it.  
-**Defined by:** PegaSys
+**Defined by:** RSK
 
 ### Requirements
+
 - Includes all of the requirements of a Member user
 - Signed ICLA, as described in [CLA.md]
 - Project Evangelist status granted by the Open Source Circle
 
 ### Responsibilities and privileges
+
 - Includes all of the responsibilities and privileges of a Member user
 - Project Evangelist have the standard public access permissions
 - Organise talks
 - Work with marketing to manage web and graphical assets
 
 ## Benevolent Dictator
+
 The benevolent dictator, or project lead, is self-appointed. However, because the community always has the ability to fork, this person is fully answerable to the community.  The key is to ensure that, as the project expands, the right people are given influence over it and the community rallies behind the vision of the project lead.
 
 ### Responsibilities and privileges
+
 - Set the strategic objectives of the project and communicate these clearly to the community
 - Understand the community as a whole and strive to satisfy as many conflicting needs as possible, while ensuring that the project survives in the long term
 - Ensure that the approvers make the right decisions on behalf of the project
 - Provide final tie-breaker decisions when consensus cannot be reached.
 
-
 ## Attribution
 
 This document is adapted from the following sources:
+
 - Kubernetes community-membership.md, available at [kub community membership].  
 - OSSWatch Benevolent Dictator Governance Model, available at [oss watch benevolent dictator].  
 
@@ -170,6 +184,5 @@ This document is adapted from the following sources:
 [contributor guide]: /CONTRIBUTING.md
 [New contributors]: /CONTRIBUTING.md
 [two-factor authentication]: https://help.github.com/articles/about-two-factor-authentication
-[pantheon-dev@pegasys.tech]: mailto:pantheon-dev@pegasys.tech
-[Pantheon Gitter]: https://gitter.im/PegaSysEng/pantheon
-[Pantheon Documentation]: https://pantheon.readthedocs.io/
+[RSK Gitter]: https://gitter.im/rsksmart/rskj
+[RSK Documentation]: https://link.needed.readthedocs.io/

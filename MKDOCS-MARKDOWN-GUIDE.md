@@ -1,3 +1,6 @@
+
+<!-- Documentation derived from PegaSys's pantheon project -->
+
 # MkDocs And Markdown Guide
 
 Pantheon documentation is written using [Markdown](https://daringfireball.net/projects/markdown/) syntax.
