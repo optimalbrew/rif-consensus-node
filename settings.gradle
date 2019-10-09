@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-rootProject.name='pantheon'
+rootProject.name='rsk-private'
 include 'acceptance-tests'
 include 'config'
 include 'consensus:clique'
