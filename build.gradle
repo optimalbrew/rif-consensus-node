@@ -294,7 +294,7 @@ subprojects {
             usage('java-runtime') { fromResolutionResult() }
           }
           pom {
-            name = "Pantheon - ${project.name}"
+            name = "{project.name}"
             url = 'http://github.com/PegaSysEng/pantheon'
             licenses {
               license {
