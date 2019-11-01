@@ -25,25 +25,23 @@ public class StateTrieAccountValue {
 
   private final long nonce;
   private final Wei balance;
-  private final Hash storageRoot;
-  private final Hash codeHash;
+  //private final Hash storageRoot;
+  //private final Hash codeHash;
   private final int version;
 
   private StateTrieAccountValue(
-      final long nonce, final Wei balance, final Hash storageRoot, final Hash codeHash) {
-    this(nonce, balance, storageRoot, codeHash, Account.DEFAULT_VERSION);
+      final long nonce, final Wei balance) {
+    this(nonce, balance, Account.DEFAULT_VERSION);
   }
 
   public StateTrieAccountValue(
       final long nonce,
       final Wei balance,
-      final Hash storageRoot,
-      final Hash codeHash,
       final int version) {
     this.nonce = nonce;
     this.balance = balance;
-    this.storageRoot = storageRoot;
-    this.codeHash = codeHash;
+    //this.storageRoot = storageRoot;
+    //this.codeHash = codeHash;
     this.version = version;
   }
 
@@ -70,18 +68,18 @@ public class StateTrieAccountValue {
    *
    * @return the hash of the root node of the storage trie.
    */
-  public Hash getStorageRoot() {
+  /*public Hash getStorageRoot() {
     return storageRoot;
-  }
+  }*/
 
   /**
    * The hash of the EVM bytecode associated with this account.
    *
    * @return the hash of the account code (which may be {@link Hash#EMPTY}).
    */
-  public Hash getCodeHash() {
+ /* public Hash getCodeHash() {
     return codeHash;
-  }
+  }*/
 
   /**
    * The version of the EVM bytecode associated with this account.
@@ -97,8 +95,8 @@ public class StateTrieAccountValue {
 
     out.writeLongScalar(nonce);
     out.writeUInt256Scalar(balance);
-    out.writeBytesValue(storageRoot);
-    out.writeBytesValue(codeHash);
+    //out.writeBytesValue(storageRoot);
+    //out.writeBytesValue(codeHash);
 
     if (version != Account.DEFAULT_VERSION) {
       // version of zero is never written out.
@@ -113,8 +111,8 @@ public class StateTrieAccountValue {
 
     final long nonce = in.readLongScalar();
     final Wei balance = in.readUInt256Scalar(Wei::wrap);
-    final Hash storageRoot = Hash.wrap(in.readBytes32());
-    final Hash codeHash = Hash.wrap(in.readBytes32());
+    //final Hash storageRoot = Hash.wrap(in.readBytes32());
+    //final Hash codeHash = Hash.wrap(in.readBytes32());
     final int version;
     if (!in.isEndOfCurrentList()) {
       version = in.readIntScalar();
@@ -124,6 +122,6 @@ public class StateTrieAccountValue {
 
     in.leaveList();
 
-    return new StateTrieAccountValue(nonce, balance, storageRoot, codeHash, version);
+    return new StateTrieAccountValue(nonce, balance, version);
   }
 }

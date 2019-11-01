@@ -21,6 +21,7 @@ import org.hyperledger.besu.plugin.data.UnformattedData;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
+import java.util.Arrays;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.buffer.Buffer;
@@ -434,6 +435,7 @@ public interface BytesValue extends Comparable<BytesValue>, UnformattedData {
    * @throws IllegalArgumentException if {@code this.size() != destination.size()}.
    */
   void copyTo(MutableBytesValue destination);
+  //void copyTo(MutableBytesValue destination, int startOffset, int destPos, int bytesToCopy);
 
   /**
    * Copy the bytes of this value to the provided mutable one from a particular offset.
@@ -462,8 +464,26 @@ public interface BytesValue extends Comparable<BytesValue>, UnformattedData {
     }
   }
 
+  //Copy with zero padding
+  default BytesValue copyOf(int length){
+    return BytesValue.wrap(Arrays.copyOf(getArrayUnsafe(), length));
+  }
+
   default void copyTo(final byte[] dest, final int srcPos, final int destPos) {
     System.arraycopy(getArrayUnsafe(), srcPos, dest, destPos, size() - srcPos);
+  }
+
+  default void copyTo(final byte[] dest, final int srcPos, final int destPos, final int length) {
+    checkArgument(length <= size() - srcPos, "Invalid length provided");
+    System.arraycopy(getArrayUnsafe(), srcPos, dest, destPos, length);
+  }
+
+
+  default BytesValue copyRange(final int initPos, final int endPos){
+    checkElementIndex(initPos, size());
+    checkElementIndex(endPos, size());
+    checkArgument(endPos > initPos , "End position must be greater than init position");
+    return BytesValue.wrap(Arrays.copyOfRange(getArrayUnsafe(), initPos, endPos));
   }
 
   /**

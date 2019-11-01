@@ -19,6 +19,7 @@ import static java.lang.String.format;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.bytes.MutableBytesValue;
 
+import java.math.BigInteger;
 import java.util.function.Consumer;
 
 import io.vertx.core.buffer.Buffer;
@@ -103,6 +104,7 @@ public abstract class RLP {
     writer.accept(out);
     return out.encoded();
   }
+
 
   /**
    * Encodes a single binary value into RLP.

@@ -18,6 +18,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkElementIndex;
 
 import java.security.MessageDigest;
+import java.util.Arrays;
 
 /**
  * A bare bone abstract {@link BytesValue} that implements basic methods likely common to all
@@ -46,6 +47,7 @@ public abstract class AbstractBytesValue implements BytesValue {
 
     copyTo(dest, 0);
   }
+
 
   @Override
   public void copyTo(final MutableBytesValue destination, final int destinationOffset) {
@@ -123,10 +125,13 @@ public abstract class AbstractBytesValue implements BytesValue {
     final BytesValue that = (BytesValue) other;
     if (this.size() != that.size()) return false;
 
-    for (int i = 0; i < size(); i++) {
+
+    return Arrays.equals(this.getArrayUnsafe(), that.getArrayUnsafe());
+
+    /*for (int i = 0; i < size(); i++) {
       if (this.get(i) != that.get(i)) return false;
-    }
-    return true;
+    }*/
+    //return true;
   }
 
   @Override

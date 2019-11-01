@@ -25,6 +25,10 @@ import io.vertx.core.buffer.Buffer;
 
 /** An implementation of {@link BytesValue} backed by a byte array ({@code byte[]}). */
 class ArrayWrappingBytesValue extends AbstractBytesValue {
+  @Override
+  public boolean equals(Object other) {
+    return super.equals(other);
+  }
 
   protected final byte[] bytes;
   protected final int offset;
@@ -144,6 +148,7 @@ class ArrayWrappingBytesValue extends AbstractBytesValue {
 
     copyTo(dest, 0);
   }
+
 
   @Override
   public void copyTo(final MutableBytesValue destination, final int destinationOffset) {

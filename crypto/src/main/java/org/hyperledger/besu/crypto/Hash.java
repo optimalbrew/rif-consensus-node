@@ -47,6 +47,20 @@ public abstract class Hash {
     }
   }
 
+  //TODO ADDED TO BE CONSISTENT TO RSK
+  private static byte[] digestUsingAlgorithm(final byte[] input, final String alg) {
+    try {
+      final MessageDigest digest = MessageDigestFactory.create(alg);
+
+      if(input.length != 0){
+        digest.update(input, 0, input.length);
+      }
+      return digest.digest();
+    } catch (final NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Digest using SHA2-256.
    *
@@ -66,6 +80,12 @@ public abstract class Hash {
   public static Bytes32 keccak256(final BytesValue input) {
     return Bytes32.wrap(digestUsingAlgorithm(input, KECCAK256_ALG));
   }
+
+  //TODO: ADDED TO BE CONSISTENT TO RSK
+  public static Bytes32 keccak256(final byte[] input) {
+    return Bytes32.wrap(digestUsingAlgorithm(input, KECCAK256_ALG));
+  }
+
 
   /**
    * Digest using RIPEMD-160.
