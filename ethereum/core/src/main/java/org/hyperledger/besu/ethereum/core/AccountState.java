@@ -18,6 +18,7 @@ import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 
+import java.math.BigInteger;
 import java.util.NavigableMap;
 
 /**
@@ -55,7 +56,7 @@ public interface AccountState {
    *
    * @return the account nonce.
    */
-  long getNonce();
+  BigInteger getNonce();
 
   /**
    * The available balance of that account.
@@ -131,7 +132,7 @@ public interface AccountState {
    *     otherwise.
    */
   default boolean isEmpty() {
-    return getNonce() == 0 && getBalance().isZero() && !hasCode();
+    return BigInteger.ZERO.equals(getNonce()) && getBalance().isZero() && !hasCode();
   }
 
   /**
@@ -142,5 +143,5 @@ public interface AccountState {
    * @param limit the maximum number of entries to return.
    * @return the requested storage entries as a map of key hash to entry.
    */
-  //NavigableMap<Bytes32, AccountStorageEntry> storageEntriesFrom(Bytes32 startKeyHash, int limit);
+  NavigableMap<Bytes32, AccountStorageEntry> storageEntriesFrom(Bytes32 startKeyHash, int limit);
 }

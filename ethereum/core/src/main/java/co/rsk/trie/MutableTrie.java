@@ -20,14 +20,12 @@ package co.rsk.trie;
 
 import co.rsk.core.types.ints.Uint24;
 import co.rsk.crypto.Keccak256;
-//import org.ethereum.db.ByteArrayWrapper;
-//import org.ethereum.vm.DataWord;
 import org.hyperledger.besu.ethereum.core.Address;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -37,15 +35,15 @@ public interface MutableTrie {
     Keccak256 getHash();
 
     @Nullable
-    Optional<BytesValue> get(BytesValue key);
+    BytesValue get(Bytes32 key);
 
-    void put(BytesValue key, BytesValue value);
+    void put(Bytes32 key, BytesValue value);
 
     void put(String key, BytesValue value);
 
     // the key has to match exactly an account key
     // it won't work if it is used with an storage key or any other
-    void deleteRecursive(BytesValue key);
+    void deleteRecursive(Bytes32 key);
 
     void save();
 
@@ -61,9 +59,9 @@ public interface MutableTrie {
     // This is for optimizing EXTCODESIZE. It returns the size of the value
     // without the need to retrieve the value itself. Implementors can fallback to
     // getting the value and then returning its size.
-    Uint24 getValueLength(BytesValue key);
+    Uint24 getValueLength(Bytes32 key);
 
     // the key has to match exactly an account key
     // it won't work if it is used with an storage key or any other
-    Iterator<BytesValue> getStorageKeys(Address addr); //DataWord here is Bytes32
+    Iterator<Bytes32> getStorageKeys(Address addr); //DataWord here is Bytes32
 }

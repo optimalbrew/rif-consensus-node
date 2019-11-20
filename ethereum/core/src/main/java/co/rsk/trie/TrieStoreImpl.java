@@ -19,9 +19,14 @@
 package co.rsk.trie;
 
 import co.rsk.datasource.KeyValueDataSource;
+import org.hyperledger.besu.ethereum.core.WorldUpdater;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.plugin.services.storage.KeyValueStorageTransaction;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -36,12 +41,12 @@ import java.util.WeakHashMap;
  */
 public class TrieStoreImpl implements TrieStore {
 
-    private KeyValueDataSource store;
+    private WorldStateStorage store;
 
     /** Weak references are removed once the tries are garbage collected */
     private Set<Trie> savedTries = Collections.newSetFromMap(new WeakHashMap<>());
 
-    public TrieStoreImpl(KeyValueDataSource store) {
+    public TrieStoreImpl(WorldUpdater worldUpdater) {
         this.store = store;
     }
 
@@ -75,25 +80,27 @@ public class TrieStoreImpl implements TrieStore {
             // In particular our levelDB driver has not method to test for the existence of a key without retrieving the
             // value also, so manually checking pre-existence here seems it will add overhead on the average case,
             // instead of reducing it.
-            this.store.put(trie.getValueHash().getBytes(), trie.getValue());
+            this.store.updater().putStateTrieNode(trie.getValueHash().getBytes(), trie.getValue());
+            //this.store.put(trie.getValueHash().getBytes(), trie.getValue());
         }
 
         if (trie.isEmbeddable() && !forceSaveRoot) {
             return;
         }
 
-        this.store.put(trie.getHash().getBytes(), trie.toMessage());
+        this.store.updater().putStateTrieNode(trie.getHash().getBytes(), trie.toMessage());
+        //this.store.put(trie.getHash().getBytes(), trie.toMessage());
         savedTries.add(trie);
     }
 
     @Override
     public void flush(){
-        this.store.flush();
+        this.store.updater().commit();
     }
 
     @Override
-    public Trie retrieve(BytesValue hash) {
-        BytesValue message = this.store.get(hash);
+    public Trie retrieve(Bytes32 hash) {
+        BytesValue message = this.store.getTrieNode(hash).orElse(null);
         if (message == null) {
             throw new IllegalArgumentException(String.format(
                     "The trie with root %s is missing in this store", hash.toString()
@@ -106,12 +113,12 @@ public class TrieStoreImpl implements TrieStore {
     }
 
     @Override
-    public BytesValue retrieveValue(BytesValue hash) {
-        return this.store.get(hash);
+    public Optional<BytesValue> retrieveValue(Bytes32 hash) {
+        return this.store.getNodeData(hash);
     }
 
     @Override
     public void dispose() {
-        store.close();
+        //NOTE or TODO : Besu does not expose ROCKSDB's close method
     }
 }

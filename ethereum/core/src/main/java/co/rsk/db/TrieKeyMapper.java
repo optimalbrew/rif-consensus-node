@@ -18,11 +18,8 @@
 
 package co.rsk.db;
 
-//import co.rsk.remasc.RemascTransaction;
+import co.rsk.utils.ByteUtils;
 import co.rsk.utils.Keccak256Helper;
-/*import org.ethereum.crypto.Keccak256Helper;
-import org.ethereum.util.ByteUtil;
-import org.ethereum.vm.DataWord;*/
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
@@ -42,38 +39,43 @@ public class TrieKeyMapper {
     // We don't need to re-hash it if was hashed last time.
     // The reduction we get is about 50% (2x efficiency)
     private Address lastAddr;
-    private BytesValue lastAccountKey;
+    private Bytes32 lastAccountKey;
 
-    public synchronized BytesValue getAccountKey(Address addr) {
+    public synchronized Bytes32 getAccountKey(Address addr) {
         if (!addr.equals(lastAddr)) {
             BytesValue secureKey = secureKeyPrefix(addr);
-            lastAccountKey = BytesValues.concatenate(DOMAIN_PREFIX, secureKey, addr); //lastAccountKey = ByteUtil.merge(DOMAIN_PREFIX, secureKey, addr.getBytes());
+            lastAccountKey = Bytes32.wrap(BytesValues.concatenate(DOMAIN_PREFIX, secureKey, addr)); //lastAccountKey = ByteUtil.merge(DOMAIN_PREFIX, secureKey, addr.getBytes());
             lastAddr = addr;
         }
 
         return lastAccountKey.copy(); //return Arrays.copyOf(lastAccountKey, lastAccountKey.length);
     }
 
-    public BytesValue getCodeKey(Address addr) {
-        return BytesValues.concatenate(getAccountKey(addr), CODE_PREFIX);//return ByteUtil.merge(getAccountKey(addr), CODE_PREFIX);
+    public Bytes32 getCodeKey(Address addr) {
+        return Bytes32.wrap(BytesValues.concatenate(getAccountKey(addr), CODE_PREFIX));//return ByteUtil.merge(getAccountKey(addr), CODE_PREFIX);
     }
 
-    public BytesValue getAccountStoragePrefixKey(Address addr) {
-        return BytesValues.concatenate(getAccountKey(addr), STORAGE_PREFIX);
+    public Bytes32 getAccountStoragePrefixKey(Address addr) {
+        return Bytes32.wrap(BytesValues.concatenate(getAccountKey(addr), STORAGE_PREFIX));
         //return ByteUtil.merge(getAccountKey(addr), STORAGE_PREFIX);
     }
 
-    public BytesValue getAccountStorageKey(Address addr, Bytes32 subkeyDW) { //DataWord changed for Besu's Bytes32
+    public Bytes32 getAccountStorageKey(Address addr, Bytes32 subkeyDW) { //DataWord changed for Besu's Bytes32
         // TODO(SDL) should we hash the full subkey or the stripped one?
 
-        BytesValue subkey = subkeyDW;
-        BytesValue secureKeyPrefix = secureKeyPrefix(subkey);
-        BytesValue storageKey = BytesValues.concatenate(secureKeyPrefix, BytesValue.stripLeadingZeroes(subkey));//ByteUtil.merge(secureKeyPrefix, ByteUtil.stripLeadingZeroes(subkey));
-        return BytesValues.concatenate(getAccountStoragePrefixKey(addr), storageKey);//ByteUtil.merge(getAccountStoragePrefixKey(addr), storageKey);
+        Bytes32 subkey = subkeyDW;
+        Bytes32 secureKeyPrefix = secureKeyPrefix(subkey);
+        BytesValue storageKey = BytesValues.concatenate(secureKeyPrefix, ByteUtils.stripLeadingZeroes(subkey));//ByteUtil.merge(secureKeyPrefix, ByteUtil.stripLeadingZeroes(subkey));
+        return Bytes32.wrap(BytesValues.concatenate(getAccountStoragePrefixKey(addr), storageKey));//ByteUtil.merge(getAccountStoragePrefixKey(addr), storageKey);
     }
 
-    public BytesValue secureKeyPrefix(BytesValue key) {
-        return Keccak256Helper.keccak256(key).copyRange(0, SECURE_KEY_SIZE);
+    public Bytes32 secureKeyPrefix(Bytes32 key) {
+        return Bytes32.wrap(Keccak256Helper.keccak256(key).copyRange(0, SECURE_KEY_SIZE));
+        //return Arrays.copyOfRange(Keccak256Helper.keccak256(key), 0, SECURE_KEY_SIZE);
+    }
+
+    public Bytes32 secureKeyPrefix(Address key) {
+        return Bytes32.wrap(Keccak256Helper.keccak256(key.getArrayUnsafe()).copyRange(0, SECURE_KEY_SIZE));
         //return Arrays.copyOfRange(Keccak256Helper.keccak256(key), 0, SECURE_KEY_SIZE);
     }
 

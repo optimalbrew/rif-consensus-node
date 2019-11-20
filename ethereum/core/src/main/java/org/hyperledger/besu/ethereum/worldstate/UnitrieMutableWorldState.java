@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
+import co.rsk.core.Repository;
 import co.rsk.crypto.Keccak256;
 import co.rsk.db.MutableRepository;
 import co.rsk.trie.Trie;
@@ -35,16 +36,20 @@ public class UnitrieMutableWorldState implements MutableWorldState {
 
   private final WorldStateStorage worldStateStorage;
   private final WorldStatePreimageStorage preimageStorage;
+  private final MutableRepository repository; // It has the merkle trie inside, which aggregates the worldStateStorage
 
-  //private final TrieStore trieStore;
-  private final MutableRepository repository;
+  private final Map<Address, Map<Bytes32, BytesValue>> updatedStoragePerAccount =
+      new HashMap<>(); //Updated state values per account
 
-  private final MerklePatriciaTrie<Bytes32, BytesValue> accountStateTrie;
-  private final Map<Address, MerklePatriciaTrie<Bytes32, BytesValue>> updatedStorageTries =
-      new HashMap<>();
-  private final Map<Address, BytesValue> updatedAccountCode = new HashMap<>();
+  private final Map<Address, BytesValue> updatedAccountCode = new HashMap<>(); //Update code per account
+    //I think it's a placeholder for new storage keys to be added
+
   private final Map<Bytes32, UInt256> newStorageKeyPreimages = new HashMap<>();
+  //I think its a placeholder for new accounts
+
   private final Map<Bytes32, Address> newAccountKeyPreimages = new HashMap<>();
+
+
 
   public UnitrieMutableWorldState(final WorldStateStorage storage, final WorldStatePreimageStorage preimageStorage) {
     this(MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH, storage, preimageStorage);
@@ -55,9 +60,8 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       final WorldStateStorage worldStateStorage,
       final WorldStatePreimageStorage preimageStorage) {
     this.worldStateStorage = worldStateStorage;
-    this.accountStateTrie = newAccountStateTrie(rootHash);
+    this.repository = new MutableRepository(worldStateStorage);
     this.preimageStorage = preimageStorage;
-    repository = null;
   }
 
   public UnitrieMutableWorldState(final WorldState worldState) {
@@ -71,19 +75,14 @@ public class UnitrieMutableWorldState implements MutableWorldState {
     final UnitrieMutableWorldState other = (UnitrieMutableWorldState) worldState;
     this.worldStateStorage = other.worldStateStorage;
     this.preimageStorage = other.preimageStorage;
-    this.accountStateTrie = newAccountStateTrie(other.accountStateTrie.getRootHash());
-    repository = null;
+    this.repository = other.repository;
   }
 
   //AccountState and Account Storage come from the same storage
-  private MerklePatriciaTrie<Bytes32, BytesValue> newAccountStateTrie(final Bytes32 rootHash) {
+  private Repository newAccountStateTrie(final Bytes32 rootHash) {
+    return new MutableRepository(worldStateStorage);
     return new StoredMerklePatriciaTrie<>(
         worldStateStorage::getAccountStateTrieNode, rootHash, b -> b, b -> b);
-  }
-
-  private MerklePatriciaTrie<Bytes32, BytesValue> newAccountStorageTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
-        worldStateStorage::getAccountStorageTrieNode, rootHash, b -> b, b -> b);
   }
 
   @Override
@@ -98,12 +97,7 @@ public class UnitrieMutableWorldState implements MutableWorldState {
 
   @Override
   public Account get(final Address address) {
-    //final Hash addressHash = Hash.hash(address);
     return repository.getAccountState(address);
-    /*return accountStateTrie
-        .get(Hash.hash(address))
-        .map(bytes -> deserializeAccount(address, addressHash, bytes))
-        .orElse(null);*/
   }
 
   private WorldStateAccount deserializeAccount(
@@ -164,10 +158,10 @@ public class UnitrieMutableWorldState implements MutableWorldState {
     }
     // Commit account storage tries
     //TODO this does not exist in unitrie
-    /*for (final MerklePatriciaTrie<Bytes32, BytesValue> updatedStorage :
+    for (final MerklePatriciaTrie<Bytes32, BytesValue> updatedStorage :
         updatedStorageTries.values()) {
       updatedStorage.commit(stateUpdater::putAccountStorageTrieNode);
-    }*/
+    }
     // Commit account updates
     //TODO ACCOUNT STATE TRIE AND STORAGE TRIE MUST BE THE SAME
     //accountStateTrie.commit(stateUpdater::putAccountStateTrieNode);
@@ -178,7 +172,7 @@ public class UnitrieMutableWorldState implements MutableWorldState {
     //newAccountKeyPreimages.forEach(preimageUpdater::putAccountTrieKeyPreimage);
 
     // Clear pending changes that we just flushed
-    updatedStorageTries.clear();
+    updatedStoragePerAccount.clear();
     updatedAccountCode.clear();
     newStorageKeyPreimages.clear();
 
@@ -217,16 +211,6 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       this.accountValue = accountValue;
     }
 
-    /*private MerklePatriciaTrie<Bytes32, BytesValue> storageTrie() {
-      final MerklePatriciaTrie<Bytes32, BytesValue> updatedTrie = updatedStorageTries.get(address);
-      if (updatedTrie != null) {
-        storageTrie = updatedTrie;
-      }
-      if (storageTrie == null) {
-        storageTrie = newAccountStorageTrie(getStorageRoot());
-      }
-      return storageTrie;
-    }*/
 
     @Override
     public Address getAddress() {
@@ -248,9 +232,6 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       return accountValue.getBalance();
     }
 
-    /*Hash getStorageRoot() {
-      return accountValue.getStorageRoot();
-    }*/
 
     @Override
     public BytesValue getCode() {
@@ -258,24 +239,13 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       if (updatedCode != null) {
         return updatedCode;
       }
-      // No code is common, save the KV-store lookup.
-      final Hash codeHash = getCodeHash();
-      if (codeHash.equals(Hash.EMPTY)) {
-        return BytesValue.EMPTY;
-      }
-
-      return repository.getCode(codeHash).orElse(BytesValue.EMPTY);
+      return repository.getCode(address);
     }
 
     @Override
     public boolean hasCode() {
       return !getCode().isEmpty();
     }
-
-    //@Override
-    /*public Hash getCodeHash() {
-      return accountValue.getCodeHash();
-    }*/
 
     @Override
     public int getVersion() {
@@ -287,10 +257,6 @@ public class UnitrieMutableWorldState implements MutableWorldState {
 
       BytesValue storageValue = repository.getStorageValue(address, Hash.hash(key.getBytes()));
 
-      /*final Optional<BytesValue> val = storageTrie().get(Hash.hash(key.getBytes()));
-      if (!val.isPresent()) {
-        return UInt256.ZERO;
-      }*/
       if(storageValue == null){
         return UInt256.ZERO;
       }
@@ -302,22 +268,6 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       return getStorageValue(key);
     }
 
-    //@Override
-   /* public NavigableMap<Bytes32, AccountStorageEntry> storageEntriesFrom(
-        final Bytes32 startKeyHash, final int limit) {
-      final NavigableMap<Bytes32, AccountStorageEntry> storageEntries = new TreeMap<>();
-
-      storageTrie()
-          .entriesFrom(startKeyHash, limit)
-          .forEach(
-              (key, value) -> {
-                final AccountStorageEntry entry =
-                    AccountStorageEntry.create(
-                        convertToUInt256(value), key, getStorageTrieKeyPreimage(key));
-                storageEntries.put(key, entry);
-              });
-      return storageEntries;
-    }*/
 
     private UInt256 convertToUInt256(final BytesValue value) {
       // TODO: we could probably have an optimized method to decode a single scalar since it's used
@@ -333,8 +283,6 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       builder.append("address=").append(getAddress()).append(", ");
       builder.append("nonce=").append(getNonce()).append(", ");
       builder.append("balance=").append(getBalance()).append(", ");
-      //builder.append("storageRoot=").append(getStorageRoot()).append(", ");
-      //builder.append("codeHash=").append(getCodeHash());
       builder.append("version=").append(getVersion());
       return builder.append("}").toString();
     }
@@ -343,9 +291,12 @@ public class UnitrieMutableWorldState implements MutableWorldState {
   protected static class Updater
       extends AbstractWorldUpdater<UnitrieMutableWorldState, WorldStateAccount> {
 
+
+
     protected Updater(final UnitrieMutableWorldState world) {
       super(world);
     }
+
 
     @Override
     protected WorldStateAccount getForMutation(final Address address) {
@@ -363,10 +314,12 @@ public class UnitrieMutableWorldState implements MutableWorldState {
       return new ArrayList<>(updatedAccounts());
     }
 
+
     @Override
     public void revert() {
       deletedAccounts().clear();
       updatedAccounts().clear();
+      wrappedWorldView().repository.rollback(); //TODO check how this is used in unitrie
     }
 
     @Override
@@ -375,51 +328,38 @@ public class UnitrieMutableWorldState implements MutableWorldState {
 
       for (final Address address : deletedAccounts()) {
         wrapped.repository.delete(address);
-        /*final Hash addressHash = Hash.hash(address);
-        wrapped.accountStateTrie.remove(addressHash);
-        wrapped.updatedStorageTries.remove(address);
-        wrapped.updatedAccountCode.remove(address);*/
       }
 
       for (final UpdateTrackingAccount<WorldStateAccount> updated : updatedAccounts()) {
         final WorldStateAccount origin = updated.getWrappedAccount();
 
         // Save the code in key-value storage ...
-        //Hash codeHash = origin == null ? Hash.EMPTY : origin.getCodeHash();
         if (updated.codeWasUpdated()) {
-          //codeHash = Hash.hash(updated.getCode());
-          //wrapped.updatedAccountCode.put(updated.getAddress(), updated.getCode());
           wrapped.repository.saveCode(updated.getAddress(), updated.getCode());
         }
-        // ...and storage in the account trie first.
-        /*final boolean freshState = origin == null || updated.getStorageWasCleared();
-        Hash storageRoot = freshState ? Hash.EMPTY_TRIE_HASH : origin.getStorageRoot();
-
+        final boolean freshState = origin == null || updated.getStorageWasCleared();
         if (freshState) {
-          wrapped.updatedStorageTries.remove(updated.getAddress());
-        }*/
+            wrapped.updatedStoragePerAccount.remove(updated.getAddress());
+        }
+
         final SortedMap<UInt256, UInt256> updatedStorage = updated.getUpdatedStorage();
+
         if (!updatedStorage.isEmpty()) {
           // Apply any storage updates
-          //final MerklePatriciaTrie<Bytes32, BytesValue> storageTrie = freshState ? wrapped.newAccountStorageTrie(Hash.EMPTY_TRIE_HASH) : origin.storageTrie();
-          //wrapped.updatedStorageTries.put(updated.getAddress(), storageTrie); //TODO Check that repository meets the same requirements as this map
           for (final Map.Entry<UInt256, UInt256> entry : updatedStorage.entrySet()) {
-            //final UInt256 value = entry.getValue();
+
             final Hash keyHash = Hash.hash(entry.getKey().getBytes());
             //if (value.isZero()) { //Zero means "delete the entry"
               //wrapped.repository.delete(); TODO ASK SERGIO: DELETE VALUE IS NOT IMPLEMENTED IN UNITRIE! so DELETE WOULD BE JUST PUTTING VALUE 0, so in this case doing nothing
-              //storageTrie.remove(keyHash);
             //} else {
             wrapped.newStorageKeyPreimages.put(keyHash, entry.getKey());
             wrapped.repository.addStorageBytes(updated.getAddress(), keyHash, RLP.encode(out -> out.writeUInt256Scalar(entry.getValue())));
-              //storageTrie.put(keyHash, RLP.encode(out -> out.writeUInt256Scalar(entry.getValue())));
             //}
           }
-          //storageRoot = Hash.wrap(storageTrie.getRootHash());
         }
 
         // Save address preimage //TODO INVESTIGATE WHAT'S THIS PREIMAGE STUFF
-        wrapped.newAccountKeyPreimages.put(updated.getAddressHash(), updated.getAddress());
+        //wrapped.newAccountKeyPreimages.put(updated.getAddressHash(), updated.getAddress());
 
 
         // Lastly, save the new account.
@@ -430,7 +370,7 @@ public class UnitrieMutableWorldState implements MutableWorldState {
                 updated.getVersion());
 
         wrapped.repository.updateAccountState(updated.getAddress(), account);
-        //wrapped.accountStateTrie.put(updated.getAddressHash(), account);
+        wrapped.repository.save();
       }
     }
   }

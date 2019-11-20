@@ -51,6 +51,12 @@ public class Keccak256 implements Serializable, Comparable<Keccak256> {
         this.bytes = rawHashBytes;
     }
 
+    public Keccak256(BytesValue rawHashBytes) {
+        checkArgument(rawHashBytes.getArrayUnsafe().length == 32);
+        this.bytes = Bytes32.wrap(rawHashBytes.getArrayUnsafe());
+    }
+
+
 
     /*public Keccak256(String hexString) {
         checkArgument(hexString.length() == 64);

@@ -465,7 +465,7 @@ public interface BytesValue extends Comparable<BytesValue>, UnformattedData {
   }
 
   //Copy with zero padding
-  default BytesValue copyOf(int length){
+  default BytesValue copyOf(final int length){
     return BytesValue.wrap(Arrays.copyOf(getArrayUnsafe(), length));
   }
 

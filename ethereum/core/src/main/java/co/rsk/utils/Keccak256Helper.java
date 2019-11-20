@@ -13,12 +13,12 @@ public class Keccak256Helper {
        // return keccak256(Hex.decode(message), new KeccakDigest(DEFAULT_SIZE), true);
     }
 
-    public static BytesValue keccak256(byte[] message) {
+    public static Bytes32 keccak256(byte[] message) {
         return Hash.keccak256(message);
         //return keccak256(message, new KeccakDigest(DEFAULT_SIZE), true);
     }
 
-    public static BytesValue keccak256(BytesValue message) {
+    public static Bytes32 keccak256(BytesValue message) {
         return Hash.keccak256(message);
         //return keccak256(message, new KeccakDigest(DEFAULT_SIZE), true);
     }

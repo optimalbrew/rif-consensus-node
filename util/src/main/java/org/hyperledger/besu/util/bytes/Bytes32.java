@@ -47,37 +47,6 @@ public interface Bytes32 extends BytesValue {
     return wrap(bytes, 0);
   }
 
-
-  static Bytes32 stripLeadingZeroes(Bytes32 data) {
-
-    Bytes32 valueForZero = Bytes32.of(0x00);
-    if (data == null) {
-      return null;
-    }
-
-    final int firstNonZero = firstNonZeroByte(data.getArrayUnsafe());
-    switch (firstNonZero) {
-      case -1:
-        return valueForZero;
-
-      case 0:
-        return data;
-
-      default:
-        byte[] result = new byte[data.size() - firstNonZero];
-        data.copyTo(result, firstNonZero,0, data.size() - firstNonZero);
-        //System.arraycopy(data, firstNonZero, result, 0, data.length - firstNonZero);
-        return BytesValue.wrap(result);
-    }
-  }
-  static int firstNonZeroByte(byte[] data) {
-    for (int i = 0; i < data.length; ++i) {
-      if (data[i] != 0) {
-        return i;
-      }
-    }
-    return -1;
-  }
   /**
    * Wraps a slice/sub-part of the provided array as a {@link Bytes32}.
    *

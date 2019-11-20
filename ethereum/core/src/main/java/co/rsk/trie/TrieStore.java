@@ -18,7 +18,10 @@
 
 package co.rsk.trie;
 
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.Optional;
 
 public interface TrieStore {
     void save(Trie trie);
@@ -26,9 +29,9 @@ public interface TrieStore {
     void flush();
 
     /** Retrieve a trie node with the specified hash from this store */
-    Trie retrieve(BytesValue hash);
+    Trie retrieve(Bytes32 hash);
 
-    BytesValue retrieveValue(BytesValue hash);
+    Optional<BytesValue> retrieveValue(Bytes32 hash);
 
     void dispose();
 }

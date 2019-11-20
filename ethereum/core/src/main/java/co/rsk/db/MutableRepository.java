@@ -19,30 +19,19 @@
 package co.rsk.db;
 
 import co.rsk.core.Coin;
-import co.rsk.core.RskAddress;
+import co.rsk.core.Repository;
+import org.hyperledger.besu.ethereum.core.UnitrieAccountState;
 import co.rsk.core.types.ints.Uint24;
 import co.rsk.crypto.Keccak256;
-import co.rsk.db.MutableTrieCache;
-import co.rsk.db.MutableTrieImpl;
-import co.rsk.trie.MutableTrie;
-import co.rsk.trie.Trie;
-import co.rsk.trie.TrieKeySlice;
-import co.rsk.trie.TrieStore;
+import co.rsk.trie.*;
 import co.rsk.utils.ByteUtils;
 import com.google.common.annotations.VisibleForTesting;
-import org.ethereum.core.AccountState;
-import org.ethereum.core.Repository;
-import org.ethereum.crypto.HashUtil;
-import org.ethereum.vm.DataWord;
-import org.hyperledger.besu.ethereum.core.Account;
-import org.hyperledger.besu.ethereum.core.AccountState;
-import org.hyperledger.besu.ethereum.core.Address;
-import org.hyperledger.besu.ethereum.core.Hash;
+
+import org.hyperledger.besu.ethereum.core.*;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
@@ -51,21 +40,22 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-public class MutableRepository implements WorldStateStorage {
+public class MutableRepository implements Repository {
     //private static final Logger logger = LoggerFactory.getLogger("repository");
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     private static final byte[] ONE_BYTE_ARRAY = new byte[] { 0x01 };
 
     private final TrieKeyMapper trieKeyMapper;
+
     private final MutableTrie mutableTrie;
 
-    public MutableRepository(TrieStore trieStore, Trie trie) {
-        this(new MutableTrieImpl(trieStore, trie));
-    }
+    private final UnitrieWorldUpdater worldUpdater;
 
-    public MutableRepository(MutableTrie mutableTrie) {
+    public MutableRepository(WorldStateStorage storage, WorldUpdater worldUpdater) {
         this.trieKeyMapper = new TrieKeyMapper();
-        this.mutableTrie = mutableTrie;
+        TrieStore ts = new TrieStoreImpl(worldUpdater);
+        this.mutableTrie = new MutableTrieImpl(ts, new Trie(ts));
+        this.worldUpdater = worldUpdater;
     }
 
     @Override
@@ -73,17 +63,11 @@ public class MutableRepository implements WorldStateStorage {
         return mutableTrie.getTrie();
     }
 
-    @Override
-    public synchronized AccountState createAccount(Address addr) {
-        AccountState accountState = new AccountState();
-        updateAccountState(addr, accountState);
-        return accountState;
-    }
 
     @Override
-    public synchronized void setupContract(RskAddress addr) {
-        byte[] prefix = trieKeyMapper.getAccountStoragePrefixKey(addr);
-        mutableTrie.put(prefix, ONE_BYTE_ARRAY);
+    public synchronized void setupContract(Address addr) {
+        Bytes32 prefix = trieKeyMapper.getAccountStoragePrefixKey(addr);
+        mutableTrie.put(prefix, BytesValue.wrap(ONE_BYTE_ARRAY));
     }
 
 
@@ -93,50 +77,62 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     @Override
-    public synchronized Account getAccountState(Address addr) {
-        AccountState result = null;
+    public synchronized AccountState getAccountState(Address addr) {
+
+        //UNITRIE_NOTES : This would be the way of getting the account in Besu.
+        //In besu Account IS an AccountState (AccountState is the readonly interface or everything but the address, added in Account)
+
+        return this.worldUpdater.getAccount(addr);
+
+       /* AccountState result = null;
         byte[] accountData = getAccountData(addr);
 
         // If there is no account it returns null
         if (accountData != null && accountData.length != 0) {
             result = new AccountState(accountData);
         }
-        return result;
+        return result;*/
     }
 
     public synchronized void delete(Address addr) {
         mutableTrie.deleteRecursive(trieKeyMapper.getAccountKey(addr));
     }
 
-    @Override
-    public synchronized void hibernate(RskAddress addr) {
+    //UNITRIE_NOTES
+    //This might not be initially supported
+    /*@Override
+    public synchronized void hibernate(Address addr) {
         AccountState account = getAccountStateOrCreateNew(addr);
 
         account.hibernate();
         updateAccountState(addr, account);
-    }
+    }*/
 
-    @Override
-    public void setNonce(RskAddress addr, BigInteger nonce) {
+    //UNITRIE_NOTES, the way to do it now is
+    //MutableAccount::setNonce
+    /*@Override
+    public void setNonce(Address addr, BigInteger nonce) {
         AccountState account = getAccountStateOrCreateNew(addr);
-
         account.setNonce(nonce);
         updateAccountState(addr, account);
-    }
+    }*/
 
-    @Override
-    public synchronized BigInteger increaseNonce(RskAddress addr) {
+    //UNITRIE_NOTES,  the way to do it now is
+    // MutableAccount::incrementNonce()
+    /*@Override
+    public synchronized BigInteger increaseNonce(Address addr) {
         AccountState account = getAccountStateOrCreateNew(addr);
-
         account.incrementNonce();
         updateAccountState(addr, account);
         return account.getNonce();
-    }
+    }*/
 
     @Override
-    public synchronized BigInteger getNonce(RskAddress addr) {
+    public synchronized BigInteger getNonce(Address addr) {
         // Why would getNonce create an Account in the repository? The semantic of a get()
         // is clear: do not change anything!
+
+
         AccountState account = getAccountState(addr);
         if (account == null) {
             return BigInteger.ZERO;
@@ -146,7 +142,7 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     public synchronized void saveCode(Address addr, BytesValue code) {
-        BytesValue key = trieKeyMapper.getCodeKey(addr);
+        Bytes32 key = trieKeyMapper.getCodeKey(addr);
         mutableTrie.put(key, code);
 
         if (code != null && code.size() != 0 && !isExist(addr)) {
@@ -155,44 +151,43 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     @Override
-    public synchronized int getCodeLength(RskAddress addr) {
+    public synchronized int getCodeLength(Address addr) {
         AccountState account = getAccountState(addr);
-        if (account == null || account.isHibernated()) {
+        if (account == null) {
             return 0;
         }
 
-        byte[] key = trieKeyMapper.getCodeKey(addr);
+        Bytes32 key = trieKeyMapper.getCodeKey(addr);
         return mutableTrie.getValueLength(key).intValue();
     }
 
-
+    @Override
     public synchronized BytesValue getCode(Address addr) {
+
         if (!isExist(addr)) {
             return BytesValue.EMPTY;
         }
 
         AccountState account = getAccountState(addr);
-        /*if (account.isHibernated()) { //TODO RESOLVE HIBERNATION
-            return EMPTY_BYTE_ARRAY;
-        }*/
 
-        BytesValue key = trieKeyMapper.getCodeKey(addr);
-        Optional<byte[]> code = mutableTrie.get(key.getArrayUnsafe());
-        return code.isPresent()?BytesValue.wrap(code.get()):BytesValue.EMPTY;
+        Bytes32 key = trieKeyMapper.getCodeKey(addr);
+        BytesValue code = mutableTrie.get(key);
+        return code;
     }
+
     @Override
     public Optional<BytesValue> getCode(final Bytes32 codeHash) {
 
         if (codeHash.equals(Hash.EMPTY)) {
             return Optional.of(BytesValue.EMPTY);
         } else {
-            return mutableTrie.get(codeHash.getArrayUnsafe()).map(BytesValue::wrap);
+            return Optional.ofNullable(mutableTrie.get(codeHash));
         }
     }
 
     public boolean isContract(Address addr) {
-        BytesValue prefix = trieKeyMapper.getAccountStoragePrefixKey(addr);
-        return mutableTrie.get(prefix.getArrayUnsafe()) != null;
+        Bytes32 prefix = trieKeyMapper.getAccountStoragePrefixKey(addr);
+        return mutableTrie.get(prefix) != null;
     }
 
     public synchronized void addStorageRow(Address addr, Bytes32 key, Bytes32 value) {
@@ -230,19 +225,19 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     @Override
-    public synchronized byte[] getStorageBytes(RskAddress addr, DataWord key) {
+    public synchronized byte[] getStorageBytes(Address addr, Bytes32 key) {
         byte[] triekey = trieKeyMapper.getAccountStorageKey(addr, key);
         return mutableTrie.get(triekey);
     }
 
     @Override
-    public Iterator<DataWord> getStorageKeys(RskAddress addr) {
+    public Iterator<Bytes32> getStorageKeys(Address addr) {
         // -1 b/c the first bit is implicit in the storage node
         return mutableTrie.getStorageKeys(addr);
     }
 
     @Override
-    public int getStorageKeysCount(RskAddress addr) {
+    public int getStorageKeysCount(Address addr) {
         // FIXME(diegoll): I think it's kind of insane to iterate the whole tree looking for storage keys for this address
         //  I think we can keep a counter for the keys, using the find function for detecting duplicates and so on
         int storageKeysCount = 0;
@@ -254,13 +249,13 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     @Override
-    public synchronized Coin getBalance(RskAddress addr) {
+    public synchronized Coin getBalance(Address addr) {
         AccountState account = getAccountState(addr);
         return (account == null) ? Coin.ZERO: account.getBalance();
     }
 
     @Override
-    public synchronized Coin addBalance(RskAddress addr, Coin value) {
+    public synchronized Coin addBalance(Address addr, Coin value) {
         AccountState account = getAccountStateOrCreateNew(addr);
 
         Coin result = account.addToBalance(value);
@@ -270,8 +265,8 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     @Override
-    public synchronized Set<RskAddress> getAccountsKeys() {
-        Set<RskAddress> result = new HashSet<>();
+    public synchronized Set<Address> getAccountsKeys() {
+        Set<Address> result = new HashSet<>();
         //TODO(diegoll): this is needed when trie is a MutableTrieCache, check if makes sense to commit here
         mutableTrie.commit();
         Trie trie = mutableTrie.getTrie();
@@ -279,9 +274,9 @@ public class MutableRepository implements WorldStateStorage {
         while (preOrderIterator.hasNext()) {
             TrieKeySlice nodeKey = preOrderIterator.next().getNodeKey();
             int nodeKeyLength = nodeKey.length();
-            if (nodeKeyLength == (1 + TrieKeyMapper.SECURE_KEY_SIZE + RskAddress.LENGTH_IN_BYTES) * Byte.SIZE) {
-                byte[] address = nodeKey.slice(nodeKeyLength - RskAddress.LENGTH_IN_BYTES * Byte.SIZE, nodeKeyLength).encode();
-                result.add(new RskAddress(address));
+            if (nodeKeyLength == (1 + TrieKeyMapper.SECURE_KEY_SIZE + Address.SIZE) * Byte.SIZE) {
+                byte[] address = nodeKey.slice(nodeKeyLength - Address.SIZE * Byte.SIZE, nodeKeyLength).encode();
+                result.add(new Address(address));
             }
         }
         return result;
@@ -309,43 +304,45 @@ public class MutableRepository implements WorldStateStorage {
     }
 
     @Override
-    public synchronized Bytes32 getRoot() {
+    public synchronized Keccak256 getRoot() {
         mutableTrie.save();
 
         Keccak256 rootHash = mutableTrie.getHash();
         //logger.trace("getting repository root hash {}", rootHash);
-        return rootHash.getBytes();
+        return rootHash;
     }
 
-    @Override
-    public synchronized void updateAccountState(Address addr, final BytesValue accountState) {
-        BytesValue accountKey = trieKeyMapper.getAccountKey(addr);
+    //UNITRIE_NOTES: It seems we don't need this, since Besu's Mutable Account already has all the needed primitives for updating
+    //Specifically UpdateTrackingAccount
+    /*@Override
+    public synchronized void updateAccountState(Address addr, AccountState accountState) {
+        Bytes32 accountKey = trieKeyMapper.getAccountKey(addr);
         mutableTrie.put(accountKey, accountState);
-    }
+    }*/
 
     @VisibleForTesting
-    public byte[] getStorageStateRoot(RskAddress addr) {
-        byte[] prefix = trieKeyMapper.getAccountStoragePrefixKey(addr);
+    public Keccak256 getStorageStateRoot(Address addr) {
+        Bytes32 prefix = trieKeyMapper.getAccountStoragePrefixKey(addr);
 
         // The value should be ONE_BYTE_ARRAY, but we don't need to check nothing else could be there.
         Trie storageRootNode = mutableTrie.getTrie().find(prefix);
         if (storageRootNode == null) {
-            return HashUtil.EMPTY_TRIE_HASH;
+            return new Keccak256(Hash.EMPTY_TRIE_HASH);
         }
 
         // Now it's a bit tricky what to return: if I return the storageRootNode hash then it's counting the "0x01"
         // value, so the try one gets will never match the trie one gets if creating the trie without any other data.
         // Unless the PDV trie is used. The best we can do is to return storageRootNode hash
-        return storageRootNode.getHash().getBytes();
+        return storageRootNode.getHash();
     }
 
     @Nonnull
-    private synchronized AccountState getAccountStateOrCreateNew(RskAddress addr) {
+    private synchronized AccountState getAccountStateOrCreateNew(Address addr) {
         AccountState account = getAccountState(addr);
         return (account == null) ? createAccount(addr) : account;
     }
 
-    private byte[] getAccountData(RskAddress addr) {
+    private BytesValue getAccountData(Address addr) {
         return mutableTrie.get(trieKeyMapper.getAccountKey(addr));
     }
 }

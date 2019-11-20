@@ -26,6 +26,7 @@ import co.rsk.trie.TrieKeySlice;
 import co.rsk.trie.TrieStore;
 
 import org.hyperledger.besu.ethereum.core.Address;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.Collections;
@@ -60,7 +61,7 @@ public class MutableTrieImpl implements MutableTrie {
     }
 
     @Override
-    public void put(BytesValue key, BytesValue value) {
+    public void put(Bytes32 key, BytesValue value) {
         trie = trie.put(key, value);
     }
 

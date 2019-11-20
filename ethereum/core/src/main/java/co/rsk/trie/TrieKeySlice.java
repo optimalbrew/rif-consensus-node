@@ -17,6 +17,7 @@
  */
 package co.rsk.trie;
 
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.bytes.MutableBytesValue;
 
@@ -119,7 +120,7 @@ public class TrieKeySlice {
         return new TrieKeySlice(BytesValue.wrap(paddedExpandedKey), 0, paddedExpandedKey.length);
     }
 
-    public static TrieKeySlice fromKey(BytesValue key) {
+    public static TrieKeySlice fromKey(Bytes32 key) {
         BytesValue expandedKey = PathEncoder.decode(key, key.size() * 8);
         return new TrieKeySlice(expandedKey, 0, expandedKey.size());
     }

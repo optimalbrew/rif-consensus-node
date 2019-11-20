@@ -25,8 +25,10 @@ import io.vertx.core.buffer.Buffer;
 
 /** An implementation of {@link BytesValue} backed by a byte array ({@code byte[]}). */
 class ArrayWrappingBytesValue extends AbstractBytesValue {
+
+
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(final Object other) {
     return super.equals(other);
   }
 

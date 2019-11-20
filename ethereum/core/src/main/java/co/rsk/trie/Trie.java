@@ -29,6 +29,8 @@ import co.rsk.crypto.Keccak256;
 import co.rsk.utils.Keccak256Helper;
 import org.bouncycastle.util.encoders.Hex;
 import org.hyperledger.besu.ethereum.core.Hash;
+import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
+import org.hyperledger.besu.ethereum.trie.Node;
 import org.hyperledger.besu.util.bytes.BytesValue;
 //import org.ethereum.crypto.Keccak256Helper;
 //import org.ethereum.db.ByteArrayWrapper;
@@ -213,7 +215,10 @@ public class Trie {
 
         if (hasLongVal) {
             valueHash = readHash(message, current);
-            value = store.retrieveValue(valueHash.getBytes());
+            value = store.retrieveValue(valueHash.getBytes()).orElse(null);
+            if(value == null){
+                throw new IllegalArgumentException("Invalid value read from store");
+            }
             lvalue = new Uint24(value.size());
         } else {
             int remaining = message.size() - offset;
@@ -226,7 +231,6 @@ public class Trie {
 
 
                 value = message.copyRange(current, current + remaining);
-                //value = Arrays.copyOfRange(message, current, current + remaining);
                 valueHash = null;
                 lvalue = new Uint24(remaining);
             } else {
@@ -489,7 +493,6 @@ public class Trie {
         }
 
         return encoded.copy();
-        //return cloneArray(encoded);
     }
 
     public int getMessageLength() {
@@ -976,7 +979,7 @@ public class Trie {
     }
 
     private BytesValue retrieveLongValue() {
-        return store.retrieveValue(getValueHash().getBytes());
+        return store.retrieveValue(getValueHash().getBytes()).orElse(null);
     }
 
     private void checkValueLengthAfterRetrieve() {
@@ -1041,7 +1044,6 @@ public class Trie {
         }
 
         return new Keccak256(bytes.copyRange(position, position + keccakSize));
-        //return new Keccak256(Arrays.copyOfRange(bytes, position, position + keccakSize));
     }
 
     @Override

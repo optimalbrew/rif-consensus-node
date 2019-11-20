@@ -19,16 +19,17 @@
 
 package co.rsk.core;
 
-import co.rsk.core.RskAddress;
 import co.rsk.db.RepositorySnapshot;
 import co.rsk.trie.Trie;
-import org.ethereum.vm.DataWord;
-import org.hyperledger.besu.ethereum.core.MutableWorldView;
+import org.hyperledger.besu.ethereum.core.AccountState;
+import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.math.BigInteger;
 
-public interface Repository extends WorldStateStorage {
+public interface Repository extends RepositorySnapshot, WorldStateStorage {
     Trie getTrie();
 
     /**
@@ -46,23 +47,23 @@ public interface Repository extends WorldStateStorage {
      * because a contract's code can be empty!
      *
      */
-    AccountState createAccount(RskAddress addr);
+    AccountState createAccount(Address addr);
 
-    void setupContract(RskAddress addr);
+    void setupContract(Address addr);
 
     /**
      * Deletes the account. This is recursive: all storage keys are deleted
      *
      * @param addr of the account
      */
-    void delete(RskAddress addr);
+    void delete(Address addr);
 
     /**
      * Hibernates the account
      *
      * @param addr of the account
      */
-    void hibernate(RskAddress addr);
+    void hibernate(Address addr);
 
     /**
      * Increase the account nonce of the given account by one
@@ -70,9 +71,9 @@ public interface Repository extends WorldStateStorage {
      * @param addr of the account
      * @return new value of the nonce
      */
-    BigInteger increaseNonce(RskAddress addr);
+    BigInteger increaseNonce(Address addr);
 
-    void setNonce(RskAddress addr, BigInteger nonce);
+    void setNonce(Address addr, BigInteger nonce);
 
     /**
      * Store code associated with an account
@@ -80,7 +81,7 @@ public interface Repository extends WorldStateStorage {
      * @param addr for the account
      * @param code that will be associated with this account
      */
-    void saveCode(RskAddress addr, byte[] code);
+    void saveCode(Address addr, byte[] code);
 
     /**
      * Put a value in storage of an account at a given key
@@ -89,9 +90,9 @@ public interface Repository extends WorldStateStorage {
      * @param key of the data to store
      * @param value is the data to store
      */
-    void addStorageRow(RskAddress addr, DataWord key, DataWord value);
+    void addStorageRow(Address addr, Bytes32 key, Bytes32 value);
 
-    void addStorageBytes(RskAddress addr, DataWord key, byte[] value);
+    void addStorageBytes(Address addr, Bytes32 key, BytesValue value);
 
     /**
      * Add value to the balance of an account
@@ -100,7 +101,7 @@ public interface Repository extends WorldStateStorage {
      * @param value to be added
      * @return new balance of the account
      */
-    Coin addBalance(RskAddress addr, Coin value);
+    Coin addBalance(Address addr, Coin value);
 
     /**
      * Store all the temporary changes made
@@ -116,9 +117,9 @@ public interface Repository extends WorldStateStorage {
 
     void save();
 
-    void updateAccountState(RskAddress addr, AccountState accountState);
+    void updateAccountState(Address addr, AccountState accountState);
 
-    default void transfer(RskAddress fromAddr, RskAddress toAddr, Coin value) {
+    default void transfer(Address fromAddr, Address toAddr, Coin value) {
         addBalance(fromAddr, value.negate());
         addBalance(toAddr, value);
     }
