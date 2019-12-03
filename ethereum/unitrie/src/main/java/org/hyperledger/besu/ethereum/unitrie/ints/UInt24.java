@@ -1,4 +1,4 @@
-package org.hyperledger.besu.ethereum.unitrie;
+package org.hyperledger.besu.ethereum.unitrie.ints;
 
 import org.hyperledger.besu.util.bytes.BytesValue;
 

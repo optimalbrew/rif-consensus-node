@@ -34,6 +34,7 @@ jar {
 dependencies {
   implementation project(':crypto')
   implementation project(':ethereum:rlp')
+  implementation project(':ethereum:trie')
   implementation project(':services:kvstore')
 
   implementation 'com.google.guava:guava'
@@ -49,6 +50,8 @@ dependencies {
 }
 
 testlogger {
-  theme 'mocha-parallel'
+  theme 'standard-parallel'
+  showSimpleNames true
   showStandardStreams true
+  showFullStackTraces true
 }

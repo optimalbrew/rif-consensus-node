@@ -31,7 +31,7 @@ public class PathEncodingTest {
 
         @Override
         public String toString() {
-            return String.format("Encoded = %s ⟷ path = %s (length = %d)", encoded, path, pathLength);
+            return String.format("Encoded = %s ↔ path = %s (length = %d)", encoded, path, pathLength);
         }
     }
 
