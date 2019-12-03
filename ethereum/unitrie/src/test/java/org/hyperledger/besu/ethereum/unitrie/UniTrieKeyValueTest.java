@@ -202,4 +202,60 @@ public class UniTrieKeyValueTest {
         assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 0)).getValue()).hasValue(BytesValue.of(1));
         assertThat(trie.accept(new GetVisitor(), BytesValue.of(0))).isEqualTo(NO_RESULT);
     }
+
+    @Test
+    public void removeWithCoalescing() {
+        UniNode trie = NullUniNode.instance();
+        trie = trie
+                .accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 1, 1))
+                .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0, 0, 0))
+                .accept(new PutVisitor(BytesValue.of(3), nodeFactory), BytesValue.of(0, 0, 0, 1, 0))
+                .accept(new RemoveVisitor(), BytesValue.of(0, 0, 0));
+
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 1, 1)).getValue()).hasValue(BytesValue.of(1));
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 0, 0, 1, 0)).getValue()).hasValue(BytesValue.of(3));
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 0, 0))).isSameAs(NO_RESULT);
+    }
+
+    @Test
+    public void removeWithoutCoalescing() {
+        UniNode trie = NullUniNode.instance();
+        trie = trie
+                .accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 1, 1))
+                .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0, 0, 0))
+                .accept(new PutVisitor(BytesValue.of(3), nodeFactory), BytesValue.of(0, 0, 0, 1, 0))
+                .accept(new RemoveVisitor(), BytesValue.of(0, 0, 0, 1, 0));
+
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 1, 1)).getValue()).hasValue(BytesValue.of(1));
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 0, 0)).getValue()).hasValue(BytesValue.of(2));
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 0, 0, 1, 0))).isSameAs(NO_RESULT);
+    }
+
+    @Test
+    public void removeEvenKeys() {
+        UniNode trie = NullUniNode.instance();
+        for (int i = 0; i < 100; i++) {
+            BytesValue value = BytesValue.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8));
+            BytesValue path = PathEncoding.decodePath(value, value.size() * 8);
+            trie = trie.accept(new PutVisitor(value, nodeFactory), path);
+        }
+
+        for (int i = 0; i < 100; i++) {
+            if (i % 2 == 1) {
+                BytesValue value = BytesValue.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8));
+                BytesValue path = PathEncoding.decodePath(value, value.size() * 8);
+                trie = trie.accept(new RemoveVisitor(), path);
+            }
+        }
+
+        for (int i = 0; i < 100; i++) {
+            BytesValue value = BytesValue.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8));
+            BytesValue path = PathEncoding.decodePath(value, value.size() * 8);
+            if (i % 2 == 0) {
+                assertThat(trie.accept(new GetVisitor(), path).getValue()).hasValue(value);
+            } else {
+                assertThat(trie.accept(new GetVisitor(), path)).isSameAs(NO_RESULT);
+            }
+        }
+    }
 }
