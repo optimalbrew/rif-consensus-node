@@ -82,25 +82,55 @@ public final class BranchUniNode implements UniNode {
         return rightChild;
     }
 
+    UniNode removeValue() {
+        // By removing this node's value we might have a chance to coalesce
+        return coalesce(nodeFactory.createBranch(path, null, leftChild, rightChild), nodeFactory);
+    }
+
     UniNode replaceValue(final BytesValue newValue) {
         if (newValue.equals(this.value)) {
             return this;
         }
-        return nodeFactory.createBranch(getPath(), newValue, leftChild, rightChild);
+        return nodeFactory.createBranch(path, newValue, leftChild, rightChild);
     }
 
     UniNode replacePath(final BytesValue newPath) {
+        if (newPath.equals(path)) {
+            return this;
+        }
         return nodeFactory.createBranch(newPath, value, leftChild, rightChild);
     }
 
     UniNode replaceChild(final byte pos, final UniNode newChild) {
         if (pos == 0) {
+            if (newChild == leftChild) {
+                return this;
+            }
             return coalesce(nodeFactory.createBranch(path, value, newChild, rightChild), nodeFactory);
         } else {
+            if (newChild == rightChild) {
+                return this;
+            }
             return coalesce(nodeFactory.createBranch(path, value, leftChild, newChild), nodeFactory);
         }
     }
 
+    /**
+     * Possibly coalesce a node. Rules are:
+     *
+     *   - Node has a value: keep node as it is.
+     *   - Node has no value and two children: keep node as it is.
+     *   - Node has no value and no children: turn it into a {@link NullUniNode}.
+     *   - Node has no value and a single child: replace it with the child (enlarging its path with
+     *     the parent path and pos bit).
+     *
+     * So, for a branch with no value and a left child with path p, return the left child with path 0:p.
+     * Conversely, if the branch has no value and a right child with path p, return the right child with path 1:p.
+     *
+     * @param node         node to possible coalesce
+     * @param nodeFactory  node factory used to create a new node in case of coalescing
+     * @return  original node, or coalesced one.
+     */
     private static UniNode coalesce(final UniNode node, final UniNodeFactory nodeFactory) {
         if (node.getValue().isPresent()) {
             return node;
@@ -131,7 +161,7 @@ public final class BranchUniNode implements UniNode {
         }
 
         return nodeFactory.createBranch(
-                BytesValue.of(pos).concat(child.getPath()),
+                node.getPath().concat(BytesValue.of(pos)).concat(child.getPath()),
                 child.getValue().orElse(null),
                 child.getLeftChild(),
                 child.getRightChild());

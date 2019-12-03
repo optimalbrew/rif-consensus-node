@@ -179,4 +179,27 @@ public class UniTrieKeyValueTest {
             assertThat(trie.accept(new GetVisitor(), path).getValue()).hasValue(value);
         }
     }
+
+    @Test
+    public void removeNonExistent() {
+        UniNode trie = NullUniNode.instance();
+        UniNode trie0 = trie
+                .accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 0))
+                .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0));
+        UniNode trie1 = trie0.accept(new RemoveVisitor(), BytesValue.of(0, 1, 1, 1, 1));
+
+        assertThat(trie0).isSameAs(trie1);
+    }
+
+    @Test
+    public void removeRoot() {
+        UniNode trie = NullUniNode.instance();
+        trie = trie
+                .accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 0))
+                .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0))
+                .accept(new RemoveVisitor(), BytesValue.of(0));
+
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0, 0)).getValue()).hasValue(BytesValue.of(1));
+        assertThat(trie.accept(new GetVisitor(), BytesValue.of(0))).isEqualTo(NO_RESULT);
+    }
 }
