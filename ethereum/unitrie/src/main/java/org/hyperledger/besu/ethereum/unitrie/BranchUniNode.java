@@ -82,6 +82,10 @@ public final class BranchUniNode implements UniNode {
         return rightChild;
     }
 
+    boolean isLeaf() {
+        return leftChild == NullUniNode.instance() && rightChild == NullUniNode.instance();
+    }
+
     UniNode removeValue() {
         // By removing this node's value we might have a chance to coalesce
         return coalesce(nodeFactory.createBranch(path, null, leftChild, rightChild), nodeFactory);
