@@ -82,7 +82,7 @@ public class UnitrieIteratorTest {
         final int totalNodes = 500;
         final int startNodeNumber = 25;
         final int stopNodeNumber = 437;
-        LinearCongruentialGeneraator g = new LinearCongruentialGeneraator();
+        LinearCongruentialGenerator g = new LinearCongruentialGenerator();
         for (int i = 0; i < totalNodes; i++) {
             final Bytes32 keyHash = Hash.keccak256(UInt256.of(Math.abs(g.next())).getBytes());
             root = root.accept(new PutVisitor(BytesValue.of(1), nodeFactory), PathEncoding.decodePath(keyHash, 256));
@@ -106,7 +106,7 @@ public class UnitrieIteratorTest {
         verifyNoMoreInteractions(leafHandler);
     }
 
-    private static class LinearCongruentialGeneraator {
+    private static class LinearCongruentialGenerator {
         final int m = 34783241;
         final int a = 6748319;
         final int c = 8736428;
