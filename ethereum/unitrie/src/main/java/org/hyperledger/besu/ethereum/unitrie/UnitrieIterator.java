@@ -66,6 +66,10 @@ public class UnitrieIterator implements UniPathVisitor {
             return handleLeaf(node);
         }
 
+        if (path.isEmpty()) {
+            return node;
+        }
+
         byte pos = 0;
         BytesValue remainingPath = path;
         if (state == State.SEARCHING) {
