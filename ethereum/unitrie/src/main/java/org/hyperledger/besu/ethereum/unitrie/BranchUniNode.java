@@ -7,7 +7,6 @@ import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
