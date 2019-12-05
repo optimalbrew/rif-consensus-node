@@ -28,7 +28,11 @@ public class UInt24 implements Comparable<UInt24> {
         return new UInt24(intValue);
     }
 
-    public UInt24(final int intValue) {
+    public static UInt24 fromInt(final int value) {
+        return new UInt24(value);
+    }
+
+    private UInt24(final int intValue) {
         if (intValue < 0 || intValue > MAX_INTEGER_VALUE) {
             throw new IllegalArgumentException("The supplied value doesn't fit in a Bytes24 instance");
         }

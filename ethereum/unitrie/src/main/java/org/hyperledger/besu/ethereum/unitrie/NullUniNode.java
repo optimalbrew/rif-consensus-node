@@ -1,6 +1,8 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Strings;
+import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.Optional;
@@ -28,8 +30,23 @@ public final class NullUniNode implements UniNode {
     }
 
     @Override
+    public ValueWrapper getValueWrapper() {
+        return ValueWrapper.EMPTY;
+    }
+
+    @Override
     public Optional<BytesValue> getValue() {
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<Bytes32> getValueHash() {
+        return getValueWrapper().getHash();
+    }
+
+    @Override
+    public Optional<UInt24> getValueLength() {
+        return getValueWrapper().getLength();
     }
 
     @Override

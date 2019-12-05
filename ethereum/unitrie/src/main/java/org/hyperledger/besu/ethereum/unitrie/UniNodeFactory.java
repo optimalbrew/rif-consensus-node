@@ -13,19 +13,19 @@ public interface UniNodeFactory {
      * Create a {@link UniNode} without children (that is, a leaf node).
      *
      * @param path   path of node to create
-     * @param value  value of node to create
+     * @param valueWrapper  value of node to create
      * @return  new leaf node
      */
-    UniNode createLeaf(BytesValue path, BytesValue value);
-
+    UniNode createLeaf(BytesValue path, ValueWrapper valueWrapper);
+    
     /**
      * Create a branch {@link UniNode}.
      *
-     * @param path        path of node to create
-     * @param value       value of node to create
+     * @param path  path of node to create
+     * @param valueWrapper  value of node to create
      * @param leftChild   left hand side child of node to create
      * @param rightChild  right hand side child of node to create
      * @return  new branch node
      */
-    UniNode createBranch(BytesValue path, BytesValue value, UniNode leftChild, UniNode rightChild);
+    UniNode createBranch(BytesValue path, ValueWrapper valueWrapper, UniNode leftChild, UniNode rightChild);
 }

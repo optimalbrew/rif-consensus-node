@@ -1,6 +1,9 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import org.hyperledger.besu.crypto.Hash;
+import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
+import org.hyperledger.besu.ethereum.trie.MerkleStorage;
+import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
@@ -28,13 +31,14 @@ public class UnitrieIteratorTest {
     private static final BytesValue PATH1 = PathEncoding.decodePath(KEY_HASH1, 256);
     private static final BytesValue PATH2 = PathEncoding.decodePath(KEY_HASH2, 256);
 
-    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory();
+    private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
+    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage);
     private final UnitrieIterator.LeafHandler leafHandler = mock(UnitrieIterator.LeafHandler.class);
     private final UnitrieIterator iterator = new UnitrieIterator(leafHandler);
 
     @Test
     public void shouldCallLeafHandlerWhenRootNodeIsALeaf() {
-        final UniNode leaf = nodeFactory.createLeaf(PATH1, BytesValue.of(0));
+        final UniNode leaf = nodeFactory.createLeaf(PATH1, ValueWrapper.fromValue(BytesValue.of(0)));
         leaf.accept(iterator, PATH1);
         verify(leafHandler).onLeaf(KEY_HASH1, leaf);
     }

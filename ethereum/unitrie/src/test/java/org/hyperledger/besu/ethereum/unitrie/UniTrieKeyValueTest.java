@@ -1,5 +1,8 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
+import org.hyperledger.besu.ethereum.trie.MerkleStorage;
+import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.junit.Test;
 
@@ -11,7 +14,8 @@ public class UniTrieKeyValueTest {
 
     private static UniNode NO_RESULT = NullUniNode.instance();
 
-    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory();
+    private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
+    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage);
 
     @Test
     public void putWithEmptyKey() {

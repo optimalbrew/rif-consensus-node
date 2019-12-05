@@ -1,5 +1,7 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.Optional;
@@ -19,11 +21,32 @@ public interface UniNode {
     BytesValue getPath();
 
     /**
+     * Get the wrapper for this value.
+     *
+     * @return   value wrapper for this node
+     */
+    ValueWrapper getValueWrapper();
+
+    /**
      * Get optional value for this node.
      *
-     * @return  optional node value
+     * @return  optional holding node's value
      */
     Optional<BytesValue> getValue();
+
+    /**
+     * If value is present return its hash.
+     *
+     * @return  optional holding value's hash if present
+     */
+    Optional<Bytes32> getValueHash();
+
+    /**
+     * If value is present return its length in bytes.
+     *
+     * @return  optional holding value's length in bytes if present
+     */
+    Optional<UInt24> getValueLength();
 
     /**
      * Get left hand side child of this node.

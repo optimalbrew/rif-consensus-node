@@ -2,6 +2,9 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import org.hyperledger.besu.ethereum.trie.MerkleStorage;
+import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.Optional;
@@ -15,31 +18,39 @@ import java.util.Optional;
 public final class BranchUniNode implements UniNode {
 
     private final BytesValue path;
-    private final BytesValue value;
-
+    private ValueWrapper valueWrapper;
     private final UniNode leftChild;
     private final UniNode rightChild;
-
+    
+    private final MerkleStorage storage;
     private final UniNodeFactory nodeFactory;
 
-    BranchUniNode(final BytesValue path, final BytesValue value, final UniNodeFactory nodeFactory) {
-        this(path, value, NullUniNode.instance(), NullUniNode.instance(), nodeFactory);
+    BranchUniNode(
+            final BytesValue path,
+            final ValueWrapper valueWrapper,
+            final MerkleStorage storage,
+            final UniNodeFactory nodeFactory) {
+        this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance(), storage, nodeFactory);
     }
 
     BranchUniNode(
             final BytesValue path,
-            final BytesValue value,
+            final ValueWrapper valueWrapper,
             final UniNode leftChild,
             final UniNode rightChild,
+            final MerkleStorage storage,
             final UniNodeFactory nodeFactory) {
 
+        Preconditions.checkNotNull(path, "Path can't be null");
+        Preconditions.checkNotNull(valueWrapper, "Value wrapper can't be null");
         Preconditions.checkNotNull(leftChild, "left child is null");
         Preconditions.checkNotNull(rightChild, "right child is null");
 
         this.path = path;
-        this.value = value;
+        this.valueWrapper = valueWrapper;
         this.leftChild = leftChild;
         this.rightChild = rightChild;
+        this.storage = storage;
         this.nodeFactory = nodeFactory;
     }
 
@@ -49,15 +60,30 @@ public final class BranchUniNode implements UniNode {
     }
 
     @Override
+    public ValueWrapper getValueWrapper() {
+        return valueWrapper;
+    }
+
+    @Override
     public Optional<BytesValue> getValue() {
-        return Optional.ofNullable(value);
+        return valueWrapper.solveValue(storage);
+    }
+
+    @Override
+    public Optional<Bytes32> getValueHash() {
+        return valueWrapper.getHash();
+    }
+
+    @Override
+    public Optional<UInt24> getValueLength() {
+        return valueWrapper.getLength();
     }
 
     @Override
     public String print(final int indent) {
         return String.format("%s%s%s%s",
                 Strings.repeat(" ", indent),
-                String.format("(key = %s, val = %s)", path, value),
+                String.format("(key = %s (%d), val = %s)", path, path.size(), valueWrapper),
                 String.format("\n%s", leftChild.print(indent + 2)),
                 String.format("\n%s", rightChild.print(indent + 2)));
     }
@@ -88,21 +114,21 @@ public final class BranchUniNode implements UniNode {
 
     UniNode removeValue() {
         // By removing this node's value we might have a chance to coalesce
-        return coalesce(nodeFactory.createBranch(path, null, leftChild, rightChild), nodeFactory);
+        return coalesce(nodeFactory.createBranch(path, ValueWrapper.empty(), leftChild, rightChild), nodeFactory);
     }
 
     UniNode replaceValue(final BytesValue newValue) {
-        if (newValue.equals(this.value)) {
+        if (valueWrapper.wrappedValueIs(newValue)) {
             return this;
         }
-        return nodeFactory.createBranch(path, newValue, leftChild, rightChild);
+        return nodeFactory.createBranch(path, ValueWrapper.fromValue(newValue), leftChild, rightChild);
     }
 
     UniNode replacePath(final BytesValue newPath) {
         if (newPath.equals(path)) {
             return this;
         }
-        return nodeFactory.createBranch(newPath, value, leftChild, rightChild);
+        return nodeFactory.createBranch(newPath, valueWrapper, leftChild, rightChild);
     }
 
     UniNode replaceChild(final byte pos, final UniNode newChild) {
@@ -110,12 +136,12 @@ public final class BranchUniNode implements UniNode {
             if (newChild == leftChild) {
                 return this;
             }
-            return coalesce(nodeFactory.createBranch(path, value, newChild, rightChild), nodeFactory);
+            return coalesce(nodeFactory.createBranch(path, valueWrapper, newChild, rightChild), nodeFactory);
         } else {
             if (newChild == rightChild) {
                 return this;
             }
-            return coalesce(nodeFactory.createBranch(path, value, leftChild, newChild), nodeFactory);
+            return coalesce(nodeFactory.createBranch(path, valueWrapper, leftChild, newChild), nodeFactory);
         }
     }
 
@@ -166,7 +192,7 @@ public final class BranchUniNode implements UniNode {
 
         return nodeFactory.createBranch(
                 node.getPath().concat(BytesValue.of(pos)).concat(child.getPath()),
-                child.getValue().orElse(null),
+                child.getValueWrapper(),
                 child.getLeftChild(),
                 child.getRightChild());
     }

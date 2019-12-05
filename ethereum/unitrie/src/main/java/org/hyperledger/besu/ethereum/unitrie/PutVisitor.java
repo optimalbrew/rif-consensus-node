@@ -21,7 +21,7 @@ public class PutVisitor implements UniPathVisitor {
 
     @Override
     public UniNode visit(final NullUniNode node, final BytesValue path) {
-        return nodeFactory.createLeaf(path, value);
+        return nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
     }
 
     @Override
@@ -76,9 +76,11 @@ public class PutVisitor implements UniPathVisitor {
             final byte updatedNodePos) {
 
         if (updatedNodePos == 0) {
-            return nodeFactory.createBranch(commonPath, value, updatedNode, NullUniNode.instance());
+            return nodeFactory.createBranch(commonPath,
+                    ValueWrapper.fromValue(value), updatedNode, NullUniNode.instance());
         } else {
-            return nodeFactory.createBranch(commonPath, value, NullUniNode.instance(), updatedNode);
+            return nodeFactory.createBranch(commonPath,
+                    ValueWrapper.fromValue(value), NullUniNode.instance(), updatedNode);
         }
     }
 
@@ -102,11 +104,11 @@ public class PutVisitor implements UniPathVisitor {
             final byte updatedNodePos,
             final BytesValue newLeafPath) {
 
-        UniNode newLeaf = nodeFactory.createLeaf(newLeafPath, value);
+        UniNode newLeaf = nodeFactory.createLeaf(newLeafPath, ValueWrapper.fromValue(value));
         if (updatedNodePos == 0) {
-            return nodeFactory.createBranch(commonPath, null, updatedNode, newLeaf);
+            return nodeFactory.createBranch(commonPath, ValueWrapper.empty(), updatedNode, newLeaf);
         } else {
-            return nodeFactory.createBranch(commonPath, null, newLeaf, updatedNode);
+            return nodeFactory.createBranch(commonPath, ValueWrapper.empty(), newLeaf, updatedNode);
         }
     }
 }
