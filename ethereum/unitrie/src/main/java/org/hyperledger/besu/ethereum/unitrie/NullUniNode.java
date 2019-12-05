@@ -31,7 +31,7 @@ public final class NullUniNode implements UniNode {
 
     @Override
     public ValueWrapper getValueWrapper() {
-        return ValueWrapper.EMPTY;
+        return null;
     }
 
     @Override
@@ -41,12 +41,12 @@ public final class NullUniNode implements UniNode {
 
     @Override
     public Optional<Bytes32> getValueHash() {
-        return getValueWrapper().getHash();
+        return Optional.empty();
     }
 
     @Override
     public Optional<UInt24> getValueLength() {
-        return getValueWrapper().getLength();
+        return Optional.empty();
     }
 
     @Override

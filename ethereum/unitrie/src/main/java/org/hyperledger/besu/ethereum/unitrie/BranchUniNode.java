@@ -7,6 +7,7 @@ import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -21,7 +22,7 @@ public final class BranchUniNode implements UniNode {
     private ValueWrapper valueWrapper;
     private final UniNode leftChild;
     private final UniNode rightChild;
-    
+
     private final MerkleStorage storage;
     private final UniNodeFactory nodeFactory;
 
@@ -41,10 +42,11 @@ public final class BranchUniNode implements UniNode {
             final MerkleStorage storage,
             final UniNodeFactory nodeFactory) {
 
-        Preconditions.checkNotNull(path, "Path can't be null");
-        Preconditions.checkNotNull(valueWrapper, "Value wrapper can't be null");
+        Preconditions.checkNotNull(path, "path can't be null");
         Preconditions.checkNotNull(leftChild, "left child is null");
         Preconditions.checkNotNull(rightChild, "right child is null");
+        Preconditions.checkNotNull(storage, "storage can;t be null");
+        Preconditions.checkNotNull(nodeFactory, "node factory can't be null");
 
         this.path = path;
         this.valueWrapper = valueWrapper;
@@ -66,17 +68,17 @@ public final class BranchUniNode implements UniNode {
 
     @Override
     public Optional<BytesValue> getValue() {
-        return valueWrapper.solveValue(storage);
+        return Optional.ofNullable(valueWrapper).map(vw -> vw.solveValue(storage));
     }
 
     @Override
     public Optional<Bytes32> getValueHash() {
-        return valueWrapper.getHash();
+        return Optional.ofNullable(valueWrapper).map(ValueWrapper::getHash);
     }
 
     @Override
     public Optional<UInt24> getValueLength() {
-        return valueWrapper.getLength();
+        return Optional.ofNullable(valueWrapper).map(ValueWrapper::getLength);
     }
 
     @Override
@@ -114,11 +116,12 @@ public final class BranchUniNode implements UniNode {
 
     UniNode removeValue() {
         // By removing this node's value we might have a chance to coalesce
-        return coalesce(nodeFactory.createBranch(path, ValueWrapper.empty(), leftChild, rightChild), nodeFactory);
+        return coalesce(nodeFactory.createBranch(path, null, leftChild, rightChild), nodeFactory);
     }
 
     UniNode replaceValue(final BytesValue newValue) {
-        if (valueWrapper.wrappedValueIs(newValue)) {
+        Preconditions.checkNotNull(newValue, "Can't call replaceValue with null, call removeValue instead");
+        if (valueWrapper != null && valueWrapper.wrappedValueIs(newValue)) {
             return this;
         }
         return nodeFactory.createBranch(path, ValueWrapper.fromValue(newValue), leftChild, rightChild);
@@ -162,7 +165,7 @@ public final class BranchUniNode implements UniNode {
      * @return  original node, or coalesced one.
      */
     private static UniNode coalesce(final UniNode node, final UniNodeFactory nodeFactory) {
-        if (node.getValue().isPresent()) {
+        if (Objects.nonNull(node.getValueWrapper())) {
             return node;
         }
 

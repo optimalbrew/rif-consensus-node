@@ -7,17 +7,17 @@ import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
+import java.lang.ref.SoftReference;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Wrapper modeling a value stored in a {@link UniNode}. A {@link UniNode} can store:
- *
- *  - No value (for example, in case the node is a branch with no value)
+ * Wrapper modeling a value stored in a {@link UniNode}. A {@link UniNode}
+ * having a value can store:
  *
  *  - The value itself + value hash + value length in bytes. This will happen if the value
  *    length in bytes is under a certain threshold.
- *
  *  - No value, but the hash and a key. This will happen if the value length in bytes
  *    is larger than the threshold. In this case the hash will act as a key that can
  *    be used to hit a ley-value store and retrieve the actual value.
@@ -27,12 +27,6 @@ import java.util.Optional;
 public final class ValueWrapper {
 
     private static int MAX_SHORT_LEN = 32;
-
-    static ValueWrapper EMPTY = ValueWrapper.empty();
-
-    static ValueWrapper empty() {
-        return new ValueWrapper(null, null, null);
-    }
 
     public static ValueWrapper fromValue(final BytesValue value) {
         Preconditions.checkNotNull(value, "Value can't be null");
@@ -45,51 +39,46 @@ public final class ValueWrapper {
         return new ValueWrapper(null, hash, length);
     }
 
-    private BytesValue value;
+    private SoftReference<BytesValue> value;
     private Bytes32 hash;
     private UInt24 length;
 
     private ValueWrapper(final BytesValue value, final Bytes32 hash, final UInt24 length) {
-        this.value = value;
+        this.value = Objects.isNull(value)? null : new SoftReference<>(value);
         this.hash = hash;
         this.length = length;
     }
 
-    Optional<BytesValue> solveValue(final MerkleStorage storage) {
-        if (isEmpty()) {
-            return Optional.empty();
+    BytesValue solveValue(final MerkleStorage storage) {
+        if (value != null) {
+            BytesValue v = value.get();
+            if (v != null) {
+                return v;
+            }
         }
-        if (value == null) {
-            value = storage.get(hash).orElseThrow(() -> new NoSuchElementException("No value for hash: " + hash));
-        }
-        return Optional.of(value);
+        BytesValue v = storage.get(hash).orElseThrow(() -> new NoSuchElementException("No value for hash: " + hash));
+        value = new SoftReference<>(v);
+        return v;
     }
 
-    Optional<Bytes32> getHash() {
-        return Optional.ofNullable(hash);
+    Bytes32 getHash() {
+        return hash;
     }
 
-    Optional<UInt24> getLength() {
-        return Optional.of(length);
+    UInt24 getLength() {
+        return length;
     }
 
     boolean wrappedValueIs(final BytesValue value) {
-        return !isEmpty() && Hash.keccak256(value).equals(hash);
-    }
-
-    boolean isEmpty() {
-        return hash == null;
+        return Hash.keccak256(value).equals(hash);
     }
 
     boolean isLong() {
-        return !isEmpty() && length.toInt() <= MAX_SHORT_LEN;
+        return length.toInt() <= MAX_SHORT_LEN;
     }
 
     @Override
     public String toString() {
-        if (isEmpty()) {
-            return "[empty]";
-        }
         return String.format("(%s, hash=%s, len=%s)", value, hash, length);
     }
 }
