@@ -13,9 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Wrapper modeling a value stored in a {@link UniNode}. A {@link UniNode}
- * having a value can store:
+ * Wrapper modeling a value stored in a {@link UniNode}. A {@link UniNode} can store:
  *
+ *  - No value at all.
  *  - The value itself + value hash + value length in bytes. This will happen if the value
  *    length in bytes is under a certain threshold.
  *  - No value, but the hash and a key. This will happen if the value length in bytes
@@ -27,6 +27,12 @@ import java.util.Optional;
 public final class ValueWrapper {
 
     private static int MAX_SHORT_LEN = 32;
+
+    public static ValueWrapper EMPTY = empty();
+
+    private static ValueWrapper empty() {
+        return new ValueWrapper(null, null, null);
+    }
 
     public static ValueWrapper fromValue(final BytesValue value) {
         Preconditions.checkNotNull(value, "Value can't be null");
@@ -49,36 +55,48 @@ public final class ValueWrapper {
         this.length = length;
     }
 
-    BytesValue solveValue(final MerkleStorage storage) {
+    Optional<BytesValue> solveValue(final MerkleStorage storage) {
+        if (isEmpty()) {
+            return Optional.empty();
+        }
         if (value != null) {
             BytesValue v = value.get();
             if (v != null) {
-                return v;
+                return Optional.of(v);
             }
         }
         BytesValue v = storage.get(hash).orElseThrow(() -> new NoSuchElementException("No value for hash: " + hash));
         value = new SoftReference<>(v);
-        return v;
+        return Optional.of(v);
     }
 
-    Bytes32 getHash() {
-        return hash;
+    Optional<Bytes32> getHash() {
+        return Optional.ofNullable(hash);
     }
 
-    UInt24 getLength() {
-        return length;
+    Optional<UInt24> getLength() {
+        return Optional.ofNullable(length);
+    }
+
+    boolean isEmpty() {
+        return Objects.isNull(hash);
     }
 
     boolean wrappedValueIs(final BytesValue value) {
-        return Hash.keccak256(value).equals(hash);
+        return !isEmpty() && Hash.keccak256(value).equals(hash);
     }
 
     boolean isLong() {
-        return length.toInt() <= MAX_SHORT_LEN;
+        return !isEmpty() && length.toInt() <= MAX_SHORT_LEN;
     }
 
     @Override
     public String toString() {
-        return String.format("(%s, hash=%s, len=%s)", value, hash, length);
+        if (isEmpty()) {
+            return "[empty]";
+        }
+
+        BytesValue v = value == null? null : value.get();
+        return String.format("(%s, hash=%s, len=%s)", v, hash, length);
     }
 }

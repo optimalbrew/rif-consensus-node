@@ -106,9 +106,9 @@ public class PutVisitor implements UniPathVisitor {
 
         UniNode newLeaf = nodeFactory.createLeaf(newLeafPath, ValueWrapper.fromValue(value));
         if (updatedNodePos == 0) {
-            return nodeFactory.createBranch(commonPath, null, updatedNode, newLeaf);
+            return nodeFactory.createBranch(commonPath, ValueWrapper.EMPTY, updatedNode, newLeaf);
         } else {
-            return nodeFactory.createBranch(commonPath, null, newLeaf, updatedNode);
+            return nodeFactory.createBranch(commonPath, ValueWrapper.EMPTY, newLeaf, updatedNode);
         }
     }
 }

@@ -31,7 +31,7 @@ public final class NullUniNode implements UniNode {
 
     @Override
     public ValueWrapper getValueWrapper() {
-        return null;
+        return ValueWrapper.EMPTY;
     }
 
     @Override

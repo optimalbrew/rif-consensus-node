@@ -43,6 +43,7 @@ public final class BranchUniNode implements UniNode {
             final UniNodeFactory nodeFactory) {
 
         Preconditions.checkNotNull(path, "path can't be null");
+        Preconditions.checkNotNull(valueWrapper, "value wrapper can't be null");
         Preconditions.checkNotNull(leftChild, "left child is null");
         Preconditions.checkNotNull(rightChild, "right child is null");
         Preconditions.checkNotNull(storage, "storage can;t be null");
@@ -68,17 +69,17 @@ public final class BranchUniNode implements UniNode {
 
     @Override
     public Optional<BytesValue> getValue() {
-        return Optional.ofNullable(valueWrapper).map(vw -> vw.solveValue(storage));
+        return valueWrapper.solveValue(storage);
     }
 
     @Override
     public Optional<Bytes32> getValueHash() {
-        return Optional.ofNullable(valueWrapper).map(ValueWrapper::getHash);
+        return valueWrapper.getHash();
     }
 
     @Override
     public Optional<UInt24> getValueLength() {
-        return Optional.ofNullable(valueWrapper).map(ValueWrapper::getLength);
+        return valueWrapper.getLength();
     }
 
     @Override
@@ -116,12 +117,12 @@ public final class BranchUniNode implements UniNode {
 
     UniNode removeValue() {
         // By removing this node's value we might have a chance to coalesce
-        return coalesce(nodeFactory.createBranch(path, null, leftChild, rightChild), nodeFactory);
+        return coalesce(nodeFactory.createBranch(path, ValueWrapper.EMPTY, leftChild, rightChild), nodeFactory);
     }
 
     UniNode replaceValue(final BytesValue newValue) {
         Preconditions.checkNotNull(newValue, "Can't call replaceValue with null, call removeValue instead");
-        if (valueWrapper != null && valueWrapper.wrappedValueIs(newValue)) {
+        if (valueWrapper.wrappedValueIs(newValue)) {
             return this;
         }
         return nodeFactory.createBranch(path, ValueWrapper.fromValue(newValue), leftChild, rightChild);
@@ -165,7 +166,7 @@ public final class BranchUniNode implements UniNode {
      * @return  original node, or coalesced one.
      */
     private static UniNode coalesce(final UniNode node, final UniNodeFactory nodeFactory) {
-        if (Objects.nonNull(node.getValueWrapper())) {
+        if (!node.getValueWrapper().isEmpty()) {
             return node;
         }
 
