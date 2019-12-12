@@ -27,7 +27,7 @@ import java.util.Optional;
  *
  * @author ppedemon
  */
-public final class NullUniNode implements UniNode {
+public class NullUniNode implements UniNode {
 
     private static NullUniNode INSTANCE = new NullUniNode();
 
@@ -97,6 +97,11 @@ public final class NullUniNode implements UniNode {
     @Override
     public UniNode accept(final UniPathVisitor visitor, final BytesValue path) {
         return visitor.visit(this, path);
+    }
+
+    @Override
+    public void accept(final UniNodeVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

@@ -33,7 +33,7 @@ import java.util.Optional;
  *
  * @author ppedemon
  */
-public final class BranchUniNode implements UniNode {
+public class BranchUniNode implements UniNode {
 
     private static final int MAX_INLINED_NODE_SIZE = 44;
 
@@ -128,6 +128,11 @@ public final class BranchUniNode implements UniNode {
     @Override
     public UniNode accept(final UniPathVisitor visitor, final BytesValue path) {
         return visitor.visit(this, path);
+    }
+
+    @Override
+    public void accept(final UniNodeVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

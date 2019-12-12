@@ -26,14 +26,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UniTrieDecodingTest {
     private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
     private final StoredUniNodeFactory nodeFactory = new StoredUniNodeFactory(storage::get);
-    private final UniNodeEncoding decoder = new UniNodeEncoding();
 
     @Test
     public void emptyPath_encodesCorrectly() {
         BytesValue value = BytesValue.of(1, 2, 3);
         UniNode trie = nodeFactory.createLeaf(BytesValue.EMPTY, ValueWrapper.fromValue(value));
         BytesValue enc = trie.getEncoding();
-        UniNode decoded = decoder.decode(enc, storage::get, nodeFactory);
+        UniNode decoded = nodeFactory.decode(enc);
         assertThat(trie.getHash()).isEqualTo(decoded.getHash());
     }
 
@@ -43,7 +42,7 @@ public class UniTrieDecodingTest {
         BytesValue value = BytesValue.of(1, 2, 3);
         UniNode trie = nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
         BytesValue enc = trie.getEncoding();
-        UniNode decoded = decoder.decode(enc, storage::get, nodeFactory);
+        UniNode decoded = nodeFactory.decode(enc);
         assertThat(trie.getHash()).isEqualTo(decoded.getHash());
     }
 
@@ -55,7 +54,7 @@ public class UniTrieDecodingTest {
                 .accept(new PutVisitor(valueLeft, nodeFactory), BytesValue.of(1, 1, 0, 0))
                 .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
         BytesValue enc = trie.getEncoding();
-        UniNode decoded = decoder.decode(enc, storage::get, nodeFactory);
+        UniNode decoded = nodeFactory.decode(enc);
         assertThat(trie.getHash()).isEqualTo(decoded.getHash());
     }
 
@@ -67,7 +66,7 @@ public class UniTrieDecodingTest {
                 .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
                 .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
         BytesValue enc = trie.getEncoding();
-        UniNode decoded = decoder.decode(enc, storage::get, nodeFactory);
+        UniNode decoded = nodeFactory.decode(enc);
         assertThat(trie.getHash()).isEqualTo(decoded.getHash());
     }
 
@@ -81,7 +80,7 @@ public class UniTrieDecodingTest {
                 .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
                 .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
         BytesValue enc = trie.getEncoding();
-        UniNode decoded = decoder.decode(enc, storage::get, nodeFactory);
+        UniNode decoded = nodeFactory.decode(enc);
         assertThat(trie.getHash()).isEqualTo(decoded.getHash());
     }
 }

@@ -110,6 +110,13 @@ public interface UniNode {
     UniNode accept(UniPathVisitor visitor, BytesValue path);
 
     /**
+     * Aceept the given {@link UniNodeVisitor}.
+     *
+     * @param visitor  visitor instance
+     */
+    void accept(UniNodeVisitor visitor);
+
+    /**
      * Get node encoding.
      *
      * @return  node encoding as dictated by RSKIP107

@@ -99,6 +99,11 @@ public class StoredUniNode implements UniNode {
     }
 
     @Override
+    public void accept(final UniNodeVisitor visitor) {
+        load().accept(visitor);
+    }
+
+    @Override
     public BytesValue getEncoding() {
         return load().getEncoding();
     }
