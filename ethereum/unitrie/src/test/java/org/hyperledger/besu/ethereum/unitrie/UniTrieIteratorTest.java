@@ -1,3 +1,17 @@
+/*
+ * Copyright ConsenSys AG.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.hyperledger.besu.ethereum.unitrie;
 
 import org.hyperledger.besu.crypto.Hash;
@@ -22,7 +36,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class UnitrieIteratorTest {
+public class UniTrieIteratorTest {
 
     private static final Bytes32 KEY_HASH1 =
             Bytes32.fromHexString("0x5555555555555555555555555555555555555555555555555555555555555555");
@@ -32,9 +46,9 @@ public class UnitrieIteratorTest {
     private static final BytesValue PATH2 = PathEncoding.decodePath(KEY_HASH2, 256);
 
     private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
-    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage);
-    private final UnitrieIterator.LeafHandler leafHandler = mock(UnitrieIterator.LeafHandler.class);
-    private final UnitrieIterator iterator = new UnitrieIterator(leafHandler);
+    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage::get);
+    private final UniTrieIterator.LeafHandler leafHandler = mock(UniTrieIterator.LeafHandler.class);
+    private final UniTrieIterator iterator = new UniTrieIterator(leafHandler);
 
     @Test
     public void shouldCallLeafHandlerWhenRootNodeIsALeaf() {
@@ -51,7 +65,7 @@ public class UnitrieIteratorTest {
 
     @Test
     public void shouldVisitEachChildOfABranchNode() {
-        when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class))).thenReturn(UnitrieIterator.State.CONTINUE);
+        when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class))).thenReturn(UniTrieIterator.State.CONTINUE);
         final UniNode root = NullUniNode.instance()
                 .accept(new PutVisitor(BytesValue.of(5), nodeFactory), PATH1)
                 .accept(new PutVisitor(BytesValue.of(6), nodeFactory), PATH2);
@@ -65,7 +79,7 @@ public class UnitrieIteratorTest {
 
     @Test
     public void shouldStopIteratingChildrenOfBranchWhenLeafHandlerReturnsStop() {
-        when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class))).thenReturn(UnitrieIterator.State.STOP);
+        when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class))).thenReturn(UniTrieIterator.State.STOP);
         final UniNode root = NullUniNode.instance()
                         .accept(new PutVisitor(BytesValue.of(5), nodeFactory), PATH1)
                         .accept(new PutVisitor(BytesValue.of(5), nodeFactory), PATH2);
@@ -99,8 +113,8 @@ public class UnitrieIteratorTest {
         }
 
         final Bytes32 actualStopAtHash = stopAtHash.compareTo(startAtHash) >= 0 ? stopAtHash : startAtHash;
-        when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class))).thenReturn(UnitrieIterator.State.CONTINUE);
-        when(leafHandler.onLeaf(eq(actualStopAtHash), any(UniNode.class))).thenReturn(UnitrieIterator.State.STOP);
+        when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class))).thenReturn(UniTrieIterator.State.CONTINUE);
+        when(leafHandler.onLeaf(eq(actualStopAtHash), any(UniNode.class))).thenReturn(UniTrieIterator.State.STOP);
         root.accept(iterator, PathEncoding.decodePath(startAtHash, 256));
 
         final InOrder inOrder = inOrder(leafHandler);

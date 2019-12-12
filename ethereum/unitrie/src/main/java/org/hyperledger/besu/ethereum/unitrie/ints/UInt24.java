@@ -1,11 +1,25 @@
+/*
+ * Copyright ConsenSys AG.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.hyperledger.besu.ethereum.unitrie.ints;
 
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
- * Type representing a 24 bit (3 bytes) value.
+ * Type representing a 24 bit (3 bytes) unsigned value.
  */
-public class UInt24 implements Comparable<UInt24> {
+public final class UInt24 implements Comparable<UInt24> {
 
     private static final int MAX_INTEGER_VALUE = 0x00ffffff;
 
@@ -16,6 +30,17 @@ public class UInt24 implements Comparable<UInt24> {
     public static final UInt24 MAX_VALUE = new UInt24(MAX_INTEGER_VALUE);
 
     private final int intValue;
+
+    public static UInt24 fromBytes(final byte[] bytes) {
+        return fromBytes(bytes, 0);
+    }
+
+    public static UInt24 fromBytes(final byte[] bytes, final int offset) {
+        int intValue = (bytes[offset + 2] & 0xFF) +
+                ((bytes[offset + 1] & 0xFF) << 8) +
+                ((bytes[offset ] & 0xFF) << 16);
+        return new UInt24(intValue);
+    }
 
     public static UInt24 fromBytesValue(final BytesValue value) {
         return fromBytesValue(value, 0);
@@ -34,7 +59,7 @@ public class UInt24 implements Comparable<UInt24> {
 
     private UInt24(final int intValue) {
         if (intValue < 0 || intValue > MAX_INTEGER_VALUE) {
-            throw new IllegalArgumentException("The supplied value doesn't fit in a Bytes24 instance");
+            throw new IllegalArgumentException("The supplied value doesn't fit in a UInt24 instance");
         }
         this.intValue = intValue;
     }

@@ -14,30 +14,24 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
+import java.util.Optional;
+
 /**
- * Interface for path-aware Unitrie visitors.
+ * Functional interface modeling the capability to load data from key value storage.
  *
  * @author ppedemon
  */
-public interface UniPathVisitor {
+@FunctionalInterface
+public interface DataLoader {
 
     /**
-     * Visit a {@link NullUniNode}.
+     * Load some data from key value storage given its hash, used as key.
      *
-     * @param node  node to visit
-     * @param path  path leading to the visited node
-     * @return  node resulting from visit
+     * @param hash  hash of data to load
+     * @return  optional holding loaded data if found, else empty
      */
-    UniNode visit(NullUniNode node, BytesValue path);
-
-    /**
-     * Visit a {@link BranchUniNode}.
-     *
-     * @param node  node to visit
-     * @param path  path leading to visited node
-     * @return  node resulting from visit
-     */
-    UniNode visit(BranchUniNode node, BytesValue path);
+    Optional<BytesValue> load(Bytes32 hash);
 }

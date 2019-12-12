@@ -1,12 +1,30 @@
+/*
+ * Copyright ConsenSys AG.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.hyperledger.besu.ethereum.trie.MerkleStorage;
+import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -17,20 +35,30 @@ import java.util.Optional;
  */
 public final class BranchUniNode implements UniNode {
 
+    private static final int MAX_INLINED_NODE_SIZE = 44;
+
+    private static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
+
     private final BytesValue path;
     private ValueWrapper valueWrapper;
     private final UniNode leftChild;
     private final UniNode rightChild;
+    private VarInt childrenSize;
 
-    private final MerkleStorage storage;
+    private WeakReference<BytesValue> encoding;
+    private SoftReference<Bytes32> hash;
+
+    private final DataLoader loader;
     private final UniNodeFactory nodeFactory;
+
+    private boolean dirty = false;
 
     BranchUniNode(
             final BytesValue path,
             final ValueWrapper valueWrapper,
-            final MerkleStorage storage,
+            final DataLoader loader,
             final UniNodeFactory nodeFactory) {
-        this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance(), storage, nodeFactory);
+        this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance(), null, loader, nodeFactory);
     }
 
     BranchUniNode(
@@ -38,21 +66,23 @@ public final class BranchUniNode implements UniNode {
             final ValueWrapper valueWrapper,
             final UniNode leftChild,
             final UniNode rightChild,
-            final MerkleStorage storage,
+            final VarInt childrenSize,
+            final DataLoader loader,
             final UniNodeFactory nodeFactory) {
 
-        Preconditions.checkNotNull(path, "path can't be null");
-        Preconditions.checkNotNull(valueWrapper, "value wrapper can't be null");
-        Preconditions.checkNotNull(leftChild, "left child is null");
-        Preconditions.checkNotNull(rightChild, "right child is null");
-        Preconditions.checkNotNull(storage, "storage can;t be null");
-        Preconditions.checkNotNull(nodeFactory, "node factory can't be null");
+        Preconditions.checkNotNull(path);
+        Preconditions.checkNotNull(valueWrapper);
+        Preconditions.checkNotNull(leftChild);
+        Preconditions.checkNotNull(rightChild);
+        Preconditions.checkNotNull(loader);
+        Preconditions.checkNotNull(nodeFactory);
 
         this.path = path;
         this.valueWrapper = valueWrapper;
         this.leftChild = leftChild;
         this.rightChild = rightChild;
-        this.storage = storage;
+        this.childrenSize = childrenSize;
+        this.loader = loader;
         this.nodeFactory = nodeFactory;
     }
 
@@ -68,7 +98,7 @@ public final class BranchUniNode implements UniNode {
 
     @Override
     public Optional<BytesValue> getValue() {
-        return valueWrapper.solveValue(storage);
+        return valueWrapper.solveValue(loader);
     }
 
     @Override
@@ -85,7 +115,7 @@ public final class BranchUniNode implements UniNode {
     public String print(final int indent) {
         return String.format("%s%s%s%s",
                 Strings.repeat(" ", indent),
-                String.format("(key = %s (%d), val = %s)", path, path.size(), valueWrapper),
+                String.format("(key = %s (%d), cs = %s, val = %s)", path, path.size(), childrenSize, valueWrapper),
                 String.format("\n%s", leftChild.print(indent + 2)),
                 String.format("\n%s", rightChild.print(indent + 2)));
     }
@@ -108,6 +138,67 @@ public final class BranchUniNode implements UniNode {
     @Override
     public UniNode getRightChild() {
         return rightChild;
+    }
+
+    @Override
+    public VarInt getChildrenSize() {
+        if (Objects.isNull(childrenSize)) {
+            if (isLeaf()) {
+                childrenSize = VarInt.ZERO;
+            } else {
+                childrenSize = new VarInt(leftChild.intrinsicSize() + rightChild.intrinsicSize());
+            }
+        }
+        return childrenSize;
+    }
+
+    @Override
+    public long intrinsicSize() {
+        int valueSize = valueWrapper.isLong()? valueWrapper.getLength().map(UInt24::toInt).orElse(0) : 0;
+        return valueSize + getChildrenSize().getValue() + getEncoding().size();
+    }
+
+    @Override
+    public BytesValue getEncoding() {
+        if (Objects.nonNull(encoding)) {
+            BytesValue v = encoding.get();
+            if (Objects.nonNull(v)) {
+                return v;
+            }
+        }
+
+        BytesValue v = encodingHelper.encode(this);
+        encoding = new WeakReference<>(v);
+        return v;
+    }
+
+    @Override
+    public Bytes32 getHash() {
+        if (Objects.nonNull(hash)) {
+            Bytes32 h = hash.get();
+            if (h != null) {
+                return h;
+            }
+        }
+
+        Bytes32 h = Hash.keccak256(getEncoding());
+        hash = new SoftReference<>(h);
+        return h;
+    }
+
+    @Override
+    public boolean isReferencedByHash() {
+        return !isLeaf() || getEncoding().size() > MAX_INLINED_NODE_SIZE;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void markDirty() {
+        dirty = true;
     }
 
     boolean isLeaf() {

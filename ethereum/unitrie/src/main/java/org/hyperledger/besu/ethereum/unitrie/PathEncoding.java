@@ -1,3 +1,17 @@
+/*
+ * Copyright ConsenSys AG.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
@@ -10,6 +24,16 @@ import org.hyperledger.besu.util.bytes.MutableBytesValue;
  * @author ppedemon
  */
 public final class PathEncoding {
+
+    /**
+     * Compute the length in bytes for a path with the given number of bits.
+     *
+     * @param pathLengthInBits  path length in bytes
+     * @return  number of bytes required to encode a path with the given length in bits
+     */
+    public static int encodedPathLength(final int pathLengthInBits) {
+        return (pathLengthInBits + 7) / 8;
+    }
 
     /**
      * Decode the given encoded path, turning it into a sequence of binary digits.
@@ -43,7 +67,7 @@ public final class PathEncoding {
     public static BytesValue encodePath(final BytesValue path) {
         Preconditions.checkNotNull(path, "Path to encode is null");
 
-        int length = (path.size() + 7) / 8;
+        int length = encodedPathLength(path.size());
         MutableBytesValue encoded = MutableBytesValue.create(length);
 
         int index = 0;
