@@ -18,7 +18,6 @@ package org.hyperledger.besu.ethereum.unitrie;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
-import org.hyperledger.besu.ethereum.trie.StoredMerklePatriciaTrie;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
@@ -77,5 +76,71 @@ public class StoredUnitrieTest extends AbstractUnitrieTest {
         final StoredUnitrie<BytesValue, String> modifiedTrie =
                 new StoredUnitrie<>(merkleStorage::get, newHash, valueSerializer, valueDeserializer);
         assertThat(modifiedTrie.get(BytesValue.fromHexString("0x0800"))).contains("c");
+    }
+
+    @Test
+    public void canReloadTrieFromHash() {
+        final BytesValue key1 = BytesValue.of(1, 5, 8, 9);
+        final BytesValue key2 = BytesValue.of(1, 6, 1, 2);
+        final BytesValue key3 = BytesValue.of(1, 6, 1, 3);
+
+        // Push some values into the trie and commit changes so nodes are persisted
+        final String value1 = "value1";
+        trie.put(key1, value1);
+        final Bytes32 hash1 = trie.getRootHash();
+        trie.commit(merkleStorage::put);
+
+        final String value2 = "value2";
+        trie.put(key2, value2);
+        final String value3 = "value3";
+        trie.put(key3, value3);
+        final Bytes32 hash2 = trie.getRootHash();
+        trie.commit(merkleStorage::put);
+
+        final String value4 = "value4";
+        trie.put(key1, value4);
+        final Bytes32 hash3 = trie.getRootHash();
+        trie.commit(merkleStorage::put);
+
+        // Check the root hashes for 3 tries are all distinct
+        assertThat(hash1).isNotEqualTo(hash2);
+        assertThat(hash1).isNotEqualTo(hash3);
+        assertThat(hash2).isNotEqualTo(hash3);
+        // And that we can retrieve the last value we set for key1
+        assertThat(trie.get(key1)).contains("value4");
+
+        // Create new tries from root hashes and check that we find expected values
+        trie = new StoredUnitrie<>(merkleStorage::get, hash1, valueSerializer, valueDeserializer);
+        assertThat(trie.get(key1)).contains("value1");
+        assertThat(trie.get(key2)).isEmpty();
+        assertThat(trie.get(key3)).isEmpty();
+
+        trie = new StoredUnitrie<>(merkleStorage::get, hash2, valueSerializer, valueDeserializer);
+        assertThat(trie.get(key1)).contains("value1");
+        assertThat(trie.get(key2)).contains("value2");
+        assertThat(trie.get(key3)).contains("value3");
+
+        trie = new StoredUnitrie<>(merkleStorage::get, hash3, valueSerializer, valueDeserializer);
+        assertThat(trie.get(key1)).contains("value4");
+        assertThat(trie.get(key2)).contains("value2");
+        assertThat(trie.get(key3)).contains("value3");
+
+        // Commit changes to storage, and create new tries from roothash and new storage instance
+        merkleStorage.commit();
+        final MerkleStorage newMerkleStorage = new KeyValueMerkleStorage(keyValueStore);
+        trie = new StoredUnitrie<>(newMerkleStorage::get, hash1, valueSerializer, valueDeserializer);
+        assertThat(trie.get(key1)).contains("value1");
+        assertThat(trie.get(key2)).isEmpty();
+        assertThat(trie.get(key3)).isEmpty();
+
+        trie = new StoredUnitrie<>(newMerkleStorage::get, hash2, valueSerializer, valueDeserializer);
+        assertThat(trie.get(key1)).contains("value1");
+        assertThat(trie.get(key2)).contains("value2");
+        assertThat(trie.get(key3)).contains("value3");
+
+        trie = new StoredUnitrie<>(newMerkleStorage::get, hash3, valueSerializer, valueDeserializer);
+        assertThat(trie.get(key1)).contains("value4");
+        assertThat(trie.get(key2)).contains("value2");
+        assertThat(trie.get(key3)).contains("value3");
     }
 }
