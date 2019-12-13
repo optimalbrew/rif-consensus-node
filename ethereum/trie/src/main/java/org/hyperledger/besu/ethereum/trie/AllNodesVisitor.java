@@ -18,9 +18,9 @@ import java.util.function.Consumer;
 
 public class AllNodesVisitor<V> implements NodeVisitor<V> {
 
-  private final Consumer<Node<V>> handler;
+  private final Consumer<BasicNode<V>> handler;
 
-  AllNodesVisitor(final Consumer<Node<V>> handler) {
+  AllNodesVisitor(final Consumer<BasicNode<V>> handler) {
     this.handler = handler;
   }
 

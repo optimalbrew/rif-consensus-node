@@ -20,7 +20,7 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 import java.util.List;
 import java.util.Optional;
 
-public interface Node<V> {
+public interface Node<V> extends BasicNode<V> {
 
   Node<V> accept(PathNodeVisitor<V> visitor, BytesValue path);
 
@@ -28,6 +28,7 @@ public interface Node<V> {
 
   BytesValue getPath();
 
+  @Override
   Optional<V> getValue();
 
   List<Node<V>> getChildren();
@@ -47,6 +48,7 @@ public interface Node<V> {
     return getRlp().size() >= 32;
   }
 
+  @Override
   Bytes32 getHash();
 
   Node<V> replacePath(BytesValue path);
