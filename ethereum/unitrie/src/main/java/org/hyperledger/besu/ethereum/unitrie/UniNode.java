@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.ethereum.trie.BasicNode;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
@@ -26,7 +27,7 @@ import java.util.Optional;
  *
  * @author ppedemon
  */
-public interface UniNode {
+public interface UniNode extends BasicNode<BytesValue> {
 
     /**
      * Get path for this node.
@@ -47,6 +48,7 @@ public interface UniNode {
      *
      * @return  optional holding node's value
      */
+    @Override
     Optional<BytesValue> getValue();
 
     /**
@@ -128,6 +130,7 @@ public interface UniNode {
      *
      * @return  node hash, given by the hash of the node's encoding
      */
+    @Override
     Bytes32 getHash();
 
     /**

@@ -13,8 +13,21 @@
  *  SPDX-License-Identifier: Apache-2.0
  *
  */
-
 package org.hyperledger.besu.ethereum.unitrie;
 
-public class SimpleUnitrieTest {
+import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
+import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+public class SimpleUnitrieTest extends AbstractUnitrieTest {
+
+    @Override
+    MerklePatriciaTrie<BytesValue, String> createTrie() {
+        return new SimpleUnitrie<>(
+                s -> Objects.isNull(s)? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8)),
+                v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8)
+        );
+    }
 }

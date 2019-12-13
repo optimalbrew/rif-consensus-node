@@ -15,18 +15,53 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.ethereum.trie.BasicNode;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Traverse a whole Unitrie, node by node.
  *
+ * @param <V>  type of values handled by this visitor
  * @author ppedemon
  */
-public class AllUniNodesVisitor implements UniNodeVisitor {
+public class AllUniNodesVisitor<V> implements UniNodeVisitor {
 
-    private final Consumer<UniNode> handler;
+    /**
+     * Basic node implementation, so it's possible to visit Unitrie
+     * nodes without leaking the underlying representation.
+     *
+     * @param <V>  type of value held by the node
+     */
+    private static class BasicNodeImpl<V> implements BasicNode<V> {
+        private final V value;
+        private final Bytes32 hash;
 
-    public AllUniNodesVisitor(final Consumer<UniNode> handler) {
+        BasicNodeImpl(final V value, final Bytes32 hash) {
+            this.value = value;
+            this.hash = hash;
+        }
+
+        @Override
+        public Bytes32 getHash() {
+            return hash;
+        }
+
+        @Override
+        public Optional<V> getValue() {
+            return Optional.ofNullable(value);
+        }
+    }
+
+    private final Function<BytesValue, V> valueDeserializer;
+    private final Consumer<BasicNode<V>> handler;
+
+    public AllUniNodesVisitor(final Function<BytesValue, V> valueDeserializer, final Consumer<BasicNode<V>> handler) {
+        this.valueDeserializer = valueDeserializer;
         this.handler = handler;
     }
 
@@ -36,7 +71,10 @@ public class AllUniNodesVisitor implements UniNodeVisitor {
 
     @Override
     public void visit(final BranchUniNode node) {
-        handler.accept(node);
+        BasicNode<V> n = new BasicNodeImpl<>(
+                node.getValue().map(valueDeserializer).orElseGet(() -> null),
+                node.getHash());
+        handler.accept(n);
         acceptAndUnload(node.getLeftChild());
         acceptAndUnload(node.getRightChild());
     }
