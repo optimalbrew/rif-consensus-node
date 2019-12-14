@@ -32,7 +32,7 @@ import java.util.Optional;
 import static junit.framework.TestCase.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class AbstractUnitrieTest {
+public abstract class AbstractUniTrieTest {
 
     MerklePatriciaTrie<BytesValue, String> trie;
 

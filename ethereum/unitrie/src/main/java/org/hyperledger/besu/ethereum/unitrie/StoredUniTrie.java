@@ -39,7 +39,7 @@ import static org.hyperledger.besu.ethereum.unitrie.UniNodeEncoding.NULL_UNINODE
  * @param <V>  value type
  * @author ppedemon
  */
-public class StoredUnitrie<K extends BytesValue, V> implements MerklePatriciaTrie<K, V> {
+public class StoredUniTrie<K extends BytesValue, V> implements MerklePatriciaTrie<K, V> {
 
     private final GetVisitor getVisitor = new GetVisitor();
     private final RemoveVisitor removeVisitor = new RemoveVisitor();
@@ -50,14 +50,14 @@ public class StoredUnitrie<K extends BytesValue, V> implements MerklePatriciaTri
 
     private UniNode root;
 
-    public StoredUnitrie(
+    public StoredUniTrie(
             final DataLoader loader,
             final Function<V, BytesValue> valueSerializer,
             final Function<BytesValue, V> valueDeserializer) {
         this(loader, NULL_UNINODE_HASH, valueSerializer, valueDeserializer);
     }
 
-    public StoredUnitrie(
+    public StoredUniTrie(
             final DataLoader loader,
             final Bytes32 rootHash,
             final Function<V, BytesValue> valueSerializer,
@@ -130,7 +130,8 @@ public class StoredUnitrie<K extends BytesValue, V> implements MerklePatriciaTri
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + getRootHash() + "]";
+        //return getClass().getSimpleName() + "[" + getRootHash() + "]";
+        return root.toString();
     }
 
     private BytesValue bytesToPath(final BytesValue key) {

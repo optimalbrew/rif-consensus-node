@@ -30,7 +30,7 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class StoredUnitrieTest extends AbstractUnitrieTest {
+public class StoredUniTrieTest extends AbstractUniTrieTest {
 
     private KeyValueStorage keyValueStore;
     private MerkleStorage merkleStorage;
@@ -43,7 +43,7 @@ public class StoredUnitrieTest extends AbstractUnitrieTest {
         merkleStorage = new KeyValueMerkleStorage(keyValueStore);
         valueSerializer = s -> Objects.isNull(s) ? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8));
         valueDeserializer = v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8);
-        return new StoredUnitrie<>(merkleStorage::get, valueSerializer, valueDeserializer);
+        return new StoredUniTrie<>(merkleStorage::get, valueSerializer, valueDeserializer);
     }
 
     @Test
@@ -54,8 +54,8 @@ public class StoredUnitrieTest extends AbstractUnitrieTest {
 
         // Ensure the extension branch can be loaded correct with its inlined child.
         final Bytes32 rootHash = trie.getRootHash();
-        final StoredUnitrie<BytesValue, String> newTrie =
-                new StoredUnitrie<>(merkleStorage::get, rootHash, valueSerializer, valueDeserializer);
+        final StoredUniTrie<BytesValue, String> newTrie =
+                new StoredUniTrie<>(merkleStorage::get, rootHash, valueSerializer, valueDeserializer);
         assertThat(newTrie.get(BytesValue.fromHexString("0x0800"))).contains("b");
     }
 
@@ -66,15 +66,15 @@ public class StoredUnitrieTest extends AbstractUnitrieTest {
         trie.commit(merkleStorage::put);
 
         final Bytes32 rootHash = trie.getRootHash();
-        final StoredUnitrie<BytesValue, String> newTrie =
-                new StoredUnitrie<>(merkleStorage::get, rootHash, valueSerializer, valueDeserializer);
+        final StoredUniTrie<BytesValue, String> newTrie =
+                new StoredUniTrie<>(merkleStorage::get, rootHash, valueSerializer, valueDeserializer);
 
         newTrie.put(BytesValue.fromHexString("0x0800"), "c");
         final Bytes32 newHash = newTrie.getRootHash();
         newTrie.commit(merkleStorage::put);
 
-        final StoredUnitrie<BytesValue, String> modifiedTrie =
-                new StoredUnitrie<>(merkleStorage::get, newHash, valueSerializer, valueDeserializer);
+        final StoredUniTrie<BytesValue, String> modifiedTrie =
+                new StoredUniTrie<>(merkleStorage::get, newHash, valueSerializer, valueDeserializer);
         assertThat(modifiedTrie.get(BytesValue.fromHexString("0x0800"))).contains("c");
     }
 
@@ -110,17 +110,17 @@ public class StoredUnitrieTest extends AbstractUnitrieTest {
         assertThat(trie.get(key1)).contains("value4");
 
         // Create new tries from root hashes and check that we find expected values
-        trie = new StoredUnitrie<>(merkleStorage::get, hash1, valueSerializer, valueDeserializer);
+        trie = new StoredUniTrie<>(merkleStorage::get, hash1, valueSerializer, valueDeserializer);
         assertThat(trie.get(key1)).contains("value1");
         assertThat(trie.get(key2)).isEmpty();
         assertThat(trie.get(key3)).isEmpty();
 
-        trie = new StoredUnitrie<>(merkleStorage::get, hash2, valueSerializer, valueDeserializer);
+        trie = new StoredUniTrie<>(merkleStorage::get, hash2, valueSerializer, valueDeserializer);
         assertThat(trie.get(key1)).contains("value1");
         assertThat(trie.get(key2)).contains("value2");
         assertThat(trie.get(key3)).contains("value3");
 
-        trie = new StoredUnitrie<>(merkleStorage::get, hash3, valueSerializer, valueDeserializer);
+        trie = new StoredUniTrie<>(merkleStorage::get, hash3, valueSerializer, valueDeserializer);
         assertThat(trie.get(key1)).contains("value4");
         assertThat(trie.get(key2)).contains("value2");
         assertThat(trie.get(key3)).contains("value3");
@@ -128,17 +128,17 @@ public class StoredUnitrieTest extends AbstractUnitrieTest {
         // Commit changes to storage, and create new tries from roothash and new storage instance
         merkleStorage.commit();
         final MerkleStorage newMerkleStorage = new KeyValueMerkleStorage(keyValueStore);
-        trie = new StoredUnitrie<>(newMerkleStorage::get, hash1, valueSerializer, valueDeserializer);
+        trie = new StoredUniTrie<>(newMerkleStorage::get, hash1, valueSerializer, valueDeserializer);
         assertThat(trie.get(key1)).contains("value1");
         assertThat(trie.get(key2)).isEmpty();
         assertThat(trie.get(key3)).isEmpty();
 
-        trie = new StoredUnitrie<>(newMerkleStorage::get, hash2, valueSerializer, valueDeserializer);
+        trie = new StoredUniTrie<>(newMerkleStorage::get, hash2, valueSerializer, valueDeserializer);
         assertThat(trie.get(key1)).contains("value1");
         assertThat(trie.get(key2)).contains("value2");
         assertThat(trie.get(key3)).contains("value3");
 
-        trie = new StoredUnitrie<>(newMerkleStorage::get, hash3, valueSerializer, valueDeserializer);
+        trie = new StoredUniTrie<>(newMerkleStorage::get, hash3, valueSerializer, valueDeserializer);
         assertThat(trie.get(key1)).contains("value4");
         assertThat(trie.get(key2)).contains("value2");
         assertThat(trie.get(key3)).contains("value3");

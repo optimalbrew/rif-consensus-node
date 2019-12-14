@@ -94,6 +94,11 @@ public class StoredUniNode implements UniNode {
     }
 
     @Override
+    public String toString() {
+        return print(0);
+    }
+
+    @Override
     public UniNode accept(final UniPathVisitor visitor, final BytesValue path) {
         return load().accept(visitor, path);
     }

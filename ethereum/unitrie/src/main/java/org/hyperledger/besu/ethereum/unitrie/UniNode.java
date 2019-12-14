@@ -123,6 +123,7 @@ public interface UniNode extends BasicNode<BytesValue> {
      *
      * @return  node encoding as dictated by RSKIP107
      */
+    @Override
     BytesValue getEncoding();
 
     /**
@@ -139,6 +140,7 @@ public interface UniNode extends BasicNode<BytesValue> {
      *
      * @return  whether this node will be referenced by hash or inlined
      */
+    @Override
     boolean isReferencedByHash();
 
     /**

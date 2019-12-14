@@ -53,6 +53,16 @@ public class AllUniNodesVisitor<V> implements UniNodeVisitor {
         public Optional<V> getValue() {
             return node.getValue().map(valueDeserializer);
         }
+
+        @Override
+        public boolean isReferencedByHash() {
+            return node.isReferencedByHash();
+        }
+
+        @Override
+        public BytesValue getEncoding() {
+            return node.getEncoding();
+        }
     }
 
     private final Function<BytesValue, V> valueDeserializer;

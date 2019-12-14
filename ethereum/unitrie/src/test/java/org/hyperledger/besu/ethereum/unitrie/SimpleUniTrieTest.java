@@ -21,11 +21,11 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-public class SimpleUnitrieTest extends AbstractUnitrieTest {
+public class SimpleUniTrieTest extends AbstractUniTrieTest {
 
     @Override
     MerklePatriciaTrie<BytesValue, String> createTrie() {
-        return new SimpleUnitrie<>(
+        return new SimpleUniTrie<>(
                 s -> Objects.isNull(s)? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8)),
                 v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8)
         );

@@ -38,7 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <V>  value type
  * @author ppedemon
  */
-public class SimpleUnitrie<K extends BytesValue, V> implements MerklePatriciaTrie<K, V> {
+public class SimpleUniTrie<K extends BytesValue, V> implements MerklePatriciaTrie<K, V> {
 
     private final GetVisitor getVisitor = new GetVisitor();
     private final RemoveVisitor removeVisitor = new RemoveVisitor();
@@ -53,7 +53,7 @@ public class SimpleUnitrie<K extends BytesValue, V> implements MerklePatriciaTri
 
     private UniNode root;
 
-    public SimpleUnitrie(
+    public SimpleUniTrie(
             final Function<V, BytesValue> valueSerializer,
             final Function<BytesValue, V> valueDeserializer) {
 
