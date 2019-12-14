@@ -32,28 +32,26 @@ import java.util.function.Function;
 public class AllUniNodesVisitor<V> implements UniNodeVisitor {
 
     /**
-     * Basic node implementation, so it's possible to visit Unitrie
-     * nodes without leaking the underlying representation.
-     *
+     * Basic node proxying a UniNode and making it polymorphic.
      * @param <V>  type of value held by the node
      */
-    private static class BasicNodeImpl<V> implements BasicNode<V> {
-        private final V value;
-        private final Bytes32 hash;
+    private static class UniNodeProxy<V> implements BasicNode<V> {
+        private final UniNode node;
+        private final Function<BytesValue, V> valueDeserializer;
 
-        BasicNodeImpl(final V value, final Bytes32 hash) {
-            this.value = value;
-            this.hash = hash;
+        UniNodeProxy(final UniNode node, final Function<BytesValue, V> valueDeserializer) {
+            this.valueDeserializer = valueDeserializer;
+            this.node = node;
         }
 
         @Override
         public Bytes32 getHash() {
-            return hash;
+            return node.getHash();
         }
 
         @Override
         public Optional<V> getValue() {
-            return Optional.ofNullable(value);
+            return node.getValue().map(valueDeserializer);
         }
     }
 
@@ -71,10 +69,8 @@ public class AllUniNodesVisitor<V> implements UniNodeVisitor {
 
     @Override
     public void visit(final BranchUniNode node) {
-        BasicNode<V> n = new BasicNodeImpl<>(
-                node.getValue().map(valueDeserializer).orElseGet(() -> null),
-                node.getHash());
-        handler.accept(n);
+        UniNodeProxy<V> p = new UniNodeProxy<>(node, valueDeserializer);
+        handler.accept(p);
         acceptAndUnload(node.getLeftChild());
         acceptAndUnload(node.getRightChild());
     }
