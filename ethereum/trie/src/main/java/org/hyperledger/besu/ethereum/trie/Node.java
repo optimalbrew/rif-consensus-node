@@ -37,6 +37,11 @@ public interface Node<V> extends BasicNode<V> {
 
   BytesValue getRlpRef();
 
+  @Override
+  default BytesValue getEncoding() {
+    return getRlp();
+  }
+
   /**
    * Whether a reference to this node should be represented as a hash of the rlp, or the node rlp
    * itself should be inlined (the rlp stored directly in the parent node). If true, the node is
@@ -44,6 +49,7 @@ public interface Node<V> extends BasicNode<V> {
    *
    * @return true if this node should be referenced by hash
    */
+  @Override
   default boolean isReferencedByHash() {
     return getRlp().size() >= 32;
   }

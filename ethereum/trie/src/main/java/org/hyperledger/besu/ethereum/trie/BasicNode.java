@@ -16,6 +16,7 @@
 package org.hyperledger.besu.ethereum.trie;
 
 import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.Optional;
 
@@ -40,4 +41,18 @@ public interface BasicNode<V> {
      * @return  optional holding value, or empty if value is absent
      */
     Optional<V> getValue();
+
+    /**
+     * Answer whether this node is referenced by a hash.
+     *
+     * @return whether this node is referenced by a hash
+     */
+    boolean isReferencedByHash();
+
+    /**
+     * Get node encoding.
+     *
+     * @return  node encoding
+     */
+    BytesValue getEncoding();
 }
