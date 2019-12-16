@@ -12,7 +12,6 @@
  *
  *  SPDX-License-Identifier: Apache-2.0
  */
-
 package org.hyperledger.besu.ethereum.trie;
 
 import org.hyperledger.besu.util.bytes.Bytes32;

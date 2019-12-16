@@ -15,6 +15,7 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
@@ -52,7 +53,6 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
         trie.put(BytesValue.fromHexString("0x0800"), "b");
         trie.commit(merkleStorage::put);
 
-        // Ensure the extension branch can be loaded correct with its inlined child.
         final Bytes32 rootHash = trie.getRootHash();
         final StoredUniTrie<BytesValue, String> newTrie =
                 new StoredUniTrie<>(merkleStorage::get, rootHash, valueSerializer, valueDeserializer);
@@ -142,5 +142,34 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
         assertThat(trie.get(key1)).contains("value4");
         assertThat(trie.get(key2)).contains("value2");
         assertThat(trie.get(key3)).contains("value3");
+    }
+
+    @Test
+    public void saveAndReloadLargeTrie() {
+        for (int i = 0; i < 1000; i++) {
+            trie.put(toKey(i), toValue(i));
+        }
+        trie.commit(merkleStorage::put);
+
+        MerklePatriciaTrie<BytesValue, String> loadedTrie =
+                new StoredUniTrie<>(merkleStorage::get, trie.getRootHash(), valueSerializer, valueDeserializer);
+        for (int i = 0; i < 1000; i++) {
+            BytesValue key = toKey(i);
+            assertThat(loadedTrie.get(key)).isEqualTo(trie.get(key));
+        }
+    }
+
+    private BytesValue toKey(final int i) {
+        Bytes32 hash = Hash.keccak256(BytesValue.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
+        return BytesValue.wrap(hash.getArrayUnsafe());
+    }
+
+    private String toValue(final int i) {
+        if ((i & 1) == 0) {
+            return String.valueOf(i);
+        } else {
+            Bytes32 hash = Hash.keccak256(BytesValue.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
+            return hash.toUnprefixedString();
+        }
     }
 }

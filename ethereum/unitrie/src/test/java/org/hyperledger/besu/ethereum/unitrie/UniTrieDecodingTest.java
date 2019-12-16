@@ -28,7 +28,7 @@ public class UniTrieDecodingTest {
     private final StoredUniNodeFactory nodeFactory = new StoredUniNodeFactory(storage::get);
 
     @Test
-    public void emptyPath_encodesCorrectly() {
+    public void emptyPath_loadsCorrectly() {
         BytesValue value = BytesValue.of(1, 2, 3);
         UniNode trie = nodeFactory.createLeaf(BytesValue.EMPTY, ValueWrapper.fromValue(value));
         BytesValue enc = trie.getEncoding();
@@ -37,7 +37,7 @@ public class UniTrieDecodingTest {
     }
 
     @Test
-    public void leaf_encodesCorrectly() {
+    public void leaf_loadsCorrectly() {
         BytesValue path = BytesValue.of(1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0);
         BytesValue value = BytesValue.of(1, 2, 3);
         UniNode trie = nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
@@ -47,7 +47,7 @@ public class UniTrieDecodingTest {
     }
 
     @Test
-    public void embeddedLeftChild_encodesCorrectly() {
+    public void embeddedLeftChild_loadsCorrectly() {
         BytesValue valueTop = BytesValue.of(9);
         BytesValue valueLeft = BytesValue.of(1, 2, 3, 4);
         UniNode trie = NullUniNode.instance()
@@ -59,7 +59,7 @@ public class UniTrieDecodingTest {
     }
 
     @Test
-    public void embeddedRightChild_encodesCorrectly() {
+    public void embeddedRightChild_loadsCorrectly() {
         BytesValue valueTop = BytesValue.of(9);
         BytesValue valueRight = BytesValue.of(5, 6, 7, 8);
         UniNode trie = NullUniNode.instance()
@@ -71,7 +71,7 @@ public class UniTrieDecodingTest {
     }
 
     @Test
-    public void embeddedChildren_encodesCorrectly() {
+    public void embeddedChildren_loadsCorrectly() {
         BytesValue valueTop = BytesValue.of(9);
         BytesValue valueLeft = BytesValue.of(1, 2, 3, 4);
         BytesValue valueRight = BytesValue.of(5, 6, 7, 8);
