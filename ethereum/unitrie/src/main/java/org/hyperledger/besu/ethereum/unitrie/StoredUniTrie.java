@@ -130,8 +130,7 @@ public class StoredUniTrie<K extends BytesValue, V> implements MerklePatriciaTri
 
     @Override
     public String toString() {
-        //return getClass().getSimpleName() + "[" + getRootHash() + "]";
-        return root.toString();
+        return getClass().getSimpleName() + "[" + getRootHash() + "]";
     }
 
     private BytesValue bytesToPath(final BytesValue key) {

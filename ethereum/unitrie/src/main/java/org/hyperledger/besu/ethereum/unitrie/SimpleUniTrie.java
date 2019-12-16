@@ -98,8 +98,7 @@ public class SimpleUniTrie<K extends BytesValue, V> implements MerklePatriciaTri
 
     @Override
     public String toString() {
-        //return getClass().getSimpleName() + "[" + getRootHash() + "]";
-        return root.toString();
+        return getClass().getSimpleName() + "[" + getRootHash() + "]";
     }
 
     @Override
