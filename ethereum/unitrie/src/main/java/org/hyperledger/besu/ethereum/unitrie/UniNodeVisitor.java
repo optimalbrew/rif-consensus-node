@@ -23,17 +23,17 @@ package org.hyperledger.besu.ethereum.unitrie;
  */
 public interface UniNodeVisitor {
 
-    /**
-     * Visit a {@link NullUniNode}.
-     *
-     * @param node  node to visit
-     */
-    void visit(NullUniNode node);
+  /**
+   * Visit a {@link NullUniNode}.
+   *
+   * @param node node to visit
+   */
+  void visit(NullUniNode node);
 
-    /**
-     * Visit a {@link BranchUniNode}.
-     *
-     * @param node  node to visit
-     */
-    void visit(BranchUniNode node);
+  /**
+   * Visit a {@link BranchUniNode}.
+   *
+   * @param node node to visit
+   */
+  void visit(BranchUniNode node);
 }

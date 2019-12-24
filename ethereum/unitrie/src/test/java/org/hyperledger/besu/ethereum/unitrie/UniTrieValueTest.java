@@ -14,81 +14,85 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
-import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 public class UniTrieValueTest {
 
-    private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
-    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage::get);
+  private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
+  private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage::get);
 
-    @Test
-    public void noLongValueInEmptyTrie() {
-        UniNode trie = NullUniNode.instance();
-        assertThat(trie.getValueWrapper().isLong()).isFalse();
-        assertThat(trie.getValueHash()).isEmpty();
-        assertThat(trie.getValue()).isEmpty();
+  @Test
+  public void noLongValueInEmptyTrie() {
+    UniNode trie = NullUniNode.instance();
+    assertThat(trie.getValueWrapper().isLong()).isFalse();
+    assertThat(trie.getValueHash()).isEmpty();
+    assertThat(trie.getValue()).isEmpty();
+  }
+
+  @Test
+  public void noLongValueInTrieWithShortValue() {
+    BytesValue key = BytesValue.of(1, 1, 0);
+    BytesValue value = BytesValue.of(1, 2, 3);
+
+    UniNode trie =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), key)
+            .accept(new GetVisitor(), key);
+
+    assertThat(trie.getValueWrapper().isLong()).isFalse();
+    assertThat(trie.getValueWrapper().getHash()).hasValue(Hash.keccak256(value));
+    assertThat(trie.getValueLength()).hasValue(UInt24.fromInt(value.size()));
+    assertThat(trie.getValue()).hasValue(value);
+  }
+
+  @Test
+  public void noValueInTrieWith32BytesValue() {
+    BytesValue key = BytesValue.of(0, 1);
+    BytesValue value = BytesValue.wrap(makeValue(32));
+
+    UniNode trie =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), key)
+            .accept(new GetVisitor(), key);
+
+    assertThat(trie.getValueWrapper().isLong()).isFalse();
+    assertThat(trie.getValueHash()).hasValue(Hash.keccak256(value));
+    assertThat(trie.getValueLength()).hasValue(UInt24.fromInt(value.size()));
+    assertThat(trie.getValue()).hasValue(value);
+  }
+
+  @Test
+  public void longValueInTrieWith33BytesValue() {
+    BytesValue key = BytesValue.of(0, 1);
+    BytesValue value = BytesValue.wrap(makeValue(33));
+
+    UniNode trie =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), key)
+            .accept(new GetVisitor(), key);
+
+    assertThat(trie.getValueWrapper().isLong()).isTrue();
+    assertThat(trie.getValueHash()).hasValue(Hash.keccak256(value));
+    assertThat(trie.getValueLength()).hasValue(UInt24.fromInt(value.size()));
+    assertThat(trie.getValue()).hasValue(value);
+  }
+
+  private static byte[] makeValue(final int length) {
+    byte[] value = new byte[length];
+
+    for (int k = 0; k < length; k++) {
+      value[k] = (byte) ((k + 1) % 256);
     }
 
-    @Test
-    public void noLongValueInTrieWithShortValue() {
-        BytesValue key = BytesValue.of(1, 1, 0);
-        BytesValue value = BytesValue.of(1, 2, 3);
-
-        UniNode trie = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), key)
-                .accept(new GetVisitor(), key);
-
-        assertThat(trie.getValueWrapper().isLong()).isFalse();
-        assertThat(trie.getValueWrapper().getHash()).hasValue(Hash.keccak256(value));
-        assertThat(trie.getValueLength()).hasValue(UInt24.fromInt(value.size()));
-        assertThat(trie.getValue()).hasValue(value);
-    }
-
-    @Test
-    public void noValueInTrieWith32BytesValue() {
-        BytesValue key = BytesValue.of(0, 1);
-        BytesValue value = BytesValue.wrap(makeValue(32));
-
-        UniNode trie = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), key)
-                .accept(new GetVisitor(), key);
-
-        assertThat(trie.getValueWrapper().isLong()).isFalse();
-        assertThat(trie.getValueHash()).hasValue(Hash.keccak256(value));
-        assertThat(trie.getValueLength()).hasValue(UInt24.fromInt(value.size()));
-        assertThat(trie.getValue()).hasValue(value);
-    }
-
-    @Test
-    public void longValueInTrieWith33BytesValue() {
-        BytesValue key = BytesValue.of(0, 1);
-        BytesValue value = BytesValue.wrap(makeValue(33));
-
-        UniNode trie = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), key)
-                .accept(new GetVisitor(), key);
-
-        assertThat(trie.getValueWrapper().isLong()).isTrue();
-        assertThat(trie.getValueHash()).hasValue(Hash.keccak256(value));
-        assertThat(trie.getValueLength()).hasValue(UInt24.fromInt(value.size()));
-        assertThat(trie.getValue()).hasValue(value);
-    }
-
-    private static byte[] makeValue(final int length) {
-        byte[] value = new byte[length];
-
-        for (int k = 0; k < length; k++) {
-            value[k] = (byte)((k + 1) % 256);
-        }
-
-        return value;
-    }
+    return value;
+  }
 }

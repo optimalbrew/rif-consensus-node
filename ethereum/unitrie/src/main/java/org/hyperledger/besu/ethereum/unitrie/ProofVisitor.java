@@ -21,41 +21,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class implementing a {@link GetVisitor} that in addition records the
- * not embedded nodes visited through the path.
+ * Class implementing a {@link GetVisitor} that in addition records the not embedded nodes visited
+ * through the path.
  *
- * The accumulated nodes can be regarded as a proof that the queried
- * node (if found) genuinely belongs to the Unitrie.
+ * <p>The accumulated nodes can be regarded as a proof that the queried node (if found) genuinely
+ * belongs to the Unitrie.
  *
  * @author ppedemon
  */
 public class ProofVisitor extends GetVisitor {
 
-    private final UniNode rootNode;
-    private final List<UniNode> proof = new ArrayList<>();
+  private final UniNode rootNode;
+  private final List<UniNode> proof = new ArrayList<>();
 
-    ProofVisitor(final UniNode rootNode) {
-        this.rootNode = rootNode;
-    }
+  ProofVisitor(final UniNode rootNode) {
+    this.rootNode = rootNode;
+  }
 
-    @Override
-    public UniNode visit(final BranchUniNode branchNode, final BytesValue path) {
-        maybeTrackNode(branchNode);
-        return super.visit(branchNode, path);
-    }
+  @Override
+  public UniNode visit(final BranchUniNode branchNode, final BytesValue path) {
+    maybeTrackNode(branchNode);
+    return super.visit(branchNode, path);
+  }
 
-    @Override
-    public UniNode visit(final NullUniNode nullNode, final BytesValue path) {
-        return super.visit(nullNode, path);
-    }
+  @Override
+  public UniNode visit(final NullUniNode nullNode, final BytesValue path) {
+    return super.visit(nullNode, path);
+  }
 
-    public List<UniNode> getProof() {
-        return proof;
-    }
+  public List<UniNode> getProof() {
+    return proof;
+  }
 
-    private void maybeTrackNode(final UniNode node) {
-        if (node.equals(rootNode) || node.isReferencedByHash()) {
-            proof.add(node);
-        }
+  private void maybeTrackNode(final UniNode node) {
+    if (node.equals(rootNode) || node.isReferencedByHash()) {
+      proof.add(node);
     }
+  }
 }

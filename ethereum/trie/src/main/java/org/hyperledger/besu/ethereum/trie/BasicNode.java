@@ -22,36 +22,36 @@ import java.util.Optional;
 /**
  * A basic trie node, having a has and optionally a value.
  *
- * @param <V>  type of value held by this node
+ * @param <V> type of value held by this node
  * @author ppedemon
  */
 public interface BasicNode<V> {
 
-    /**
-     * Get the hash corresponding to this trie node.
-     *
-     * @return  hash for this tree node
-     */
-    Bytes32 getHash();
+  /**
+   * Get the hash corresponding to this trie node.
+   *
+   * @return hash for this tree node
+   */
+  Bytes32 getHash();
 
-    /**
-     * Get optional value for this trie node.
-     *
-     * @return  optional holding value, or empty if value is absent
-     */
-    Optional<V> getValue();
+  /**
+   * Get optional value for this trie node.
+   *
+   * @return optional holding value, or empty if value is absent
+   */
+  Optional<V> getValue();
 
-    /**
-     * Answer whether this node is referenced by a hash.
-     *
-     * @return whether this node is referenced by a hash
-     */
-    boolean isReferencedByHash();
+  /**
+   * Answer whether this node is referenced by a hash.
+   *
+   * @return whether this node is referenced by a hash
+   */
+  boolean isReferencedByHash();
 
-    /**
-     * Get node encoding.
-     *
-     * @return  node encoding
-     */
-    BytesValue getEncoding();
+  /**
+   * Get node encoding.
+   *
+   * @return node encoding
+   */
+  BytesValue getEncoding();
 }

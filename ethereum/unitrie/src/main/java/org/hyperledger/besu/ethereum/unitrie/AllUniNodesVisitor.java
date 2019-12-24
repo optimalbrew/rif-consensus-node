@@ -26,67 +26,68 @@ import java.util.function.Function;
 /**
  * Traverse a whole Unitrie, node by node.
  *
- * @param <V>  type of values handled by this visitor
+ * @param <V> type of values handled by this visitor
  * @author ppedemon
  */
 public class AllUniNodesVisitor<V> implements UniNodeVisitor {
 
-    /**
-     * Basic node proxying a UniNode and making it polymorphic.
-     * @param <V>  type of value held by the node
-     */
-    private static class UniNodeProxy<V> implements BasicNode<V> {
-        private final UniNode node;
-        private final Function<BytesValue, V> valueDeserializer;
+  private final Function<BytesValue, V> valueDeserializer;
+  private final Consumer<BasicNode<V>> handler;
 
-        UniNodeProxy(final UniNode node, final Function<BytesValue, V> valueDeserializer) {
-            this.valueDeserializer = valueDeserializer;
-            this.node = node;
-        }
+  public AllUniNodesVisitor(
+      final Function<BytesValue, V> valueDeserializer, final Consumer<BasicNode<V>> handler) {
+    this.valueDeserializer = valueDeserializer;
+    this.handler = handler;
+  }
 
-        @Override
-        public Bytes32 getHash() {
-            return node.getHash();
-        }
+  @Override
+  public void visit(final NullUniNode node) {}
 
-        @Override
-        public Optional<V> getValue() {
-            return node.getValue().map(valueDeserializer);
-        }
+  @Override
+  public void visit(final BranchUniNode node) {
+    UniNodeProxy<V> p = new UniNodeProxy<>(node, valueDeserializer);
+    handler.accept(p);
+    acceptAndUnload(node.getLeftChild());
+    acceptAndUnload(node.getRightChild());
+  }
 
-        @Override
-        public boolean isReferencedByHash() {
-            return node.isReferencedByHash();
-        }
+  private void acceptAndUnload(final UniNode node) {
+    node.accept(this);
+    node.unload();
+  }
 
-        @Override
-        public BytesValue getEncoding() {
-            return node.getEncoding();
-        }
-    }
-
+  /**
+   * Basic node proxying a UniNode and making it polymorphic.
+   *
+   * @param <V> type of value held by the node
+   */
+  private static class UniNodeProxy<V> implements BasicNode<V> {
+    private final UniNode node;
     private final Function<BytesValue, V> valueDeserializer;
-    private final Consumer<BasicNode<V>> handler;
 
-    public AllUniNodesVisitor(final Function<BytesValue, V> valueDeserializer, final Consumer<BasicNode<V>> handler) {
-        this.valueDeserializer = valueDeserializer;
-        this.handler = handler;
+    UniNodeProxy(final UniNode node, final Function<BytesValue, V> valueDeserializer) {
+      this.valueDeserializer = valueDeserializer;
+      this.node = node;
     }
 
     @Override
-    public void visit(final NullUniNode node) {
+    public Bytes32 getHash() {
+      return node.getHash();
     }
 
     @Override
-    public void visit(final BranchUniNode node) {
-        UniNodeProxy<V> p = new UniNodeProxy<>(node, valueDeserializer);
-        handler.accept(p);
-        acceptAndUnload(node.getLeftChild());
-        acceptAndUnload(node.getRightChild());
+    public Optional<V> getValue() {
+      return node.getValue().map(valueDeserializer);
     }
 
-    private void acceptAndUnload(final UniNode node) {
-        node.accept(this);
-        node.unload();
+    @Override
+    public boolean isReferencedByHash() {
+      return node.isReferencedByHash();
     }
+
+    @Override
+    public BytesValue getEncoding() {
+      return node.getEncoding();
+    }
+  }
 }

@@ -24,40 +24,41 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  */
 public interface UniNodeFactory {
 
-    /**
-     * Create a {@link UniNode} without children (that is, a leaf node).
-     *
-     * @param path   path of node to create
-     * @param valueWrapper  value of node to create
-     * @return  new leaf node
-     */
-    UniNode createLeaf(BytesValue path, ValueWrapper valueWrapper);
-    
-    /**
-     * Create a branch {@link UniNode} with unknown children size.
-     *
-     * @param path  path of node to create
-     * @param valueWrapper  value of node to create
-     * @param leftChild   left hand side child of node to create
-     * @param rightChild  right hand side child of node to create
-     * @return  new branch node
-     */
-    UniNode createBranch(BytesValue path, ValueWrapper valueWrapper, UniNode leftChild, UniNode rightChild);
+  /**
+   * Create a {@link UniNode} without children (that is, a leaf node).
+   *
+   * @param path path of node to create
+   * @param valueWrapper value of node to create
+   * @return new leaf node
+   */
+  UniNode createLeaf(BytesValue path, ValueWrapper valueWrapper);
 
-    /**
-     * Create a branch {@link UniNode} with known children size.
-     *
-     * @param path  path of node to create
-     * @param valueWrapper  value of node to create
-     * @param leftChild   left hand side child of node to create
-     * @param rightChild  right hand side child of node to create
-     * @param childrenSize  cumulative size of children in bytes
-     * @return  new branch node
-     */
-    UniNode createBranch(
-            BytesValue path,
-            ValueWrapper valueWrapper,
-            UniNode leftChild,
-            UniNode rightChild,
-            VarInt childrenSize);
+  /**
+   * Create a branch {@link UniNode} with unknown children size.
+   *
+   * @param path path of node to create
+   * @param valueWrapper value of node to create
+   * @param leftChild left hand side child of node to create
+   * @param rightChild right hand side child of node to create
+   * @return new branch node
+   */
+  UniNode createBranch(
+      BytesValue path, ValueWrapper valueWrapper, UniNode leftChild, UniNode rightChild);
+
+  /**
+   * Create a branch {@link UniNode} with known children size.
+   *
+   * @param path path of node to create
+   * @param valueWrapper value of node to create
+   * @param leftChild left hand side child of node to create
+   * @param rightChild right hand side child of node to create
+   * @param childrenSize cumulative size of children in bytes
+   * @return new branch node
+   */
+  UniNode createBranch(
+      BytesValue path,
+      ValueWrapper valueWrapper,
+      UniNode leftChild,
+      UniNode rightChild,
+      VarInt childrenSize);
 }

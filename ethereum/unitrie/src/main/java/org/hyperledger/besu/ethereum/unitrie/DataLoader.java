@@ -27,11 +27,11 @@ import java.util.Optional;
 @FunctionalInterface
 public interface DataLoader {
 
-    /**
-     * Load some data from key value storage given its hash, used as key.
-     *
-     * @param hash  hash of data to load
-     * @return  optional holding loaded data if found, else empty
-     */
-    Optional<BytesValue> load(Bytes32 hash);
+  /**
+   * Load some data from key value storage given its hash, used as key.
+   *
+   * @param hash hash of data to load
+   * @return optional holding loaded data if found, else empty
+   */
+  Optional<BytesValue> load(Bytes32 hash);
 }

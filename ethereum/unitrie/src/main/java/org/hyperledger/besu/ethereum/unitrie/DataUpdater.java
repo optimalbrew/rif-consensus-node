@@ -25,11 +25,11 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 @FunctionalInterface
 public interface DataUpdater {
 
-    /**
-     * Store some value in key value storage.
-     *
-     * @param hash   value's hash, used as key
-     * @param value  value to store
-     */
-    void store(Bytes32 hash, BytesValue value);
+  /**
+   * Store some value in key value storage.
+   *
+   * @param hash value's hash, used as key
+   * @param value value to store
+   */
+  void store(Bytes32 hash, BytesValue value);
 }

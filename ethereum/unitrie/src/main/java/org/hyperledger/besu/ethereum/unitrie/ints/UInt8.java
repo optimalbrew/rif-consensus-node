@@ -16,86 +16,84 @@ package org.hyperledger.besu.ethereum.unitrie.ints;
 
 import org.hyperledger.besu.util.bytes.BytesValue;
 
-/**
- * Type representing an 8 bits (single byte) unsigned value.
- */
+/** Type representing an 8 bits (single byte) unsigned value. */
 public final class UInt8 implements Comparable<UInt8> {
 
-    private static final int MAX_INTEGER_VALUE = 0xff;
+  public static final int BITS = 8;
+  public static final int BYTES = BITS / Byte.SIZE;
 
-    private static final int BITS = 8;
-    public static final int BYTES = BITS / Byte.SIZE;
+  public static final UInt8 ZERO = new UInt8(0);
 
-    public static final UInt8 ZERO = new UInt8(0);
-    public static final UInt8 MAX_VALUE = new UInt8(MAX_INTEGER_VALUE);
+  private static final int MAX_INTEGER_VALUE = 0xff;
+  public static final UInt8 MAX_VALUE = new UInt8(MAX_INTEGER_VALUE);
 
-    private final int intValue;
+  private final int intValue;
 
-    public static UInt8 fromBytes(final byte[] bytes) {
-        return fromBytes(bytes, 0);
+  public static UInt8 fromBytes(final byte[] bytes) {
+    return fromBytes(bytes, 0);
+  }
+
+  public static UInt8 fromBytes(final byte[] bytes, final int offset) {
+    int intValue = bytes[offset] & 0xFF;
+    return new UInt8(intValue);
+  }
+
+  public static UInt8 fromBytesValue(final BytesValue value) {
+    return fromBytesValue(value, 0);
+  }
+
+  public static UInt8 fromBytesValue(final BytesValue value, final int offset) {
+    int intValue = value.get(offset) & 0xff;
+    return new UInt8(intValue);
+  }
+
+  public UInt8(final int intValue) {
+    if (intValue < 0 || intValue > MAX_INTEGER_VALUE) {
+      throw new IllegalArgumentException("The supplied value doesn't fit in a UInt8 instance");
+    }
+    this.intValue = intValue;
+  }
+
+  public byte asByte() {
+    return (byte) intValue;
+  }
+
+  public byte[] toByteArray() {
+    byte[] bytes = new byte[BYTES];
+    bytes[0] = asByte();
+    return bytes;
+  }
+
+  public int intValue() {
+    return intValue;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
     }
 
-    public static UInt8 fromBytes(final byte[] bytes, final int offset) {
-        int intValue = bytes[offset] & 0xFF;
-        return new UInt8(intValue);
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
 
-    public static UInt8 fromBytesValue(final BytesValue value) {
-        return fromBytesValue(value, 0);
-    }
+    UInt8 uint8 = (UInt8) o;
+    return intValue == uint8.intValue;
+  }
 
-    public static UInt8 fromBytesValue(final BytesValue value, final int offset) {
-        int intValue = value.get(offset) & 0xff;
-        return new UInt8(intValue);
-    }
+  @Override
+  public int hashCode() {
+    return Integer.hashCode(intValue);
+  }
 
-    public UInt8(final int intValue) {
-        if (intValue < 0 || intValue > MAX_INTEGER_VALUE) {
-            throw new IllegalArgumentException("The supplied value doesn't fit in a UInt8 instance");
-        }
-        this.intValue = intValue;
-    }
+  @Override
+  public int compareTo(final UInt8 other) {
+    return Integer.compare(intValue, other.intValue);
+  }
 
-    public byte asByte() {
-        return (byte) intValue;
-    }
-
-    public byte[] toByteArray() {
-        byte[] bytes = new byte[BYTES];
-        bytes[0] = asByte();
-        return bytes;
-    }
-
-    public int intValue() {
-        return intValue;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        UInt8 uint8 = (UInt8) o;
-        return intValue == uint8.intValue;
-    }
-
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(intValue);
-    }
-
-    @Override
-    public int compareTo(final UInt8 other) {
-        return Integer.compare(intValue, other.intValue);
-    }
-
-    @Override
-    public String toString() {
-        return Integer.toString(intValue);
-    }
+  @Override
+  public String toString() {
+    return Integer.toString(intValue);
+  }
 }

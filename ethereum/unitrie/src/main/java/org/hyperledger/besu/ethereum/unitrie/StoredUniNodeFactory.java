@@ -27,66 +27,71 @@ import java.util.Optional;
  */
 public class StoredUniNodeFactory implements UniNodeFactory {
 
-    private final DataLoader loader;
-    private final UniNodeEncoding encoding = new UniNodeEncoding();
+  private final DataLoader loader;
+  private final UniNodeEncoding encoding = new UniNodeEncoding();
 
-    public StoredUniNodeFactory(final DataLoader loader) {
-        this.loader = loader;
-    }
+  public StoredUniNodeFactory(final DataLoader loader) {
+    this.loader = loader;
+  }
 
-    @Override
-    public UniNode createLeaf(final BytesValue path, final ValueWrapper valueWrapper) {
-        return handleNewNode(new BranchUniNode(path, valueWrapper, loader, this));
-    }
+  @Override
+  public UniNode createLeaf(final BytesValue path, final ValueWrapper valueWrapper) {
+    return handleNewNode(new BranchUniNode(path, valueWrapper, loader, this));
+  }
 
-    @Override
-    public UniNode createBranch(
-            final BytesValue path,
-            final ValueWrapper valueWrapper,
-            final UniNode leftChild,
-            final UniNode rightChild) {
+  @Override
+  public UniNode createBranch(
+      final BytesValue path,
+      final ValueWrapper valueWrapper,
+      final UniNode leftChild,
+      final UniNode rightChild) {
 
-        return createBranch(path, valueWrapper, leftChild, rightChild, null);
-    }
+    return createBranch(path, valueWrapper, leftChild, rightChild, null);
+  }
 
-    @Override
-    public UniNode createBranch(
-            final BytesValue path,
-            final ValueWrapper valueWrapper,
-            final UniNode leftChild,
-            final UniNode rightChild,
-            final VarInt childrenSize) {
+  @Override
+  public UniNode createBranch(
+      final BytesValue path,
+      final ValueWrapper valueWrapper,
+      final UniNode leftChild,
+      final UniNode rightChild,
+      final VarInt childrenSize) {
 
-        return handleNewNode(new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize, loader, this));
-    }
+    return handleNewNode(
+        new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize, loader, this));
+  }
 
-    private UniNode handleNewNode(final UniNode node) {
-        node.markDirty();
-        return node;
-    }
+  private UniNode handleNewNode(final UniNode node) {
+    node.markDirty();
+    return node;
+  }
 
-    /**
-     * Retrieve a {@link UniNode} by hash using this instance loader.
-     *
-     * @param hash  hash of node to retrieve
-     * @return  optional holding retrieved node, empty if there's no node associated to the given hash
-     */
-    public Optional<UniNode> retrieve(final Bytes32 hash) {
-        return loader.load(hash).map(value -> {
-           UniNode node = decode(value);
-            // recalculating the node.hash() is potentially expensive, so do it as an assertion
-            assert (hash.equals(node.getHash())) : "Node hash " + node.getHash() + " not equal to expected " + hash;
-            return node;
-        });
-    }
+  /**
+   * Retrieve a {@link UniNode} by hash using this instance loader.
+   *
+   * @param hash hash of node to retrieve
+   * @return optional holding retrieved node, empty if there's no node associated to the given hash
+   */
+  public Optional<UniNode> retrieve(final Bytes32 hash) {
+    return loader
+        .load(hash)
+        .map(
+            value -> {
+              UniNode node = decode(value);
+              // recalculating the node.hash() is potentially expensive, so do it as an assertion
+              assert (hash.equals(node.getHash()))
+                  : "Node hash " + node.getHash() + " not equal to expected " + hash;
+              return node;
+            });
+  }
 
-    /**
-     * Decode the given value into a {@link UniNode}.
-     *
-     * @param value  value to decode
-     * @return  decoded {@link UniNode} corresponding to the given value
-     */
-    public UniNode decode(final BytesValue value) {
-        return encoding.decode(value, loader, this);
-    }
+  /**
+   * Decode the given value into a {@link UniNode}.
+   *
+   * @param value value to decode
+   * @return decoded {@link UniNode} corresponding to the given value
+   */
+  public UniNode decode(final BytesValue value) {
+    return encoding.decode(value, loader, this);
+  }
 }

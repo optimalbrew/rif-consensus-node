@@ -24,33 +24,33 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  */
 public class DefaultUniNodeFactory implements UniNodeFactory {
 
-    private final DataLoader loader;
+  private final DataLoader loader;
 
-    public DefaultUniNodeFactory(final DataLoader loader) {
-        this.loader = loader;
-    }
+  public DefaultUniNodeFactory(final DataLoader loader) {
+    this.loader = loader;
+  }
 
-    @Override
-    public UniNode createLeaf(final BytesValue path, final ValueWrapper valueWrapper) {
-        return new BranchUniNode(path, valueWrapper, loader, this);
-    }
+  @Override
+  public UniNode createLeaf(final BytesValue path, final ValueWrapper valueWrapper) {
+    return new BranchUniNode(path, valueWrapper, loader, this);
+  }
 
-    @Override
-    public UniNode createBranch(
-            final BytesValue path,
-            final ValueWrapper valueWrapper,
-            final UniNode leftChild,
-            final UniNode rightChild) {
-        return createBranch(path, valueWrapper, leftChild, rightChild, null);
-    }
+  @Override
+  public UniNode createBranch(
+      final BytesValue path,
+      final ValueWrapper valueWrapper,
+      final UniNode leftChild,
+      final UniNode rightChild) {
+    return createBranch(path, valueWrapper, leftChild, rightChild, null);
+  }
 
-    @Override
-    public UniNode createBranch(
-            final BytesValue path,
-            final ValueWrapper valueWrapper,
-            final UniNode leftChild,
-            final UniNode rightChild,
-            final VarInt childrenSize) {
-        return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize, loader, this);
-    }
+  @Override
+  public UniNode createBranch(
+      final BytesValue path,
+      final ValueWrapper valueWrapper,
+      final UniNode leftChild,
+      final UniNode rightChild,
+      final VarInt childrenSize) {
+    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize, loader, this);
+  }
 }

@@ -25,51 +25,52 @@ import java.util.function.Function;
 /**
  * Lexicographically collect values from some {@link UniNode}, starting from a given hash.
  *
- * @param <V>  type of values returned by this collector
+ * @param <V> type of values returned by this collector
  * @author ppedemon
  */
 public class UniTrieCollector<V> implements UniTrieIterator.LeafHandler {
 
-    private final Bytes32 startKeyHash;
-    private final int limit;
-    private final Map<Bytes32, V> values = new TreeMap<>();
-    private final Function<BytesValue, V> valueDeserializer;
+  private final Bytes32 startKeyHash;
+  private final int limit;
+  private final Map<Bytes32, V> values = new TreeMap<>();
+  private final Function<BytesValue, V> valueDeserializer;
 
-    public UniTrieCollector(
-            final Bytes32 startKeyHash,
-            final int limit,
-            final Function<BytesValue, V> valueDeserializer) {
+  public UniTrieCollector(
+      final Bytes32 startKeyHash,
+      final int limit,
+      final Function<BytesValue, V> valueDeserializer) {
 
-        this.startKeyHash = startKeyHash;
-        this.limit = limit;
-        this.valueDeserializer = valueDeserializer;
+    this.startKeyHash = startKeyHash;
+    this.limit = limit;
+    this.valueDeserializer = valueDeserializer;
+  }
+
+  public static <V> Map<Bytes32, V> collectEntries(
+      final UniNode root,
+      final Bytes32 startKeyHash,
+      final int limit,
+      final Function<BytesValue, V> valueDeserializer) {
+
+    final UniTrieCollector<V> collector =
+        new UniTrieCollector<>(startKeyHash, limit, valueDeserializer);
+    final UniTrieIterator visitor = new UniTrieIterator(collector);
+    root.accept(visitor, PathEncoding.decodePath(startKeyHash, Bytes32.SIZE * 8));
+    return collector.getValues();
+  }
+
+  private boolean limitReached() {
+    return limit <= values.size();
+  }
+
+  @Override
+  public UniTrieIterator.State onLeaf(final Bytes32 keyHash, final UniNode node) {
+    if (keyHash.compareTo(startKeyHash) >= 0) {
+      node.getValue().ifPresent(value -> values.put(keyHash, valueDeserializer.apply(value)));
     }
+    return limitReached() ? UniTrieIterator.State.STOP : UniTrieIterator.State.CONTINUE;
+  }
 
-    public static <V> Map<Bytes32, V> collectEntries(
-            final UniNode root,
-            final Bytes32 startKeyHash,
-            final int limit,
-            final Function<BytesValue, V> valueDeserializer) {
-
-        final UniTrieCollector<V> collector = new UniTrieCollector<>(startKeyHash, limit, valueDeserializer);
-        final UniTrieIterator visitor = new UniTrieIterator(collector);
-        root.accept(visitor, PathEncoding.decodePath(startKeyHash, Bytes32.SIZE * 8));
-        return collector.getValues();
-    }
-
-    private boolean limitReached() {
-        return limit <= values.size();
-    }
-
-    @Override
-    public UniTrieIterator.State onLeaf(final Bytes32 keyHash, final UniNode node) {
-        if (keyHash.compareTo(startKeyHash) >= 0) {
-            node.getValue().ifPresent(value -> values.put(keyHash, valueDeserializer.apply(value)));
-        }
-        return limitReached() ? UniTrieIterator.State.STOP : UniTrieIterator.State.CONTINUE;
-    }
-
-    public Map<Bytes32, V> getValues() {
-        return values;
-    }
+  public Map<Bytes32, V> getValues() {
+    return values;
+  }
 }

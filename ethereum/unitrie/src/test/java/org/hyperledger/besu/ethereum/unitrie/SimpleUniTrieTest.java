@@ -23,11 +23,10 @@ import java.util.Objects;
 
 public class SimpleUniTrieTest extends AbstractUniTrieTest {
 
-    @Override
-    MerklePatriciaTrie<BytesValue, String> createTrie() {
-        return new SimpleUniTrie<>(
-                s -> Objects.isNull(s)? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8)),
-                v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8)
-        );
-    }
+  @Override
+  MerklePatriciaTrie<BytesValue, String> createTrie() {
+    return new SimpleUniTrie<>(
+        s -> Objects.isNull(s) ? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8)),
+        v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8));
+  }
 }

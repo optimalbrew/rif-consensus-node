@@ -15,36 +15,39 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.hyperledger.besu.util.bytes.BytesValue;
-import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 public class UniTrieChildrenSizeTest {
 
-    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(__ -> Optional.empty());
+  private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(__ -> Optional.empty());
 
-    @Test
-    public void childrenSizeEmpty() {
-        UniNode trie = NullUniNode.instance();
-        assertThat(trie.getChildrenSize().getValue()).isEqualTo(0);
-    }
+  @Test
+  public void childrenSizeEmpty() {
+    UniNode trie = NullUniNode.instance();
+    assertThat(trie.getChildrenSize().getValue()).isEqualTo(0);
+  }
 
-    @Test
-    public void childrenSizeShort() {
-        UniNode trie = NullUniNode.instance()
-                .accept(new PutVisitor(BytesValue.of(0), nodeFactory), BytesValue.of(0))
-                .accept(new PutVisitor(BytesValue.wrap(new byte[32]), nodeFactory), BytesValue.of(1));
-        assertThat(trie.getChildrenSize().getValue()).isEqualTo(35);
-    }
+  @Test
+  public void childrenSizeShort() {
+    UniNode trie =
+        NullUniNode.instance()
+            .accept(new PutVisitor(BytesValue.of(0), nodeFactory), BytesValue.of(0))
+            .accept(new PutVisitor(BytesValue.wrap(new byte[32]), nodeFactory), BytesValue.of(1));
+    assertThat(trie.getChildrenSize().getValue()).isEqualTo(35);
+  }
 
-    @Test
-    public void childrenSizeLong() {
-        UniNode trie = NullUniNode.instance()
-                .accept(new PutVisitor(BytesValue.of(0), nodeFactory), BytesValue.of(0))
-                .accept(new PutVisitor(BytesValue.wrap(new byte[33]), nodeFactory), BytesValue.of(1));
-        assertThat(trie.getChildrenSize().getValue()).isEqualTo(71);
-    }
+  @Test
+  public void childrenSizeLong() {
+    UniNode trie =
+        NullUniNode.instance()
+            .accept(new PutVisitor(BytesValue.of(0), nodeFactory), BytesValue.of(0))
+            .accept(new PutVisitor(BytesValue.wrap(new byte[33]), nodeFactory), BytesValue.of(1));
+    assertThat(trie.getChildrenSize().getValue()).isEqualTo(71);
+  }
 }

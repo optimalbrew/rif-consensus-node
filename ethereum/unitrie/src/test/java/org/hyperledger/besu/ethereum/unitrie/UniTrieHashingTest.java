@@ -15,60 +15,67 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.base.Strings;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.hyperledger.besu.util.bytes.BytesValue;
-import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.base.Strings;
+import org.junit.Test;
 
 public class UniTrieHashingTest {
 
-    private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(__ -> Optional.empty());
+  private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(__ -> Optional.empty());
 
-    @Test
-    public void equalityImpliesEqualHash() {
-        BytesValue value = BytesValue.fromHexString("0x" + Strings.repeat("bad", 100));
+  @Test
+  public void equalityImpliesEqualHash() {
+    BytesValue value = BytesValue.fromHexString("0x" + Strings.repeat("bad", 100));
 
-        UniNode trie0 = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
-                .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
+    UniNode trie0 =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
+            .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
 
-        UniNode trie1 = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
-                .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
+    UniNode trie1 =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
+            .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
 
-        assertThat(trie0.getHash()).isEqualTo(trie1.getHash());
-    }
+    assertThat(trie0.getHash()).isEqualTo(trie1.getHash());
+  }
 
-    @Test
-    public void outOfOrder_equalityImpliesEqualHash() {
-        BytesValue value = BytesValue.fromHexString("0x" + Strings.repeat("bad", 100));
+  @Test
+  public void outOfOrder_equalityImpliesEqualHash() {
+    BytesValue value = BytesValue.fromHexString("0x" + Strings.repeat("bad", 100));
 
-        UniNode trie0 = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
-                .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
+    UniNode trie0 =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
+            .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
 
-        UniNode trie1 = NullUniNode.instance()
-                .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0))
-                .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1));
+    UniNode trie1 =
+        NullUniNode.instance()
+            .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0))
+            .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1));
 
-        assertThat(trie0.getHash()).isEqualTo(trie1.getHash());
-    }
+    assertThat(trie0.getHash()).isEqualTo(trie1.getHash());
+  }
 
-    @Test
-    public void inequalityImpliesDifferentHash() {
-        BytesValue value = BytesValue.fromHexString("0x" + Strings.repeat("bad", 100));
+  @Test
+  public void inequalityImpliesDifferentHash() {
+    BytesValue value = BytesValue.fromHexString("0x" + Strings.repeat("bad", 100));
 
-        UniNode trie0 = NullUniNode.instance()
-                .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
-                .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
+    UniNode trie0 =
+        NullUniNode.instance()
+            .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1))
+            .accept(new PutVisitor(BytesValue.of(20), nodeFactory), BytesValue.of(0, 1, 0));
 
-        UniNode trie1 = NullUniNode.instance()
-                .accept(new PutVisitor(BytesValue.of(21), nodeFactory), BytesValue.of(0, 1, 0))
-                .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1));
+    UniNode trie1 =
+        NullUniNode.instance()
+            .accept(new PutVisitor(BytesValue.of(21), nodeFactory), BytesValue.of(0, 1, 0))
+            .accept(new PutVisitor(value, nodeFactory), BytesValue.of(1, 0, 1));
 
-        assertThat(trie0.getHash()).isNotEqualTo(trie1.getHash());
-    }
+    assertThat(trie0.getHash()).isNotEqualTo(trie1.getHash());
+  }
 }

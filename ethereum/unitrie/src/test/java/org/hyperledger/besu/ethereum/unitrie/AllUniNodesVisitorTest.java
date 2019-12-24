@@ -15,29 +15,31 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
 public class AllUniNodesVisitorTest {
 
-    @Mock private StoredUniNode leftStoredNode;
+  @Mock private StoredUniNode leftStoredNode;
 
-    @Mock private StoredUniNode rightStoredNode;
+  @Mock private StoredUniNode rightStoredNode;
 
-    @Mock private BranchUniNode branchNode;
+  @Mock private BranchUniNode branchNode;
 
-    @Test
-    public void visitBranch() {
-        when(branchNode.getLeftChild()).thenReturn(leftStoredNode);
-        when(branchNode.getRightChild()).thenReturn(rightStoredNode);
-        new AllUniNodesVisitor<Void>(__ -> null, x -> {}).visit(branchNode);
-        verify(leftStoredNode).unload();
-        verify(rightStoredNode).unload();
-    }
+  @Test
+  public void visitBranch() {
+    when(branchNode.getLeftChild()).thenReturn(leftStoredNode);
+    when(branchNode.getRightChild()).thenReturn(rightStoredNode);
+
+    new AllUniNodesVisitor<Void>(__ -> null, x -> {}).visit(branchNode);
+
+    verify(leftStoredNode).unload();
+    verify(rightStoredNode).unload();
+  }
 }

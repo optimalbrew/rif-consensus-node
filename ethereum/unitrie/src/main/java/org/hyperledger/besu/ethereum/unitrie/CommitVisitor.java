@@ -20,60 +20,57 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class CommitVisitor implements UniNodeVisitor {
 
-    /**
-     * Dead simple (valueHash, value) pair.
-     */
-    private static class HashedValue {
-        final Bytes32 hash;
-        final BytesValue value;
+  private final DataUpdater updater;
 
-        public HashedValue(final Bytes32 hash, final BytesValue value) {
-            this.hash = hash;
-            this.value = value;
-        }
+  public CommitVisitor(final DataUpdater updater) {
+    this.updater = updater;
+  }
+
+  @Override
+  public void visit(final NullUniNode node) {}
+
+  @Override
+  public void visit(final BranchUniNode node) {
+    if (!node.isDirty()) {
+      return;
     }
 
-    private final DataUpdater updater;
-
-    public CommitVisitor(final DataUpdater updater) {
-        this.updater = updater;
+    if (node.getLeftChild().isDirty()) {
+      node.getLeftChild().accept(this);
+    }
+    if (node.getRightChild().isDirty()) {
+      node.getRightChild().accept(this);
     }
 
-    @Override
-    public void visit(final NullUniNode node) {
+    maybeStoreNode(node);
+  }
+
+  private void maybeStoreNode(final BranchUniNode node) {
+    // If value is not embedded in node it must be explicitly stored
+    if (node.getValueWrapper().isLong()) {
+      node.getValue()
+          .flatMap(value -> node.getValueHash().map(hash -> new HashedValue(hash, value)))
+          .ifPresentOrElse(
+              hashedValue -> updater.store(hashedValue.hash, hashedValue.value),
+              () -> {
+                throw new IllegalStateException("Long valued node provides no hash or value");
+              });
     }
 
-    @Override
-    public void visit(final BranchUniNode node) {
-        if (!node.isDirty()) {
-            return;
-        }
-
-        if (node.getLeftChild().isDirty()) {
-            node.getLeftChild().accept(this);
-        }
-        if (node.getRightChild().isDirty()) {
-            node.getRightChild().accept(this);
-        }
-
-        maybeStoreNode(node);
+    // If node is not embedded in its parent it must be explicitly stored
+    if (node.isReferencedByHash()) {
+      updater.store(node.getHash(), node.getEncoding());
     }
+  }
 
-    private void maybeStoreNode(final BranchUniNode node) {
-        // If value is not embedded in node it must be explicitly stored
-        if (node.getValueWrapper().isLong()) {
-            node.getValue()
-                    .flatMap(value -> node.getValueHash().map(hash -> new HashedValue(hash, value)))
-                    .ifPresentOrElse(
-                            hashedValue -> updater.store(hashedValue.hash, hashedValue.value),
-                            () -> {
-                                throw new IllegalStateException("Long valued node provides no hash or value");
-                            });
-        }
+  /** Dead simple (valueHash, value) pair. */
+  private static class HashedValue {
+    final Bytes32 hash;
+    final BytesValue value;
 
-        // If node is not embedded in its parent it must be explicitly stored
-        if (node.isReferencedByHash()) {
-            updater.store(node.getHash(), node.getEncoding());
-        }
+    public HashedValue(final Bytes32 hash, final BytesValue value) {
+      this.hash = hash;
+      this.value = value;
     }
+  }
 }
