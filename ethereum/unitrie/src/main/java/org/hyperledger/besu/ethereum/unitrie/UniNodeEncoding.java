@@ -31,8 +31,8 @@ import java.util.Objects;
  */
 public class UniNodeEncoding {
 
-  static final BytesValue NULL_UNINODE_ENCODING = nullUniNodeEncoding();
-  static final Bytes32 NULL_UNINODE_HASH = Hash.keccak256(NULL_UNINODE_ENCODING);
+  public static final BytesValue NULL_UNINODE_ENCODING = nullUniNodeEncoding();
+  public static final Bytes32 NULL_UNINODE_HASH = Hash.keccak256(NULL_UNINODE_ENCODING);
 
   /*
    * As per RSKIP107, null uninodes must be encoded as a single flag byte with only the version bit set,

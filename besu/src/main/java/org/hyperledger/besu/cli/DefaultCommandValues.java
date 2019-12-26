@@ -17,6 +17,7 @@ package org.hyperledger.besu.cli;
 import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.eth.sync.SyncMode;
 import org.hyperledger.besu.ethereum.p2p.config.RlpxConfiguration;
+import org.hyperledger.besu.ethereum.triestorage.TrieStorageMode;
 import org.hyperledger.besu.nat.NatMethod;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
@@ -71,6 +72,11 @@ public interface DefaultCommandValues {
   float DEFAULT_FRACTION_REMOTE_WIRE_CONNECTIONS_ALLOWED =
       RlpxConfiguration.DEFAULT_FRACTION_REMOTE_CONNECTIONS_ALLOWED;
   String DEFAULT_KEY_VALUE_STORAGE_NAME = "rocksdb";
+
+  // Default trie storage mode. You can pick between CLASSIC and UNITRIE.
+  // Storage mode is permanent. Once a node has started with a given
+  // storage mode, such mode must be kept for the node's lifetime.
+  TrieStorageMode DEFAULT_TRIE_STORAGE_MODE = TrieStorageMode.CLASSIC;
 
   static Path getDefaultBesuDataPath(final Object command) {
     // this property is retrieved from Gradle tasks or Besu running shell script.

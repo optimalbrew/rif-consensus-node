@@ -34,10 +34,14 @@ import org.hyperledger.besu.ethereum.p2p.config.SubProtocolConfiguration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import org.hyperledger.besu.ethereum.triestorage.TrieStorage;
 
 public class BesuController<C> implements java.io.Closeable {
 
   public static final String DATABASE_PATH = "database";
+
+  private final TrieStorage trieStorage;
+
   private final ProtocolSchedule<C> protocolSchedule;
   private final ProtocolContext<C> protocolContext;
   private final EthProtocolManager ethProtocolManager;
@@ -54,6 +58,7 @@ public class BesuController<C> implements java.io.Closeable {
   private final SyncState syncState;
 
   BesuController(
+      final TrieStorage trieStorage,
       final ProtocolSchedule<C> protocolSchedule,
       final ProtocolContext<C> protocolContext,
       final EthProtocolManager ethProtocolManager,
@@ -67,6 +72,7 @@ public class BesuController<C> implements java.io.Closeable {
       final Runnable close,
       final JsonRpcMethodFactory additionalJsonRpcMethodsFactory,
       final KeyPair keyPair) {
+    this.trieStorage = trieStorage;
     this.protocolSchedule = protocolSchedule;
     this.protocolContext = protocolContext;
     this.ethProtocolManager = ethProtocolManager;
@@ -80,6 +86,10 @@ public class BesuController<C> implements java.io.Closeable {
     this.miningCoordinator = miningCoordinator;
     this.privacyParameters = privacyParameters;
     this.close = close;
+  }
+
+  public TrieStorage getTrieStorage() {
+    return trieStorage;
   }
 
   public ProtocolContext<C> getProtocolContext() {

@@ -87,6 +87,7 @@ import org.hyperledger.besu.ethereum.permissioning.PermissioningConfigurationBui
 import org.hyperledger.besu.ethereum.permissioning.SmartContractPermissioningConfiguration;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProviderBuilder;
+import org.hyperledger.besu.ethereum.triestorage.TrieStorageMode;
 import org.hyperledger.besu.ethereum.worldstate.PruningConfiguration;
 import org.hyperledger.besu.metrics.BesuMetricCategory;
 import org.hyperledger.besu.metrics.MetricCategoryRegistryImpl;
@@ -703,6 +704,13 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
   private String keyValueStorageName = DEFAULT_KEY_VALUE_STORAGE_NAME;
 
   @Option(
+      names = {"--trie-storage-mode"},
+      description =
+          "Specify the underlying trie storage mode between ${COMPLETION-CANDIDATES}. "
+              + "(default: ${DEFAULT-VALUE})")
+  private final TrieStorageMode trieStorageMode = DEFAULT_TRIE_STORAGE_MODE;
+
+  @Option(
       names = {"--override-genesis-config"},
       paramLabel = "NAME=VALUE",
       description = "Overrides configuration values in the genesis file.  Use with care.",
@@ -1093,6 +1101,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
           .clock(Clock.systemUTC())
           .isRevertReasonEnabled(isRevertReasonEnabled)
           .storageProvider(keyStorageProvider(keyValueStorageName))
+          .trieStorageMode(trieStorageMode)
           .isPruningEnabled(isPruningEnabled)
           .pruningConfiguration(buildPruningConfiguration())
           .genesisConfigOverrides(genesisConfigOverrides)

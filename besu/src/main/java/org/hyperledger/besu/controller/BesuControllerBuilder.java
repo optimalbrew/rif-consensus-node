@@ -46,6 +46,10 @@ import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolFactory;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.p2p.config.SubProtocolConfiguration;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
+import org.hyperledger.besu.ethereum.triestorage.ClassicTrieStorage;
+import org.hyperledger.besu.ethereum.triestorage.TrieStorage;
+import org.hyperledger.besu.ethereum.triestorage.TrieStorageMode;
+import org.hyperledger.besu.ethereum.triestorage.UniTrieStorage;
 import org.hyperledger.besu.ethereum.worldstate.MarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.Pruner;
 import org.hyperledger.besu.ethereum.worldstate.PruningConfiguration;
@@ -87,6 +91,7 @@ public abstract class BesuControllerBuilder<C> {
   protected boolean isRevertReasonEnabled;
   GasLimitCalculator gasLimitCalculator;
   private StorageProvider storageProvider;
+  private TrieStorageMode trieStorageMode;
   private final List<Runnable> shutdownActions = new ArrayList<>();
   private boolean isPruningEnabled;
   private PruningConfiguration pruningConfiguration;
@@ -95,6 +100,11 @@ public abstract class BesuControllerBuilder<C> {
 
   public BesuControllerBuilder<C> storageProvider(final StorageProvider storageProvider) {
     this.storageProvider = storageProvider;
+    return this;
+  }
+
+  public BesuControllerBuilder<C> trieStorageMode(final TrieStorageMode trieStorageMode) {
+    this.trieStorageMode = trieStorageMode;
     return this;
   }
 
@@ -207,6 +217,7 @@ public abstract class BesuControllerBuilder<C> {
     checkNotNull(transactionPoolConfiguration, "Missing transaction pool configuration");
     checkNotNull(nodeKeys, "Missing node keys");
     checkNotNull(storageProvider, "Must supply a storage provider");
+    checkNotNull(trieStorageMode, "Must define trie storage mode");
     checkNotNull(gasLimitCalculator, "Missing gas limit calculator");
 
     prepForBuild();
@@ -305,6 +316,7 @@ public abstract class BesuControllerBuilder<C> {
     final JsonRpcMethodFactory additionalJsonRpcMethodFactory =
         createAdditionalJsonRpcMethodFactory(protocolContext);
     return new BesuController<>(
+        createTrieStorage(),
         protocolSchedule,
         protocolContext,
         ethProtocolManager,
@@ -397,5 +409,15 @@ public abstract class BesuControllerBuilder<C> {
     }
 
     return validators;
+  }
+
+  private TrieStorage createTrieStorage() {
+    switch (trieStorageMode) {
+      case UNITRIE:
+        return new UniTrieStorage();
+      case CLASSIC:
+      default:
+        return new ClassicTrieStorage();
+    }
   }
 }
