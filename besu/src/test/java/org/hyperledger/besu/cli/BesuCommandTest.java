@@ -54,6 +54,7 @@ import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.permissioning.LocalPermissioningConfiguration;
 import org.hyperledger.besu.ethereum.permissioning.PermissioningConfiguration;
 import org.hyperledger.besu.ethereum.permissioning.SmartContractPermissioningConfiguration;
+import org.hyperledger.besu.ethereum.triestorage.ClassicTrieStorage;
 import org.hyperledger.besu.ethereum.triestorage.TrieStorageMode;
 import org.hyperledger.besu.ethereum.worldstate.PruningConfiguration;
 import org.hyperledger.besu.metrics.StandardMetricCategory;
@@ -2881,5 +2882,23 @@ public class BesuCommandTest extends CommandTestAbstract {
         .containsEntry(block1, Hash.fromHexStringLenient(hash1));
     assertThat(requiredBlocksArg.getValue())
         .containsEntry(block2, Hash.fromHexStringLenient(hash2));
+  }
+
+  @Test
+  public void defaultTrieStorageModeIsClassic() {
+    parseCommand();
+    verify(mockControllerBuilder).trieStorageMode(TrieStorageMode.CLASSIC);
+  }
+
+  @Test
+  public void trieStorageModeSetAsClassic() {
+    parseCommand("--trie-storage-mode=classic");
+    verify(mockControllerBuilder).trieStorageMode(TrieStorageMode.CLASSIC);
+  }
+
+  @Test
+  public void trieStorageModeSetAsUnitrie() {
+    parseCommand("--trie-storage-mode=unitrie");
+    verify(mockControllerBuilder).trieStorageMode(TrieStorageMode.UNITRIE);
   }
 }
