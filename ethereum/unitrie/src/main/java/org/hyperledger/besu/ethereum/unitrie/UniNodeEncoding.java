@@ -15,6 +15,8 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import org.hyperledger.besu.crypto.Hash;
+import org.hyperledger.besu.ethereum.rlp.RLP;
+import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt8;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
@@ -31,16 +33,8 @@ import java.util.Objects;
  */
 public class UniNodeEncoding {
 
-  public static final BytesValue NULL_UNINODE_ENCODING = nullUniNodeEncoding();
-  public static final Bytes32 NULL_UNINODE_HASH = Hash.keccak256(NULL_UNINODE_ENCODING);
-
-  /*
-   * As per RSKIP107, null uninodes must be encoded as a single flag byte with only the version bit set,
-   * since they have no path, value, or children.
-   */
-  private static BytesValue nullUniNodeEncoding() {
-    return BytesValue.of(0b01000000);
-  }
+  public static final BytesValue NULL_UNINODE_ENCODING = MerklePatriciaTrie.EMPTY_TRIE_NODE;
+  public static final Bytes32 NULL_UNINODE_HASH = MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH;
 
   /**
    * Encode a {@link BranchUniNode}.

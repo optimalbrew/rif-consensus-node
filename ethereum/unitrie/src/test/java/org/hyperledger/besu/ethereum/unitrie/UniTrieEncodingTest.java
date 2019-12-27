@@ -37,12 +37,6 @@ public class UniTrieEncodingTest {
   }
 
   @Test
-  public void emptyLeaf_encodesAsNullUniNode() {
-    assertThat(nodeFactory.createLeaf(BytesValue.EMPTY, ValueWrapper.EMPTY).getEncoding())
-        .isEqualTo(UniNodeEncoding.NULL_UNINODE_ENCODING);
-  }
-
-  @Test
   public void emptyPath_encodesCorrectly() {
     BytesValue value = BytesValue.of(1, 2, 3);
     UniNode trie = nodeFactory.createLeaf(BytesValue.EMPTY, ValueWrapper.fromValue(value));
