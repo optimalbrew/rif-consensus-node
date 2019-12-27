@@ -28,6 +28,7 @@ import org.hyperledger.besu.ethereum.api.graphql.GraphQLConfiguration;
 import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.permissioning.PermissioningConfiguration;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProvider;
@@ -139,6 +140,7 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
     try {
       besuController =
           builder
+              .merkleAwareProvider(new ClassicMerkleAwareProvider())
               .synchronizerConfiguration(new SynchronizerConfiguration.Builder().build())
               .dataDirectory(node.homeDirectory())
               .miningParameters(node.getMiningParameters())

@@ -112,7 +112,7 @@ revert-reason-enabled=false
 key-value-storage="rocksdb"
 
 # trie storage mode
-trie-storage-mode="classic"
+merkle-storage-mode="classic"
 
 # Gas limit
 target-gas-limit=8000000

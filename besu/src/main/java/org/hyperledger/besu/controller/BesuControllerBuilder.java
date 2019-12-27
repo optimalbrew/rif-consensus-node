@@ -18,6 +18,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.hyperledger.besu.controller.KeyPairUtil.loadKeyPair;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.concurrent.Executors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hyperledger.besu.config.GenesisConfigFile;
 import org.hyperledger.besu.crypto.SECP256K1.KeyPair;
 import org.hyperledger.besu.ethereum.ProtocolContext;
@@ -44,34 +59,14 @@ import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolFactory;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.config.SubProtocolConfiguration;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
-import org.hyperledger.besu.ethereum.triestorage.ClassicTrieStorage;
-import org.hyperledger.besu.ethereum.triestorage.TrieStorage;
-import org.hyperledger.besu.ethereum.triestorage.TrieStorageMode;
-import org.hyperledger.besu.ethereum.triestorage.UniTrieStorage;
 import org.hyperledger.besu.ethereum.worldstate.MarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.Pruner;
 import org.hyperledger.besu.ethereum.worldstate.PruningConfiguration;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.metrics.ObservableMetricsSystem;
-
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.file.Path;
-import java.time.Clock;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.concurrent.Executors;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public abstract class BesuControllerBuilder<C> {
 
@@ -91,7 +86,7 @@ public abstract class BesuControllerBuilder<C> {
   protected boolean isRevertReasonEnabled;
   GasLimitCalculator gasLimitCalculator;
   private StorageProvider storageProvider;
-  private TrieStorageMode trieStorageMode;
+  private MerkleAwareProvider merkleAwareProvider;
   private final List<Runnable> shutdownActions = new ArrayList<>();
   private boolean isPruningEnabled;
   private PruningConfiguration pruningConfiguration;
@@ -103,8 +98,9 @@ public abstract class BesuControllerBuilder<C> {
     return this;
   }
 
-  public BesuControllerBuilder<C> trieStorageMode(final TrieStorageMode trieStorageMode) {
-    this.trieStorageMode = trieStorageMode;
+  public BesuControllerBuilder<C> merkleAwareProvider(
+      final MerkleAwareProvider merkleAwareProvider) {
+    this.merkleAwareProvider = merkleAwareProvider;
     return this;
   }
 
@@ -205,6 +201,7 @@ public abstract class BesuControllerBuilder<C> {
   }
 
   public BesuController<C> build() {
+    checkNotNull(merkleAwareProvider, "Missing Merkle aware provider");
     checkNotNull(genesisConfig, "Missing genesis config");
     checkNotNull(syncConfig, "Missing sync config");
     checkNotNull(ethereumWireProtocolConfiguration, "Missing ethereum protocol configuration");
@@ -217,7 +214,7 @@ public abstract class BesuControllerBuilder<C> {
     checkNotNull(transactionPoolConfiguration, "Missing transaction pool configuration");
     checkNotNull(nodeKeys, "Missing node keys");
     checkNotNull(storageProvider, "Must supply a storage provider");
-    checkNotNull(trieStorageMode, "Must define trie storage mode");
+    checkNotNull(merkleAwareProvider, "Must define Merkle aware provider");
     checkNotNull(gasLimitCalculator, "Missing gas limit calculator");
 
     prepForBuild();
@@ -316,7 +313,6 @@ public abstract class BesuControllerBuilder<C> {
     final JsonRpcMethodFactory additionalJsonRpcMethodFactory =
         createAdditionalJsonRpcMethodFactory(protocolContext);
     return new BesuController<>(
-        createTrieStorage(),
         protocolSchedule,
         protocolContext,
         ethProtocolManager,
@@ -409,15 +405,5 @@ public abstract class BesuControllerBuilder<C> {
     }
 
     return validators;
-  }
-
-  private TrieStorage createTrieStorage() {
-    switch (trieStorageMode) {
-      case UNITRIE:
-        return new UniTrieStorage();
-      case CLASSIC:
-      default:
-        return new ClassicTrieStorage();
-    }
   }
 }

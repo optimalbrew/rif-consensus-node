@@ -13,7 +13,7 @@
  *  SPDX-License-Identifier: Apache-2.0
  *
  */
-package org.hyperledger.besu.ethereum.triestorage;
+package org.hyperledger.besu.ethereum.merkleutils;
 
 /**
  * Trie storage mode: we can use a "classic" merkle patricia tree model
@@ -24,11 +24,11 @@ package org.hyperledger.besu.ethereum.triestorage;
  *
  * @author ppedemon
  */
-public enum TrieStorageMode {
+public enum MerkleStorageMode {
   CLASSIC, UNITRIE;
 
-  public static TrieStorageMode fromString(final String str) {
-    for (final TrieStorageMode mode : TrieStorageMode.values()) {
+  public static MerkleStorageMode fromString(final String str) {
+    for (final MerkleStorageMode mode : MerkleStorageMode.values()) {
       if (mode.name().equalsIgnoreCase(str)) {
         return mode;
       }

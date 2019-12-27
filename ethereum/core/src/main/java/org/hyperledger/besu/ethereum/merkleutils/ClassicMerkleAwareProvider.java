@@ -13,28 +13,21 @@
  *  SPDX-License-Identifier: Apache-2.0
  *
  */
-package org.hyperledger.besu.ethereum.triestorage;
+package org.hyperledger.besu.ethereum.merkleutils;
 
+import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
+import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
- * Abstraction layer for properties accessing properties depending on
- * different trie storage models.
+ * Provider based on on "classic" (as defined in the Yellow paper) merkle storage.
  *
  * @author ppedemon
  */
-public interface TrieStorage {
+public class ClassicMerkleAwareProvider implements MerkleAwareProvider {
 
-  /**
-   * Get the encoding for an empty trie node.
-   * @return  encoding for an empty trie node
-   */
-  BytesValue emptyTrieNodeEncoding();
-
-  /**
-   * Get the empty trie hash.
-   * @return  emtpy trie hash
-   */
-  Bytes32 emptyTrieNodeHash();
+  // TODO Add method for creating suitable MutableWorldState instance
 }

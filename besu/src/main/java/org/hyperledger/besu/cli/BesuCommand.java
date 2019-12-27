@@ -78,6 +78,9 @@ import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.eth.sync.SyncMode;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.config.DiscoveryConfiguration;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.p2p.peers.StaticNodesParser;
@@ -87,7 +90,7 @@ import org.hyperledger.besu.ethereum.permissioning.PermissioningConfigurationBui
 import org.hyperledger.besu.ethereum.permissioning.SmartContractPermissioningConfiguration;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProviderBuilder;
-import org.hyperledger.besu.ethereum.triestorage.TrieStorageMode;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.ethereum.worldstate.PruningConfiguration;
 import org.hyperledger.besu.metrics.BesuMetricCategory;
 import org.hyperledger.besu.metrics.MetricCategoryRegistryImpl;
@@ -704,11 +707,11 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
   private String keyValueStorageName = DEFAULT_KEY_VALUE_STORAGE_NAME;
 
   @Option(
-      names = {"--trie-storage-mode"},
+      names = {"--merkle-storage-mode"},
       description =
-          "Specify the underlying trie storage mode between ${COMPLETION-CANDIDATES}. "
+          "Specify the underlying Merkle storage mode between ${COMPLETION-CANDIDATES}. "
               + "(default: ${DEFAULT-VALUE})")
-  private final TrieStorageMode trieStorageMode = DEFAULT_TRIE_STORAGE_MODE;
+  private final MerkleStorageMode merkleStorageMode = DEFAULT_MERKLE_STORAGE_MODE;
 
   @Option(
       names = {"--override-genesis-config"},
@@ -732,6 +735,9 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
   private BesuConfiguration pluginCommonConfiguration;
   private final Supplier<ObservableMetricsSystem> metricsSystem =
       Suppliers.memoize(() -> PrometheusMetricsSystem.init(metricsConfiguration()));
+
+  private final Supplier<MerkleAwareProvider> merkleAwareProvider =
+      Suppliers.memoize(this::createMerkleAwareProvider);
 
   public BesuCommand(
       final Logger logger,
@@ -1101,7 +1107,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
           .clock(Clock.systemUTC())
           .isRevertReasonEnabled(isRevertReasonEnabled)
           .storageProvider(keyStorageProvider(keyValueStorageName))
-          .trieStorageMode(trieStorageMode)
+          .merkleAwareProvider(merkleAwareProvider.get())
           .isPruningEnabled(isPruningEnabled)
           .pruningConfiguration(buildPruningConfiguration())
           .genesisConfigOverrides(genesisConfigOverrides)
@@ -1713,5 +1719,15 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
 
   private Level getLogLevel() {
     return logLevel;
+  }
+
+  private MerkleAwareProvider createMerkleAwareProvider() {
+    switch(merkleStorageMode) {
+      case UNITRIE:
+        return new UniTrieMerkleAwareProvider();
+      case CLASSIC:
+      default:
+        return new ClassicMerkleAwareProvider();
+    }
   }
 }

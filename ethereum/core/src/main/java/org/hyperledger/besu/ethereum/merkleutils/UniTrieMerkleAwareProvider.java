@@ -13,26 +13,14 @@
  *  SPDX-License-Identifier: Apache-2.0
  *
  */
-package org.hyperledger.besu.ethereum.triestorage;
-
-import org.hyperledger.besu.ethereum.unitrie.UniNodeEncoding;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
+package org.hyperledger.besu.ethereum.merkleutils;
 
 /**
- * Properties for Unitrie-based trie storage.
+ * Provider tailored to Untrie Merkle storage.
  *
  * @author ppedemon
  */
-public class UniTrieStorage implements TrieStorage {
+public class UniTrieMerkleAwareProvider implements MerkleAwareProvider {
 
-  @Override
-  public BytesValue emptyTrieNodeEncoding() {
-    return UniNodeEncoding.NULL_UNINODE_ENCODING;
-  }
-
-  @Override
-  public Bytes32 emptyTrieNodeHash() {
-    return UniNodeEncoding.NULL_UNINODE_HASH;
-  }
+  // TODO Add method for creating suitable MutableWorldState instance
 }
