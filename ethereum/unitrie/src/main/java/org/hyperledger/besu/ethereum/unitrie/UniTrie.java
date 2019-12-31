@@ -35,21 +35,21 @@ public interface UniTrie<K, V> {
   Bytes32 NULL_UNINODE_HASH = keccak256(NULL_UNINODE_ENCODING);
 
   /**
-   * Get the sub UniTrie starting from the given key. Will be empty if key
-   * is not present in this UniTrie.
-   *
-   * @param key key specifying root of subtree to return
-   * @return  sub UniTrie, will be empty if key not present
-   */
-  UniTrie<K, V> getSubUniTrie(K key);
-
-  /**
    * Returns an {@code Optional} of value mapped to the hash if it exists; otherwise empty.
    *
    * @param key The key for the value.
    * @return an {@code Optional} of value mapped to the hash if it exists; otherwise empty
    */
   Optional<V> get(K key);
+
+  /**
+   * Get the hash of the UniTrie node associated to the given key, or
+   * the null uninode hash if the key is not present.
+   *
+   * @param key key specifying node whose hash will be retrieved
+   * @return  node hash if key existis; otherwise null uninode hash
+   */
+  Bytes32 getHash(K key);
 
   /**
    * Returns value and ordered proof-related nodes mapped to the hash if it exists; otherwise empty.

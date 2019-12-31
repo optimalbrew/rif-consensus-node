@@ -74,16 +74,15 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
-  public UniTrie<K, V> getSubUniTrie(final K key) {
-    checkNotNull(key);
-    UniNode node = root.accept(getVisitor, bytesToPath(key));
-    return new SimpleUniTrie<>(node, valueSerializer, valueDeserializer);
-  }
-
-  @Override
   public Optional<V> get(final K key) {
     checkNotNull(key);
     return root.accept(getVisitor, bytesToPath(key)).getValue().map(valueDeserializer);
+  }
+
+  @Override
+  public Bytes32 getHash(final K key) {
+    checkNotNull(key);
+    return root.accept(getVisitor, bytesToPath(key)).getHash();
   }
 
   @Override

@@ -69,30 +69,16 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
             : new StoredUniNode(rootHash, nodeFactory);
   }
 
-  // For creating a sub unitrie only
-  private StoredUniTrie(
-      final UniNode root,
-      final StoredUniNodeFactory nodeFactory,
-      final Function<V, BytesValue> valueSerializer,
-      final Function<BytesValue, V> valueDeserializer) {
-
-    this.root = root;
-    this.nodeFactory = nodeFactory;
-    this.valueSerializer = valueSerializer;
-    this.valueDeserializer = valueDeserializer;
-  }
-
-  @Override
-  public UniTrie<K, V> getSubUniTrie(final K key) {
-    checkNotNull(key);
-    UniNode node = root.accept(getVisitor, bytesToPath(key));
-    return new StoredUniTrie<>(node, nodeFactory, valueSerializer, valueDeserializer);
-  }
-
   @Override
   public Optional<V> get(final K key) {
     checkNotNull(key);
     return root.accept(getVisitor, bytesToPath(key)).getValue().map(valueDeserializer);
+  }
+
+  @Override
+  public Bytes32 getHash(final K key) {
+    checkNotNull(key);
+    return root.accept(getVisitor, bytesToPath(key)).getHash();
   }
 
   @Override
