@@ -17,11 +17,22 @@ package org.hyperledger.besu.ethereum.unitrie;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
- * Visitor implementing Remove operation in a unitrie.
+ * Visitor implementing Remove operation in a unitrie. Removal can be recursive,
+ * in that case the operation will remove the node and both subtrees.
  *
  * @author ppedemon
  */
 public class RemoveVisitor implements UniPathVisitor {
+
+  private final boolean recursiveRemove;
+
+  public RemoveVisitor() {
+    this(false);
+  }
+
+  public RemoveVisitor(final boolean recursiveRemove) {
+    this.recursiveRemove = recursiveRemove;
+  }
 
   @Override
   public UniNode visit(final NullUniNode node, final BytesValue path) {
@@ -34,7 +45,7 @@ public class RemoveVisitor implements UniPathVisitor {
     BytesValue commonPath = path.commonPrefix(nodePath);
 
     if (commonPath.size() == path.size() && commonPath.size() == nodePath.size()) {
-      return node.removeValue();
+      return recursiveRemove? NullUniNode.instance() : node.removeValue();
     }
 
     if (commonPath.size() < nodePath.size()) {

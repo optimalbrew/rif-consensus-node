@@ -14,20 +14,18 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.trie.BasicNode;
+import java.util.Optional;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.Optional;
 
 /**
  * Interface for nodes in a Unitrie. A node has a path and an optional value.
  *
  * @author ppedemon
  */
-public interface UniNode extends BasicNode<BytesValue> {
+public interface UniNode {
 
   /**
    * Get path for this node.
@@ -48,7 +46,6 @@ public interface UniNode extends BasicNode<BytesValue> {
    *
    * @return optional holding node's value
    */
-  @Override
   Optional<BytesValue> getValue();
 
   /**
@@ -123,7 +120,6 @@ public interface UniNode extends BasicNode<BytesValue> {
    *
    * @return node encoding as dictated by RSKIP107
    */
-  @Override
   BytesValue getEncoding();
 
   /**
@@ -131,7 +127,6 @@ public interface UniNode extends BasicNode<BytesValue> {
    *
    * @return node hash, given by the hash of the node's encoding
    */
-  @Override
   Bytes32 getHash();
 
   /**
@@ -140,7 +135,6 @@ public interface UniNode extends BasicNode<BytesValue> {
    *
    * @return whether this node will be referenced by hash or inlined
    */
-  @Override
   boolean isReferencedByHash();
 
   /**

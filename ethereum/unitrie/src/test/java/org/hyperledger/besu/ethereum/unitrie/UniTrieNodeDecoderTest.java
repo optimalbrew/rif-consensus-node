@@ -17,21 +17,19 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
-import org.hyperledger.besu.ethereum.trie.MerkleStorage;
-import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
+import com.google.common.base.Strings;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.base.Strings;
+import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
+import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
+import org.hyperledger.besu.ethereum.trie.MerkleStorage;
+import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 import org.junit.Test;
 
 public class UniTrieNodeDecoderTest {
@@ -41,7 +39,7 @@ public class UniTrieNodeDecoderTest {
     final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
 
     // Build a small trie
-    MerklePatriciaTrie<BytesValue, BytesValue> trie =
+    UniTrie<BytesValue, BytesValue> trie =
         new StoredUniTrie<>(storage::get, Function.identity(), Function.identity());
 
     trie.put(BytesValue.of(0, 0), BytesValue.of(1));
@@ -90,7 +88,7 @@ public class UniTrieNodeDecoderTest {
     final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
 
     // Build a small trie
-    MerklePatriciaTrie<BytesValue, BytesValue> trie =
+    UniTrie<BytesValue, BytesValue> trie =
         new StoredUniTrie<>(storage::get, Function.identity(), Function.identity());
 
     trie.put(BytesValue.of(0, 0), BytesValue.of(1));
@@ -157,7 +155,7 @@ public class UniTrieNodeDecoderTest {
     final MerkleStorage partialStorage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
 
     // Build a small trie
-    MerklePatriciaTrie<BytesValue, BytesValue> trie =
+    UniTrie<BytesValue, BytesValue> trie =
         new StoredUniTrie<>(fullStorage::get, Function.identity(), Function.identity());
 
     LinearCongruentialGenerator g = new LinearCongruentialGenerator();
@@ -189,7 +187,7 @@ public class UniTrieNodeDecoderTest {
   public void breadthFirstDecode_emptyTrie() {
     List<UniNode> result =
         UniTrieNodeDecoder.breadthFirstDecoder(
-                __ -> Optional.empty(), UniNodeEncoding.NULL_UNINODE_HASH)
+                __ -> Optional.empty(), UniTrie.NULL_UNINODE_HASH)
             .collect(Collectors.toList());
     assertThat(result.size()).isEqualTo(0);
   }
@@ -198,7 +196,7 @@ public class UniTrieNodeDecoderTest {
   public void breadthFirstDecode_singleNodeTrie() {
     final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
 
-    MerklePatriciaTrie<BytesValue, BytesValue> trie =
+    UniTrie<BytesValue, BytesValue> trie =
         new StoredUniTrie<>(storage::get, Function.identity(), Function.identity());
     trie.put(BytesValue.fromHexString("0x100000"), BytesValue.of(1));
     trie.commit(storage::put);

@@ -311,4 +311,48 @@ public class UniTrieKeyValueTest {
       }
     }
   }
+
+  @Test
+  public void removeRecursiveNotPresent() {
+    UniNode trie = NullUniNode.instance();
+    trie =
+        trie.accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 1, 1))
+            .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0, 0, 0))
+            .accept(new PutVisitor(BytesValue.of(3), nodeFactory), BytesValue.of(0, 0, 0, 1, 0))
+            .accept(new PutVisitor(BytesValue.of(4), nodeFactory), BytesValue.EMPTY);
+    assertThat(trie.accept(new RemoveVisitor(true), BytesValue.of(1, 1, 1))).isSameAs(trie);
+  }
+
+  @Test
+  public void removeRootRecursively_leavesEmptyTrie() {
+    UniNode trie = NullUniNode.instance();
+    trie =
+        trie.accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 1, 1))
+            .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0, 0, 0))
+            .accept(new PutVisitor(BytesValue.of(3), nodeFactory), BytesValue.of(0, 0, 0, 1, 0))
+            .accept(new PutVisitor(BytesValue.of(4), nodeFactory), BytesValue.EMPTY);
+    assertThat(trie.accept(new RemoveVisitor(true), BytesValue.EMPTY))
+        .isSameAs(NullUniNode.instance());
+  }
+
+  @Test
+  public void removeNodeRecursively() {
+    UniNode trie = NullUniNode.instance();
+    trie =
+        trie.accept(new PutVisitor(BytesValue.of(1), nodeFactory), BytesValue.of(0, 1, 1))
+            .accept(new PutVisitor(BytesValue.of(2), nodeFactory), BytesValue.of(0, 0, 0))
+            .accept(new PutVisitor(BytesValue.of(3), nodeFactory), BytesValue.of(0, 0, 0, 1, 0))
+            .accept(new PutVisitor(BytesValue.of(4), nodeFactory), BytesValue.EMPTY);
+
+    UniNode stripped = trie.accept(new RemoveVisitor(true), BytesValue.of(0, 0, 0));
+
+    assertThat(stripped.accept(new GetVisitor(), BytesValue.of(0, 1, 1)).getValue())
+        .contains(BytesValue.of(1));
+    assertThat(stripped.accept(new GetVisitor(), BytesValue.EMPTY).getValue())
+        .contains(BytesValue.of(4));
+    assertThat(stripped.accept(new GetVisitor(), BytesValue.of(0, 0, 0)).getValue())
+        .isEmpty();
+    assertThat(stripped.accept(new GetVisitor(), BytesValue.of(0, 0, 0, 1, 0)).getValue())
+        .isEmpty();
+  }
 }

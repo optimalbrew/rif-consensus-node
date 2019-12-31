@@ -14,12 +14,10 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Path visitor traversing a Unitrie.
@@ -89,18 +87,18 @@ public class UniTrieIterator implements UniPathVisitor {
 
   private UniNode handleLeaf(final BranchUniNode node) {
     paths.push(node.getPath());
-    state = leafHandler.onLeaf(keyHash(), node);
+    state = leafHandler.onLeaf(assemblePath(), node);
     paths.pop();
     return node;
   }
 
-  private Bytes32 keyHash() {
+  private BytesValue assemblePath() {
     final Iterator<BytesValue> iterator = paths.descendingIterator();
     BytesValue fullPath = iterator.next();
     while (iterator.hasNext()) {
       fullPath = BytesValue.wrap(fullPath, iterator.next());
     }
-    return fullPath.isZero() ? Bytes32.ZERO : Bytes32.wrap(PathEncoding.encodePath(fullPath), 0);
+    return fullPath.isZero() ? BytesValue.EMPTY : PathEncoding.encodePath(fullPath);
   }
 
   /**
@@ -123,11 +121,11 @@ public class UniTrieIterator implements UniPathVisitor {
   }
 
   /**
-   * Leaf handler: given a leaf node and its path interpreted as a 32 bytes hash, process the leaf
-   * and return the new iteration state.
+   * Leaf handler: given a leaf node and its path, process the leaf and
+   * return the new iteration state.
    */
   @FunctionalInterface
   public interface LeafHandler {
-    State onLeaf(Bytes32 keyHash, UniNode node);
+    State onLeaf(BytesValue path, UniNode node);
   }
 }

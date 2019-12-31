@@ -33,7 +33,7 @@ public class UniTrieEncodingTest {
   @Test
   public void emptyTree_givesNullEncoding() {
     assertThat(NullUniNode.instance().getEncoding())
-        .isEqualTo(UniNodeEncoding.NULL_UNINODE_ENCODING);
+        .isEqualTo(UniTrie.NULL_UNINODE_ENCODING);
   }
 
   @Test

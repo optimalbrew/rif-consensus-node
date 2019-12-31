@@ -18,26 +18,23 @@ package org.hyperledger.besu.ethereum.unitrie;
 import static junit.framework.TestCase.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.ethereum.trie.Proof;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
-
 import org.junit.Before;
 import org.junit.Test;
 
 public abstract class AbstractUniTrieTest {
 
-  MerklePatriciaTrie<BytesValue, String> trie;
+  UniTrie<BytesValue, String> trie;
 
-  abstract MerklePatriciaTrie<BytesValue, String> createTrie();
+  abstract UniTrie<BytesValue, String> createTrie();
 
   @Before
   public void setup() {
@@ -52,7 +49,7 @@ public abstract class AbstractUniTrieTest {
   @Test
   public void emptyTreeHasKnownRootHash() {
     assertThat(trie.getRootHash().toString())
-        .isEqualTo(UniNodeEncoding.NULL_UNINODE_HASH.toString());
+        .isEqualTo(UniTrie.NULL_UNINODE_HASH.toString());
   }
 
   @Test(expected = NullPointerException.class)

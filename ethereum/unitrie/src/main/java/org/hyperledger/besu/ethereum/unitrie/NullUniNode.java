@@ -107,12 +107,12 @@ public class NullUniNode implements UniNode {
 
   @Override
   public BytesValue getEncoding() {
-    return UniNodeEncoding.NULL_UNINODE_ENCODING;
+    return UniTrie.NULL_UNINODE_ENCODING;
   }
 
   @Override
   public Bytes32 getHash() {
-    return UniNodeEncoding.NULL_UNINODE_HASH;
+    return UniTrie.NULL_UNINODE_HASH;
   }
 
   @Override

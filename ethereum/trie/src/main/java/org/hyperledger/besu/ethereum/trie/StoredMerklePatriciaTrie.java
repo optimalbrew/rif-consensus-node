@@ -125,7 +125,7 @@ public class StoredMerklePatriciaTrie<K extends BytesValue, V> implements Merkle
   }
 
   @Override
-  public void visitAll(final Consumer<BasicNode<V>> visitor) {
+  public void visitAll(final Consumer<Node<V>> visitor) {
     root.accept(new AllNodesVisitor<>(visitor));
   }
 

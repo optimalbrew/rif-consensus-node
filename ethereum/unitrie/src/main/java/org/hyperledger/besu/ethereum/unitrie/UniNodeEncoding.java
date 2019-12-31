@@ -14,17 +14,13 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.crypto.Hash;
-import org.hyperledger.besu.ethereum.rlp.RLP;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
+import java.nio.ByteBuffer;
+import java.util.Objects;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt8;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.nio.ByteBuffer;
-import java.util.Objects;
 
 /**
  * Encode or decode {@link UniNode}s.
@@ -32,9 +28,6 @@ import java.util.Objects;
  * @author ppedemon
  */
 public class UniNodeEncoding {
-
-  public static final BytesValue NULL_UNINODE_ENCODING = MerklePatriciaTrie.EMPTY_TRIE_NODE;
-  public static final Bytes32 NULL_UNINODE_HASH = MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH;
 
   /**
    * Encode a {@link BranchUniNode}.
@@ -222,7 +215,7 @@ public class UniNodeEncoding {
   UniNode decode(
       final BytesValue value, final DataLoader loader, final StoredUniNodeFactory nodeFactory) {
 
-    if (value.equals(NULL_UNINODE_ENCODING)) {
+    if (value.equals(UniTrie.NULL_UNINODE_ENCODING)) {
       return NullUniNode.instance();
     }
 

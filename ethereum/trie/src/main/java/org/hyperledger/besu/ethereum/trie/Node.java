@@ -14,13 +14,12 @@
  */
 package org.hyperledger.besu.ethereum.trie;
 
+import java.util.List;
+import java.util.Optional;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface Node<V> extends BasicNode<V> {
+public interface Node<V> {
 
   Node<V> accept(PathNodeVisitor<V> visitor, BytesValue path);
 
@@ -28,7 +27,6 @@ public interface Node<V> extends BasicNode<V> {
 
   BytesValue getPath();
 
-  @Override
   Optional<V> getValue();
 
   List<Node<V>> getChildren();
@@ -37,11 +35,6 @@ public interface Node<V> extends BasicNode<V> {
 
   BytesValue getRlpRef();
 
-  @Override
-  default BytesValue getEncoding() {
-    return getRlp();
-  }
-
   /**
    * Whether a reference to this node should be represented as a hash of the rlp, or the node rlp
    * itself should be inlined (the rlp stored directly in the parent node). If true, the node is
@@ -49,12 +42,10 @@ public interface Node<V> extends BasicNode<V> {
    *
    * @return true if this node should be referenced by hash
    */
-  @Override
   default boolean isReferencedByHash() {
     return getRlp().size() >= 32;
   }
 
-  @Override
   Bytes32 getHash();
 
   Node<V> replacePath(BytesValue path);

@@ -37,7 +37,7 @@ public class AllUniNodesVisitorTest {
     when(branchNode.getLeftChild()).thenReturn(leftStoredNode);
     when(branchNode.getRightChild()).thenReturn(rightStoredNode);
 
-    new AllUniNodesVisitor<Void>(__ -> null, x -> {}).visit(branchNode);
+    new AllUniNodesVisitor(x -> {}).visit(branchNode);
 
     verify(leftStoredNode).unload();
     verify(rightStoredNode).unload();

@@ -16,14 +16,6 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.hyperledger.besu.ethereum.unitrie.UniNodeEncoding.NULL_UNINODE_HASH;
-
-import org.hyperledger.besu.ethereum.trie.BasicNode;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
-import org.hyperledger.besu.ethereum.trie.NodeUpdater;
-import org.hyperledger.besu.ethereum.trie.Proof;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +23,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.hyperledger.besu.ethereum.trie.NodeUpdater;
+import org.hyperledger.besu.ethereum.trie.Proof;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Unitrie backed by some key value storage.
@@ -39,10 +35,11 @@ import java.util.stream.Collectors;
  * @param <V> value type
  * @author ppedemon
  */
-public class StoredUniTrie<K extends BytesValue, V> implements MerklePatriciaTrie<K, V> {
+public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
 
   private final GetVisitor getVisitor = new GetVisitor();
   private final RemoveVisitor removeVisitor = new RemoveVisitor();
+  private final RemoveVisitor recursiveRemoveVisitor = new RemoveVisitor(true);
 
   private final StoredUniNodeFactory nodeFactory;
   private final Function<V, BytesValue> valueSerializer;
@@ -70,6 +67,26 @@ public class StoredUniTrie<K extends BytesValue, V> implements MerklePatriciaTri
         rootHash.equals(NULL_UNINODE_HASH)
             ? NullUniNode.instance()
             : new StoredUniNode(rootHash, nodeFactory);
+  }
+
+  // For creating a sub unitrie only
+  private StoredUniTrie(
+      final UniNode root,
+      final StoredUniNodeFactory nodeFactory,
+      final Function<V, BytesValue> valueSerializer,
+      final Function<BytesValue, V> valueDeserializer) {
+
+    this.root = root;
+    this.nodeFactory = nodeFactory;
+    this.valueSerializer = valueSerializer;
+    this.valueDeserializer = valueDeserializer;
+  }
+
+  @Override
+  public UniTrie<K, V> getSubUniTrie(final K key) {
+    checkNotNull(key);
+    UniNode node = root.accept(getVisitor, bytesToPath(key));
+    return new StoredUniTrie<>(node, nodeFactory, valueSerializer, valueDeserializer);
   }
 
   @Override
@@ -104,6 +121,12 @@ public class StoredUniTrie<K extends BytesValue, V> implements MerklePatriciaTri
   }
 
   @Override
+  public void removeRecursive(final K key) {
+    checkNotNull(key);
+    this.root = root.accept(recursiveRemoveVisitor, bytesToPath(key));
+  }
+
+  @Override
   public void commit(final NodeUpdater nodeUpdater) {
     final CommitVisitor commitVisitor = new CommitVisitor(nodeUpdater::store);
     root.accept(commitVisitor);
@@ -120,13 +143,13 @@ public class StoredUniTrie<K extends BytesValue, V> implements MerklePatriciaTri
   }
 
   @Override
-  public Map<Bytes32, V> entriesFrom(final Bytes32 startKeyHash, final int limit) {
-    return UniTrieCollector.collectEntries(root, startKeyHash, limit, valueDeserializer);
+  public void visitAll(final Consumer<UniNode> visitor) {
+    root.accept(new AllUniNodesVisitor(visitor));
   }
 
   @Override
-  public void visitAll(final Consumer<BasicNode<V>> visitor) {
-    root.accept(new AllUniNodesVisitor<>(valueDeserializer, visitor));
+  public Map<BytesValue, V> entriesFrom(final BytesValue startPath, final int limit) {
+    return UniTrieCollector.collectEntries(root, startPath, limit, valueDeserializer);
   }
 
   @Override

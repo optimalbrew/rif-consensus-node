@@ -15,46 +15,44 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
- * Lexicographically collect values from some {@link UniNode}, starting from a given hash.
+ * Lexicographically collect values from some {@link UniNode}, starting from a given path.
  *
  * @param <V> type of values returned by this collector
  * @author ppedemon
  */
 public class UniTrieCollector<V> implements UniTrieIterator.LeafHandler {
 
-  private final Bytes32 startKeyHash;
+  private final BytesValue startPath;
   private final int limit;
-  private final Map<Bytes32, V> values = new TreeMap<>();
+  private final Map<BytesValue, V> values = new TreeMap<>();
   private final Function<BytesValue, V> valueDeserializer;
 
   public UniTrieCollector(
-      final Bytes32 startKeyHash,
+      final BytesValue startPath,
       final int limit,
       final Function<BytesValue, V> valueDeserializer) {
 
-    this.startKeyHash = startKeyHash;
+    this.startPath = startPath;
     this.limit = limit;
     this.valueDeserializer = valueDeserializer;
   }
 
-  public static <V> Map<Bytes32, V> collectEntries(
+  public static <V> Map<BytesValue, V> collectEntries(
       final UniNode root,
-      final Bytes32 startKeyHash,
+      final BytesValue startPath,
       final int limit,
       final Function<BytesValue, V> valueDeserializer) {
 
     final UniTrieCollector<V> collector =
-        new UniTrieCollector<>(startKeyHash, limit, valueDeserializer);
+        new UniTrieCollector<>(startPath, limit, valueDeserializer);
     final UniTrieIterator visitor = new UniTrieIterator(collector);
-    root.accept(visitor, PathEncoding.decodePath(startKeyHash, Bytes32.SIZE * 8));
+    root.accept(visitor, PathEncoding.decodePath(startPath, startPath.size() * 8));
     return collector.getValues();
   }
 
@@ -63,14 +61,14 @@ public class UniTrieCollector<V> implements UniTrieIterator.LeafHandler {
   }
 
   @Override
-  public UniTrieIterator.State onLeaf(final Bytes32 keyHash, final UniNode node) {
-    if (keyHash.compareTo(startKeyHash) >= 0) {
-      node.getValue().ifPresent(value -> values.put(keyHash, valueDeserializer.apply(value)));
+  public UniTrieIterator.State onLeaf(final BytesValue path, final UniNode node) {
+    if (path.compareTo(startPath) >= 0) {
+      node.getValue().ifPresent(value -> values.put(path, valueDeserializer.apply(value)));
     }
     return limitReached() ? UniTrieIterator.State.STOP : UniTrieIterator.State.CONTINUE;
   }
 
-  public Map<Bytes32, V> getValues() {
+  public Map<BytesValue, V> getValues() {
     return values;
   }
 }

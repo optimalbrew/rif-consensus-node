@@ -15,16 +15,14 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class SimpleUniTrieTest extends AbstractUniTrieTest {
 
   @Override
-  MerklePatriciaTrie<BytesValue, String> createTrie() {
+  UniTrie<BytesValue, String> createTrie() {
     return new SimpleUniTrie<>(
         s -> Objects.isNull(s) ? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8)),
         v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8));

@@ -270,9 +270,9 @@ public class BranchUniNode implements UniNode {
    *       the parent path and pos bit).
    * </ul>
    *
-   * <p>So, for a branch with no value and a left child with path p, return the left child with path
-   * 0:p. Conversely, if the branch has no value and a right child with path p, return the right
-   * child with path 1:p.
+   * <p>So, for a branch with path p, no value and a left child with path q, return
+   * the left child with path p:0:q. Conversely, if the branch has no value and a
+   * right child with path q, return the right child with path p:1:q.
    *
    * @param node node to possible coalesce
    * @param nodeFactory node factory used to create a new node in case of coalescing

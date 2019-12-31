@@ -68,7 +68,7 @@ public class UniTrieIteratorTest {
 
   @Test
   public void shouldVisitEachChildOfABranchNode() {
-    when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class)))
+    when(leafHandler.onLeaf(any(BytesValue.class), any(UniNode.class)))
         .thenReturn(UniTrieIterator.State.CONTINUE);
 
     final UniNode root =
@@ -85,7 +85,7 @@ public class UniTrieIteratorTest {
 
   @Test
   public void shouldStopIteratingChildrenOfBranchWhenLeafHandlerReturnsStop() {
-    when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class)))
+    when(leafHandler.onLeaf(any(BytesValue.class), any(UniNode.class)))
         .thenReturn(UniTrieIterator.State.STOP);
 
     final UniNode root =
@@ -101,10 +101,10 @@ public class UniTrieIteratorTest {
   @Test
   public void shouldIterateArbitraryStructureAccurately() {
     UniNode root = NullUniNode.instance();
-    final NavigableSet<Bytes32> expectedKeyHashes = new TreeSet<>();
+    final NavigableSet<BytesValue> expectedKeyHashes = new TreeSet<>();
 
-    Bytes32 startAtHash = Bytes32.ZERO;
-    Bytes32 stopAtHash = Bytes32.ZERO;
+    BytesValue startAtHash = BytesValue.EMPTY;
+    BytesValue stopAtHash = BytesValue.EMPTY;
 
     final int totalNodes = 500;
     final int startNodeNumber = 25;
@@ -125,10 +125,10 @@ public class UniTrieIteratorTest {
       }
     }
 
-    final Bytes32 actualStopAtHash =
+    final BytesValue actualStopAtHash =
         stopAtHash.compareTo(startAtHash) >= 0 ? stopAtHash : startAtHash;
 
-    when(leafHandler.onLeaf(any(Bytes32.class), any(UniNode.class)))
+    when(leafHandler.onLeaf(any(BytesValue.class), any(UniNode.class)))
         .thenReturn(UniTrieIterator.State.CONTINUE);
     when(leafHandler.onLeaf(eq(actualStopAtHash), any(UniNode.class)))
         .thenReturn(UniTrieIterator.State.STOP);
