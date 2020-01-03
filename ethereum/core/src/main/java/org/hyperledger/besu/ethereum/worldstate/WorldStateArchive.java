@@ -14,18 +14,18 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
+import java.util.List;
+import java.util.Optional;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.WorldState;
+import org.hyperledger.besu.ethereum.proof.ClassicWorldStateProofProvider;
 import org.hyperledger.besu.ethereum.proof.WorldStateProof;
 import org.hyperledger.besu.ethereum.proof.WorldStateProofProvider;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
-
-import java.util.List;
-import java.util.Optional;
 
 public class WorldStateArchive {
   private final WorldStateStorage worldStateStorage;
@@ -38,7 +38,7 @@ public class WorldStateArchive {
       final WorldStateStorage worldStateStorage, final WorldStatePreimageStorage preimageStorage) {
     this.worldStateStorage = worldStateStorage;
     this.preimageStorage = preimageStorage;
-    this.worldStateProof = new WorldStateProofProvider(worldStateStorage);
+    this.worldStateProof = new ClassicWorldStateProofProvider(worldStateStorage);
   }
 
   public Optional<WorldState> get(final Hash rootHash) {

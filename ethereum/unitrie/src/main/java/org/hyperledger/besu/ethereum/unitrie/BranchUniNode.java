@@ -125,7 +125,7 @@ public class BranchUniNode implements UniNode {
         "%s%s%s%s",
         Strings.repeat(" ", indent),
         String.format(
-            "(key = %s (%d), cs = %s, val = %s)", path, path.size(), childrenSize, valueWrapper),
+            "(key = %s (%d), cs = %s, val = %s)", PathEncoding.encodePath(path), path.size(), childrenSize, valueWrapper),
         String.format("\n%s", leftChild.print(indent + 2)),
         String.format("\n%s", rightChild.print(indent + 2)));
   }

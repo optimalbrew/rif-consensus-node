@@ -14,73 +14,28 @@
  */
 package org.hyperledger.besu.ethereum.proof;
 
-import org.hyperledger.besu.ethereum.core.Address;
-import org.hyperledger.besu.ethereum.core.Hash;
-import org.hyperledger.besu.ethereum.rlp.RLP;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
-import org.hyperledger.besu.ethereum.trie.Proof;
-import org.hyperledger.besu.ethereum.trie.StoredMerklePatriciaTrie;
-import org.hyperledger.besu.ethereum.worldstate.StateTrieAccountValue;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-import org.hyperledger.besu.util.uint.UInt256;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import org.hyperledger.besu.ethereum.core.Address;
+import org.hyperledger.besu.ethereum.core.Hash;
+import org.hyperledger.besu.util.uint.UInt256;
 
-public class WorldStateProofProvider {
+/**
+ * Specification for classes that can provide world state Merkle proofs.
+ *
+ * @author ppedemon
+ */
+public interface WorldStateProofProvider {
 
-  private final WorldStateStorage worldStateStorage;
-
-  public WorldStateProofProvider(final WorldStateStorage worldStateStorage) {
-    this.worldStateStorage = worldStateStorage;
-  }
-
-  public Optional<WorldStateProof> getAccountProof(
-      final Hash worldStateRoot,
-      final Address accountAddress,
-      final List<UInt256> accountStorageKeys) {
-
-    if (!worldStateStorage.isWorldStateAvailable(worldStateRoot)) {
-      return Optional.empty();
-    } else {
-      final Hash addressHash = Hash.hash(accountAddress);
-      final Proof<BytesValue> accountProof =
-          newAccountStateTrie(worldStateRoot).getValueWithProof(addressHash);
-
-      return accountProof
-          .getValue()
-          .map(RLP::input)
-          .map(StateTrieAccountValue::readFrom)
-          .map(
-              account -> {
-                final SortedMap<UInt256, Proof<BytesValue>> storageProofs =
-                    getStorageProofs(account, accountStorageKeys);
-                return new WorldStateProof(account, accountProof, storageProofs);
-              });
-    }
-  }
-
-  private SortedMap<UInt256, Proof<BytesValue>> getStorageProofs(
-      final StateTrieAccountValue account, final List<UInt256> accountStorageKeys) {
-    final MerklePatriciaTrie<Bytes32, BytesValue> storageTrie =
-        newAccountStorageTrie(account.getStorageRoot());
-    final SortedMap<UInt256, Proof<BytesValue>> storageProofs = new TreeMap<>();
-    accountStorageKeys.forEach(
-        key -> storageProofs.put(key, storageTrie.getValueWithProof(Hash.hash(key.getBytes()))));
-    return storageProofs;
-  }
-
-  private MerklePatriciaTrie<Bytes32, BytesValue> newAccountStateTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
-        worldStateStorage::getAccountStateTrieNode, rootHash, b -> b, b -> b);
-  }
-
-  private MerklePatriciaTrie<Bytes32, BytesValue> newAccountStorageTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
-        worldStateStorage::getAccountStorageTrieNode, rootHash, b -> b, b -> b);
-  }
+  /**
+   * Provide a world state proof for the given account and storage keys.
+   *
+   * @param worldStateRoot world state root hash
+   * @param accountAddress account address
+   * @param accountStorageKeys storage keys for the account to process
+   * @return optional world state proof, empty if:
+   *     there's world state for the given root hash or account doesn't exist for the given state
+   */
+  Optional<WorldStateProof> getAccountProof(
+      Hash worldStateRoot, Address accountAddress, List<UInt256> accountStorageKeys);
 }
