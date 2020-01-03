@@ -177,13 +177,17 @@ public final class ValueWrapper {
   }
 
   /**
-   * Equality test: answer true if wrapped value hash is equal the given one's hash.
+   * Equality test: answer true if wrapped value is equal the given value.
    *
-   * @param value value to test for equality using hash
-   * @return whether the given value hash is equal to the wrapped value hash
+   * @param value value to test for equality
+   * @return whether the given value is equal to the wrapped one, always false if wrapper is empty
    */
   boolean wrappedValueIs(final BytesValue value) {
-    return !isEmpty() && Hash.keccak256(value).equals(hash);
+    // Compute value's hash as the last resource to determine equality
+    if (isEmpty() || value.size() != length.toInt()) {
+      return false;
+    }
+    return (this.value != null && this.value.equals(value)) || Hash.keccak256(value).equals(hash);
   }
 
   /**

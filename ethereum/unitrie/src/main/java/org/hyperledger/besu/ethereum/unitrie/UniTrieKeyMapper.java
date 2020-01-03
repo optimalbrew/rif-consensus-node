@@ -15,15 +15,15 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.crypto.Hash;
-import org.hyperledger.besu.plugin.data.Address;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.hyperledger.besu.crypto.Hash;
+import org.hyperledger.besu.plugin.data.Address;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
+import org.hyperledger.besu.util.uint.UInt256;
 
 /**
  * Produce Unitrie keys for accounts, code, and storage.
@@ -62,9 +62,9 @@ public class UniTrieKeyMapper {
     return BytesValue.wrap(buffer.array());
   }
 
-  public BytesValue getAccountStorageKey(final Address address, final BytesValue subkey) {
+  public BytesValue getAccountStorageKey(final Address address, final UInt256 subkey) {
     byte[] addressBytes = address.getByteArray();
-    byte[] subkeyBytes = subkey.getArrayUnsafe();
+    byte[] subkeyBytes = subkey.getByteArray();
     byte[] strippedSubkeyBytes = stripLeadingZeros(subkeyBytes);
     ByteBuffer buffer =
         ByteBuffer.allocate(accountStorageKeySize(addressBytes, strippedSubkeyBytes));
