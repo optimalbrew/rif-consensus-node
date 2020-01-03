@@ -15,10 +15,10 @@
  */
 package org.hyperledger.besu.ethereum.merkleutils;
 
+import org.hyperledger.besu.ethereum.core.MutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
-import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Abstraction layer for creating instances of classes depending on
@@ -28,5 +28,24 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  */
 public interface MerkleAwareProvider {
 
-  // TODO Add method for creating suitable MutableWorldState instance
+  /**
+   * Create a new {@link MutableWorldState} instance.
+   *
+   * @param storage world state storage
+   * @param preImageStorage world state pre-image storage
+   * @return {@link MutableWorldState} instance
+   */
+  MutableWorldState createMutableWorldState(
+      WorldStateStorage storage, WorldStatePreimageStorage preImageStorage);
+
+  /**
+   * Create a new {@link MutableWorldState} instance.
+   *
+   * @param rootHash root hash of the state represented by the instance to create
+   * @param storage world state storage
+   * @param preImageStorage world state pre-image storage
+   * @return {@link MutableWorldState} instance
+   */
+  MutableWorldState createMutableWorldState(
+      Bytes32 rootHash, WorldStateStorage storage, WorldStatePreimageStorage preImageStorage);
 }

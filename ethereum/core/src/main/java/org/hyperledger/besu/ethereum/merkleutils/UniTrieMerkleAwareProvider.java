@@ -15,6 +15,12 @@
  */
 package org.hyperledger.besu.ethereum.merkleutils;
 
+import org.hyperledger.besu.ethereum.core.MutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.UniTrieMutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.util.bytes.Bytes32;
+
 /**
  * Provider tailored to Untrie Merkle storage.
  *
@@ -22,5 +28,17 @@ package org.hyperledger.besu.ethereum.merkleutils;
  */
 public class UniTrieMerkleAwareProvider implements MerkleAwareProvider {
 
-  // TODO Add method for creating suitable MutableWorldState instance
+  @Override
+  public MutableWorldState createMutableWorldState(
+      final WorldStateStorage storage, final WorldStatePreimageStorage preImageStorage) {
+    return new UniTrieMutableWorldState(storage);
+  }
+
+  @Override
+  public MutableWorldState createMutableWorldState(
+      final Bytes32 rootHash,
+      final WorldStateStorage storage,
+      final WorldStatePreimageStorage preImageStorage) {
+    return new UniTrieMutableWorldState(rootHash, storage);
+  }
 }

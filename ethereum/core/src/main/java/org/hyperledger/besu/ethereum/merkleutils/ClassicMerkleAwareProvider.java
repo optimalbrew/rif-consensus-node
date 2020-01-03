@@ -15,12 +15,11 @@
  */
 package org.hyperledger.besu.ethereum.merkleutils;
 
-import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
+import org.hyperledger.besu.ethereum.core.MutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
-import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Provider based on on "classic" (as defined in the Yellow paper) merkle storage.
@@ -29,5 +28,17 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  */
 public class ClassicMerkleAwareProvider implements MerkleAwareProvider {
 
-  // TODO Add method for creating suitable MutableWorldState instance
+  @Override
+  public MutableWorldState createMutableWorldState(
+      final WorldStateStorage storage, final WorldStatePreimageStorage preImageStorage) {
+    return new DefaultMutableWorldState(storage, preImageStorage);
+  }
+
+  @Override
+  public MutableWorldState createMutableWorldState(
+      final Bytes32 rootHash,
+      final WorldStateStorage storage,
+      final WorldStatePreimageStorage preImageStorage) {
+    return new DefaultMutableWorldState(rootHash, storage, preImageStorage);
+  }
 }
