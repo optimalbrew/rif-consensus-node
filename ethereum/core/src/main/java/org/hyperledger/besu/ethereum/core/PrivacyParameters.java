@@ -16,21 +16,21 @@ package org.hyperledger.besu.ethereum.core;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import org.hyperledger.besu.crypto.SECP256K1;
-import org.hyperledger.besu.crypto.SECP256K1.KeyPair;
-import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateStorage;
-import org.hyperledger.besu.ethereum.storage.StorageProvider;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
-import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
-
+import com.google.common.base.Preconditions;
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
-
-import com.google.common.io.Files;
+import org.hyperledger.besu.crypto.SECP256K1;
+import org.hyperledger.besu.crypto.SECP256K1.KeyPair;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateStorage;
+import org.hyperledger.besu.ethereum.storage.StorageProvider;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
+import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 
 public class PrivacyParameters {
 
@@ -134,6 +134,7 @@ public class PrivacyParameters {
     private String enclavePublicKey;
     private Path privateKeyPath;
     private StorageProvider storageProvider;
+    private MerkleAwareProvider merkleAwareProvider;
 
     public Builder setPrivacyAddress(final Integer privacyAddress) {
       this.privacyAddress = privacyAddress;
@@ -155,6 +156,11 @@ public class PrivacyParameters {
       return this;
     }
 
+    public Builder setMerkleAwareProvider(final MerkleAwareProvider merkleAwareProvider) {
+      this.merkleAwareProvider = merkleAwareProvider;
+      return this;
+    }
+
     public Builder setPrivateKeyPath(final Path privateKeyPath) {
       this.privateKeyPath = privateKeyPath;
       return this;
@@ -163,12 +169,15 @@ public class PrivacyParameters {
     public PrivacyParameters build() throws IOException {
       final PrivacyParameters config = new PrivacyParameters();
       if (enabled) {
+        Preconditions.checkNotNull(merkleAwareProvider, "Merkle aware provider must be non null");
+
         final WorldStateStorage privateWorldStateStorage =
             storageProvider.createWorldStateStorage();
         final WorldStatePreimageStorage privatePreimageStorage =
             storageProvider.createWorldStatePreimageStorage();
         final WorldStateArchive privateWorldStateArchive =
-            new WorldStateArchive(privateWorldStateStorage, privatePreimageStorage);
+            new WorldStateArchive(
+                privateWorldStateStorage, privatePreimageStorage, merkleAwareProvider);
 
         final PrivateStateStorage privateStateStorage = storageProvider.createPrivateStateStorage();
 

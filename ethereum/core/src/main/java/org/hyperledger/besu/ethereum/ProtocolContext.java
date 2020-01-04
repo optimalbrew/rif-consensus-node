@@ -20,6 +20,7 @@ import org.hyperledger.besu.ethereum.chain.DefaultBlockchain;
 import org.hyperledger.besu.ethereum.chain.GenesisState;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
@@ -50,6 +51,7 @@ public class ProtocolContext<C> {
   }
 
   public static <T> ProtocolContext<T> init(
+      final MerkleAwareProvider merkleAwareProvider,
       final StorageProvider storageProvider,
       final GenesisState genesisState,
       final ProtocolSchedule<T> protocolSchedule,
@@ -65,7 +67,7 @@ public class ProtocolContext<C> {
         DefaultBlockchain.createMutable(genesisState.getBlock(), blockchainStorage, metricsSystem);
 
     final WorldStateArchive worldStateArchive =
-        new WorldStateArchive(worldStateStorage, preimageStorage);
+        new WorldStateArchive(worldStateStorage, preimageStorage, merkleAwareProvider);
     genesisState.writeStateTo(worldStateArchive.getMutable());
 
     return new ProtocolContext<>(

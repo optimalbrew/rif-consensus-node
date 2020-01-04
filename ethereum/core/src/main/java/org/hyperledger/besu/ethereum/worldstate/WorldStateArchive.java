@@ -20,7 +20,8 @@ import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.WorldState;
-import org.hyperledger.besu.ethereum.proof.ClassicWorldStateProofProvider;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.proof.WorldStateProof;
 import org.hyperledger.besu.ethereum.proof.WorldStateProofProvider;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
@@ -28,17 +29,30 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 
 public class WorldStateArchive {
+
   private final WorldStateStorage worldStateStorage;
   private final WorldStatePreimageStorage preimageStorage;
+  private final MerkleAwareProvider merkleAwareProvider;
+
   private final WorldStateProofProvider worldStateProof;
 
   private static final Hash EMPTY_ROOT_HASH = Hash.wrap(MerklePatriciaTrie.EMPTY_TRIE_NODE_HASH);
 
+  // TODO (ppedemon) eventually remove this method
   public WorldStateArchive(
       final WorldStateStorage worldStateStorage, final WorldStatePreimageStorage preimageStorage) {
+    this(worldStateStorage, preimageStorage, new ClassicMerkleAwareProvider());
+  }
+
+  public WorldStateArchive(
+      final WorldStateStorage worldStateStorage,
+      final WorldStatePreimageStorage preimageStorage,
+      final MerkleAwareProvider merkleAwareProvider) {
+
     this.worldStateStorage = worldStateStorage;
     this.preimageStorage = preimageStorage;
-    this.worldStateProof = new ClassicWorldStateProofProvider(worldStateStorage);
+    this.merkleAwareProvider = merkleAwareProvider;
+    this.worldStateProof = merkleAwareProvider.createWorldStateProofProvider(worldStateStorage);
   }
 
   public Optional<WorldState> get(final Hash rootHash) {
@@ -53,7 +67,8 @@ public class WorldStateArchive {
     if (!worldStateStorage.isWorldStateAvailable(rootHash)) {
       return Optional.empty();
     }
-    return Optional.of(new DefaultMutableWorldState(rootHash, worldStateStorage, preimageStorage));
+    return Optional.of(
+        merkleAwareProvider.createMutableWorldState(rootHash, worldStateStorage, preimageStorage));
   }
 
   public WorldState get() {

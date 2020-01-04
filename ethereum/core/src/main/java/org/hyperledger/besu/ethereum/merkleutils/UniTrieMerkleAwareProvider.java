@@ -16,6 +16,8 @@
 package org.hyperledger.besu.ethereum.merkleutils;
 
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
+import org.hyperledger.besu.ethereum.proof.UniTrieWorldStateProofProvider;
+import org.hyperledger.besu.ethereum.proof.WorldStateProofProvider;
 import org.hyperledger.besu.ethereum.worldstate.UniTrieMutableWorldState;
 import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
@@ -40,5 +42,15 @@ public class UniTrieMerkleAwareProvider implements MerkleAwareProvider {
       final WorldStateStorage storage,
       final WorldStatePreimageStorage preImageStorage) {
     return new UniTrieMutableWorldState(rootHash, storage);
+  }
+
+  @Override
+  public WorldStateProofProvider createWorldStateProofProvider(final WorldStateStorage storage) {
+    return new UniTrieWorldStateProofProvider(storage);
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
   }
 }

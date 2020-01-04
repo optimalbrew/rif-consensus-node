@@ -16,6 +16,7 @@
 package org.hyperledger.besu.ethereum.merkleutils;
 
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
+import org.hyperledger.besu.ethereum.proof.WorldStateProofProvider;
 import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
@@ -48,4 +49,12 @@ public interface MerkleAwareProvider {
    */
   MutableWorldState createMutableWorldState(
       Bytes32 rootHash, WorldStateStorage storage, WorldStatePreimageStorage preImageStorage);
+
+  /**
+   * Create a new {@link WorldStateProofProvider}.
+   *
+   * @param storage storage for returned provider
+   * @return {@link WorldStateProofProvider} instance
+   */
+  WorldStateProofProvider createWorldStateProofProvider(WorldStateStorage storage);
 }

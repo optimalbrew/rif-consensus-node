@@ -224,6 +224,7 @@ public abstract class BesuControllerBuilder<C> {
         GenesisState.fromConfig(genesisConfig, protocolSchedule, merkleAwareProvider);
     final ProtocolContext<C> protocolContext =
         ProtocolContext.init(
+            merkleAwareProvider,
             storageProvider,
             genesisState,
             protocolSchedule,

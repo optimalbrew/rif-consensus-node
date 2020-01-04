@@ -1358,6 +1358,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
       privacyParametersBuilder.setPrivateKeyPath(privacyMarkerTransactionSigningKeyPath);
       privacyParametersBuilder.setStorageProvider(
           keyStorageProvider(keyValueStorageName + "-privacy"));
+      privacyParametersBuilder.setMerkleAwareProvider(merkleAwareProvider.get());
     }
 
     return privacyParametersBuilder.build();

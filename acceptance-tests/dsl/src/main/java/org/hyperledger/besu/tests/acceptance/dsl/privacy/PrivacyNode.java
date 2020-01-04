@@ -23,6 +23,7 @@ import org.hyperledger.besu.enclave.types.SendRequest;
 import org.hyperledger.besu.enclave.types.SendRequestLegacy;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueSegmentIdentifier;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProviderBuilder;
@@ -156,6 +157,7 @@ public class PrivacyNode implements AutoCloseable {
               .setEnclaveUrl(orion.clientUrl())
               .setEnclavePublicKeyUsingFile(orion.getConfig().publicKeys().get(0).toFile())
               .setStorageProvider(createKeyValueStorageProvider(dataDir, dbDir))
+              .setMerkleAwareProvider(new ClassicMerkleAwareProvider())
               .setPrivateKeyPath(KeyPairUtil.getDefaultKeyFile(besu.homeDirectory()).toPath())
               .build();
     } catch (IOException e) {
