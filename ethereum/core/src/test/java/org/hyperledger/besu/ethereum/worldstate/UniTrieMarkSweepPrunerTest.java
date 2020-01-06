@@ -4,13 +4,14 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations under the License.
  *
- * SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0
+ *
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
@@ -20,7 +21,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.spy;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.assertj.core.api.Assertions;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
+import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
 import org.hyperledger.besu.ethereum.core.BlockDataGenerator;
 import org.hyperledger.besu.ethereum.core.BlockDataGenerator.BlockOptions;
@@ -29,73 +41,71 @@ import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.TransactionReceipt;
 import org.hyperledger.besu.ethereum.core.WorldState;
-import org.hyperledger.besu.ethereum.rlp.RLP;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStatePreimageKeyValueStorage;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
-import org.hyperledger.besu.ethereum.trie.StoredMerklePatriciaTrie;
+import org.hyperledger.besu.ethereum.unitrie.StoredUniTrie;
+import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.junit.Test;
 import org.mockito.InOrder;
 
-public class MarkSweepPrunerTest {
+public class UniTrieMarkSweepPrunerTest {
 
+  // Block generation
   private final BlockDataGenerator gen = new BlockDataGenerator();
-  private final NoOpMetricsSystem metricsSystem = new NoOpMetricsSystem();
-  private final Map<BytesValue, byte[]> hashValueStore = spy(new HashMap<>());
-  private final InMemoryKeyValueStorage stateStorage = spy(new TestInMemoryStorage(hashValueStore));
-  private final WorldStateStorage worldStateStorage = new WorldStateKeyValueStorage(stateStorage);
-  private final WorldStateArchive worldStateArchive =
-      new WorldStateArchive(
-          worldStateStorage, new WorldStatePreimageKeyValueStorage(new InMemoryKeyValueStorage()));
-  private final InMemoryKeyValueStorage markStorage = new InMemoryKeyValueStorage();
   private final Block genesisBlock = gen.genesisBlock();
   private final MutableBlockchain blockchain = createInMemoryBlockchain(genesisBlock);
 
+  // World state
+  private final Map<BytesValue, byte[]> hashValueStore = spy(new HashMap<>());
+  private final InMemoryKeyValueStorage stateStorage = spy(new TestInMemoryStorage(hashValueStore));
+  private final WorldStateStorage worldStateStorage = new WorldStateKeyValueStorage(stateStorage);
+
+  // World state archive
+  private final WorldStateArchive worldStateArchive =
+      new WorldStateArchive(
+          worldStateStorage,
+          new WorldStatePreimageKeyValueStorage(new InMemoryKeyValueStorage()),
+          new UniTrieMerkleAwareProvider());
+
+  // Pruner dependencies
+  private final NoOpMetricsSystem metricsSystem = new NoOpMetricsSystem();
+  private final InMemoryKeyValueStorage markStorage = new InMemoryKeyValueStorage();
+
   @Test
   public void mark_marksAllExpectedNodes() {
-    final MarkSweepPruner pruner =
-        new MarkSweepPruner(worldStateStorage, blockchain, markStorage, metricsSystem);
+    final UniTrieMarkSweepPruner pruner =
+        new UniTrieMarkSweepPruner(worldStateStorage, blockchain, markStorage, metricsSystem);
 
     // Generate accounts and save corresponding state root
     final int numBlocks = 15;
     final int numAccounts = 10;
-    generateBlockchainData(numBlocks, numAccounts);
+    List<Account> accounts = generateBlockchainData(numBlocks, numAccounts);
 
     final int markBlockNumber = 10;
     final BlockHeader markBlock = blockchain.getBlockHeader(markBlockNumber).get();
+
     // Collect the nodes we expect to keep
-    final Set<BytesValue> expectedNodes = collectWorldStateNodes(markBlock.getStateRoot());
-    assertThat(hashValueStore.size()).isGreaterThan(expectedNodes.size()); // Sanity check
+    final Set<BytesValue> expectedNodes = collectUniTrieNodes(markBlock.getStateRoot());
+    assertThat(hashValueStore.size()).isGreaterThan(expectedNodes.size());
 
     // Mark and sweep
     pruner.mark(markBlock.getStateRoot());
     pruner.sweepBefore(markBlock.getNumber());
 
     // Assert that the block we marked is still present and all accounts are accessible
-    assertThat(worldStateArchive.get(markBlock.getStateRoot())).isPresent();
-    final WorldState markedState = worldStateArchive.get(markBlock.getStateRoot()).get();
-    // Traverse accounts and make sure all are accessible
-    final int expectedAccounts = numAccounts * markBlockNumber;
-    final long accounts = markedState.streamAccounts(Bytes32.ZERO, expectedAccounts * 2).count();
-    assertThat(accounts).isEqualTo(expectedAccounts);
-    // Traverse storage to ensure that all storage is accessible
-    markedState
-        .streamAccounts(Bytes32.ZERO, expectedAccounts * 2)
-        .forEach(a -> a.storageEntriesFrom(Bytes32.ZERO, 1000));
+    WorldState markedState =
+        worldStateArchive
+            .get(markBlock.getStateRoot())
+            .orElseGet(
+                () -> Assertions.fail("No world state for hash = %s", markBlock.getStateRoot()));
+
+    // Verify we have the expected accounts
+    verifyAccounts(markedState, accounts.subList(0, numAccounts*markBlockNumber));
 
     // All other state roots should have been removed
     for (int i = 0; i < numBlocks; i++) {
@@ -115,8 +125,8 @@ public class MarkSweepPrunerTest {
 
   @Test
   public void sweepBefore_shouldSweepStateRootFirst() {
-    final MarkSweepPruner pruner =
-        new MarkSweepPruner(worldStateStorage, blockchain, markStorage, metricsSystem, 1);
+    final UniTrieMarkSweepPruner pruner =
+        new UniTrieMarkSweepPruner(worldStateStorage, blockchain, markStorage, metricsSystem, 1);
 
     // Generate accounts and save corresponding state root
     final int numBlocks = 15;
@@ -146,8 +156,8 @@ public class MarkSweepPrunerTest {
 
   @Test
   public void sweepBefore_shouldNotRemoveMarkedStateRoots() {
-    final MarkSweepPruner pruner =
-        new MarkSweepPruner(worldStateStorage, blockchain, markStorage, metricsSystem, 1);
+    final UniTrieMarkSweepPruner pruner =
+        new UniTrieMarkSweepPruner(worldStateStorage, blockchain, markStorage, metricsSystem, 1);
 
     // Generate accounts and save corresponding state root
     final int numBlocks = 15;
@@ -181,12 +191,18 @@ public class MarkSweepPrunerTest {
     assertThat(stateStorage.containsKey(markedRoot.getArrayUnsafe())).isTrue();
   }
 
-  private void generateBlockchainData(final int numBlocks, final int numAccounts) {
+  private List<Account> generateBlockchainData(final int numBlocks, final int numAccounts) {
+    List<List<Account>> accountsPerBlock = new ArrayList<>();
+
     Block parentBlock = blockchain.getChainHeadBlock();
     for (int i = 0; i < numBlocks; i++) {
       final MutableWorldState worldState =
           worldStateArchive.getMutable(parentBlock.getHeader().getStateRoot()).get();
-      gen.createRandomContractAccountsWithNonEmptyStorage(worldState, numAccounts);
+
+      List<Account> accounts =
+          gen.createRandomContractAccountsWithNonEmptyStorage(worldState, numAccounts);
+      accountsPerBlock.add(accounts);
+
       final Hash stateRoot = worldState.rootHash();
 
       final Block block =
@@ -199,74 +215,50 @@ public class MarkSweepPrunerTest {
       blockchain.appendBlock(block, receipts);
       parentBlock = block;
     }
+
+    return accountsPerBlock.stream().flatMap(Collection::stream).collect(Collectors.toList());
   }
 
-  private Set<BytesValue> collectWorldStateNodes(final Hash stateRootHash) {
-    final Set<BytesValue> nodeData = new HashSet<>();
-    collectWorldStateNodes(stateRootHash, nodeData);
-    return nodeData;
-  }
-
-  private Set<BytesValue> collectWorldStateNodes(
-      final Hash stateRootHash, final Set<BytesValue> collector) {
-    final List<Hash> storageRoots = new ArrayList<>();
-    final MerklePatriciaTrie<Bytes32, BytesValue> stateTrie = createStateTrie(stateRootHash);
-
-    // Collect storage roots and code
-    stateTrie
-        .entriesFrom(Bytes32.ZERO, 1000)
-        .forEach(
-            (key, val) -> {
-              final StateTrieAccountValue accountValue =
-                  StateTrieAccountValue.readFrom(RLP.input(val));
-              stateStorage
-                  .get(accountValue.getCodeHash().getArrayUnsafe())
-                  .ifPresent(v -> collector.add(BytesValue.wrap(v)));
-              storageRoots.add(accountValue.getStorageRoot());
-            });
-
-    // Collect state nodes
-    collectTrieNodes(stateTrie, collector);
-    // Collect storage nodes
-    for (Hash storageRoot : storageRoots) {
-      final MerklePatriciaTrie<Bytes32, BytesValue> storageTrie = createStorageTrie(storageRoot);
-      collectTrieNodes(storageTrie, collector);
+  private void verifyAccounts(final WorldState state, final List<Account> accounts) {
+    for (Account account : accounts) {
+      if (state.get(account.getAddress()) == null) {
+        Assertions.fail("State doesn't have account: %s", account.getAddress());
+      }
     }
+  }
 
+  private Set<BytesValue> collectUniTrieNodes(final Hash stateRoot) {
+    Set<BytesValue> collector = new HashSet<>();
+    collectUniTrieNodes(createUniTrie(stateRoot), collector);
     return collector;
   }
 
-  private void collectTrieNodes(
-      final MerklePatriciaTrie<Bytes32, BytesValue> trie, final Set<BytesValue> collector) {
+  private void collectUniTrieNodes(
+      final UniTrie<BytesValue, BytesValue> trie, final Set<BytesValue> collector) {
+
     final Bytes32 rootHash = trie.getRootHash();
     trie.visitAll(
-        (node) -> {
+        node -> {
+          if (node.getValueWrapper().isLong()) {
+            node.getValue().ifPresent(collector::add);
+          }
           if (node.isReferencedByHash() || node.getHash().equals(rootHash)) {
-            collector.add(node.getRlp());
+            collector.add(node.getEncoding());
           }
         });
   }
 
-  private MerklePatriciaTrie<Bytes32, BytesValue> createStateTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
+  private UniTrie<BytesValue, BytesValue> createUniTrie(final Bytes32 rootHash) {
+    return new StoredUniTrie<>(
         worldStateStorage::getAccountStateTrieNode,
         rootHash,
         Function.identity(),
         Function.identity());
   }
 
-  private MerklePatriciaTrie<Bytes32, BytesValue> createStorageTrie(final Bytes32 rootHash) {
-    return new StoredMerklePatriciaTrie<>(
-        worldStateStorage::getAccountStorageTrieNode,
-        rootHash,
-        Function.identity(),
-        Function.identity());
-  }
-
-  // Proxy class so that we have access to the constructor that takes our own map
+  /** Proxy class so we can access to the constructor that takes a map */
   private static class TestInMemoryStorage extends InMemoryKeyValueStorage {
-
-    public TestInMemoryStorage(final Map<BytesValue, byte[]> hashValueStore) {
+    TestInMemoryStorage(final Map<BytesValue, byte[]> hashValueStore) {
       super(hashValueStore);
     }
   }

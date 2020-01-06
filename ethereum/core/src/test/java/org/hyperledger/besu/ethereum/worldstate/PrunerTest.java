@@ -50,7 +50,7 @@ public class PrunerTest {
 
   private final BlockDataGenerator gen = new BlockDataGenerator();
 
-  @Mock private MarkSweepPruner markSweepPruner;
+  @Mock private ClassicMarkSweepPruner markSweepPruner;
   private final ExecutorService mockExecutorService = new MockExecutorService();
 
   private final Block genesisBlock = gen.genesisBlock();

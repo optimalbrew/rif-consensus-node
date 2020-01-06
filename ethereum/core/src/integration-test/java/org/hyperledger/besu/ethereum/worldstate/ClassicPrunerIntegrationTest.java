@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-public class PrunerIntegrationTest {
+public class ClassicPrunerIntegrationTest {
 
   private final BlockDataGenerator gen = new BlockDataGenerator();
   private final NoOpMetricsSystem metricsSystem = new NoOpMetricsSystem();
@@ -101,7 +101,7 @@ public class PrunerIntegrationTest {
       throws InterruptedException {
 
     final var markSweepPruner =
-        new MarkSweepPruner(
+        new ClassicMarkSweepPruner(
             worldStateStorage, blockchain, markStorage, metricsSystem, opsPerTransaction);
     final var pruner =
         new Pruner(

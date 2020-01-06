@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
  *       in bytes is under a certain threshold.
  *   <li>No value, but the hash and a key. This will happen if the value length in bytes is larger
  *       than the threshold. In this case the hash will act as a key that can be used to hit a
- *       ley-value store and retrieve the actual value.
+ *       key-value store and retrieve the actual value.
  * </ul>
  *
  * @author ppedemon
@@ -195,7 +195,7 @@ public final class ValueWrapper {
    *
    * @return whether the wrapped value is long
    */
-  boolean isLong() {
+  public boolean isLong() {
     return !isEmpty() && length.toInt() > MAX_SHORT_LEN;
   }
 

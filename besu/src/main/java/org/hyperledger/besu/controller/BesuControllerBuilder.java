@@ -62,7 +62,6 @@ import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.config.SubProtocolConfiguration;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
-import org.hyperledger.besu.ethereum.worldstate.MarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.Pruner;
 import org.hyperledger.besu.ethereum.worldstate.PruningConfiguration;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
@@ -242,7 +241,7 @@ public abstract class BesuControllerBuilder<C> {
       maybePruner =
           Optional.of(
               new Pruner(
-                  new MarkSweepPruner(
+                  merkleAwareProvider.createMarkSweepPruner(
                       protocolContext.getWorldStateArchive().getWorldStateStorage(),
                       blockchain,
                       storageProvider.createPruningStorage(),

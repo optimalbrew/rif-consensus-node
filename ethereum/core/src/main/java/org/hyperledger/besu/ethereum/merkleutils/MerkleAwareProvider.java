@@ -15,10 +15,14 @@
  */
 package org.hyperledger.besu.ethereum.merkleutils;
 
+import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.proof.WorldStateProofProvider;
+import org.hyperledger.besu.ethereum.worldstate.MarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.metrics.ObservableMetricsSystem;
+import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 
 /**
@@ -57,4 +61,19 @@ public interface MerkleAwareProvider {
    * @return {@link WorldStateProofProvider} instance
    */
   WorldStateProofProvider createWorldStateProofProvider(WorldStateStorage storage);
+
+  /**
+   * Create a new {@link MarkSweepPruner}.
+   *
+   * @param storage storage to prune
+   * @param blockchain blockchain providing mark roots
+   * @param pruningStorage storage used by the prunner to store marked nodes
+   * @param metricsSystem metrics system keeping track of pruner statistics
+   * @return {@link MarkSweepPruner} instance
+   */
+  MarkSweepPruner createMarkSweepPruner(
+      WorldStateStorage storage,
+      MutableBlockchain blockchain,
+      KeyValueStorage pruningStorage,
+      ObservableMetricsSystem metricsSystem);
 }

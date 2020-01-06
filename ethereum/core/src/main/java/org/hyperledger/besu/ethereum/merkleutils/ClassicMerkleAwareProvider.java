@@ -15,12 +15,17 @@
  */
 package org.hyperledger.besu.ethereum.merkleutils;
 
+import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.proof.ClassicWorldStateProofProvider;
 import org.hyperledger.besu.ethereum.proof.WorldStateProofProvider;
+import org.hyperledger.besu.ethereum.worldstate.ClassicMarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.MarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.metrics.ObservableMetricsSystem;
+import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 
 /**
@@ -47,6 +52,15 @@ public class ClassicMerkleAwareProvider implements MerkleAwareProvider {
   @Override
   public WorldStateProofProvider createWorldStateProofProvider(final WorldStateStorage storage) {
     return new ClassicWorldStateProofProvider(storage);
+  }
+
+  @Override
+  public MarkSweepPruner createMarkSweepPruner(
+      final WorldStateStorage storage,
+      final MutableBlockchain blockchain,
+      final KeyValueStorage pruningStorage,
+      final ObservableMetricsSystem metricsSystem) {
+    return new ClassicMarkSweepPruner(storage, blockchain, pruningStorage, metricsSystem);
   }
 
   @Override
