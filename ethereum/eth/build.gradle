@@ -32,6 +32,7 @@ dependencies {
   implementation project(':ethereum:p2p')
   implementation project(':ethereum:rlp')
   implementation project(':ethereum:trie')
+  implementation project(':ethereum:unitrie')
   implementation project(':ethereum:permissioning')
   implementation project(':metrics:core')
   implementation project(':services:kvstore')

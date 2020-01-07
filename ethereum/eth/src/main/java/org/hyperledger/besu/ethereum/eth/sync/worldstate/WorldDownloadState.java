@@ -14,16 +14,6 @@
  */
 package org.hyperledger.besu.ethereum.eth.sync.worldstate;
 
-import org.hyperledger.besu.ethereum.core.BlockHeader;
-import org.hyperledger.besu.ethereum.eth.manager.EthScheduler;
-import org.hyperledger.besu.ethereum.eth.manager.task.EthTask;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage.Updater;
-import org.hyperledger.besu.services.tasks.CachingTaskCollection;
-import org.hyperledger.besu.services.tasks.Task;
-import org.hyperledger.besu.util.ExceptionUtils;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.time.Clock;
 import java.util.Collections;
 import java.util.Set;
@@ -31,9 +21,18 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hyperledger.besu.ethereum.core.BlockHeader;
+import org.hyperledger.besu.ethereum.eth.manager.EthScheduler;
+import org.hyperledger.besu.ethereum.eth.manager.task.EthTask;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage.Updater;
+import org.hyperledger.besu.services.tasks.CachingTaskCollection;
+import org.hyperledger.besu.services.tasks.Task;
+import org.hyperledger.besu.util.ExceptionUtils;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 class WorldDownloadState {
   private static final Logger LOG = LogManager.getLogger();
@@ -53,11 +52,15 @@ class WorldDownloadState {
   private BytesValue rootNodeData;
   private WorldStateDownloadProcess worldStateDownloadProcess;
 
+  private final MerkleAwareProvider merkleAwareProvider;
+
   public WorldDownloadState(
+      final MerkleAwareProvider merkleAwareProvider,
       final CachingTaskCollection<NodeDataRequest> pendingRequests,
       final int maxRequestsWithoutProgress,
       final long minMillisBeforeStalling,
       final Clock clock) {
+    this.merkleAwareProvider = merkleAwareProvider;
     this.minMillisBeforeStalling = minMillisBeforeStalling;
     this.timestampOfLastProgress = clock.millis();
     this.downloadWasResumed = !pendingRequests.isEmpty();
@@ -185,7 +188,9 @@ class WorldDownloadState {
       final WorldStateStorage worldStateStorage, final BlockHeader header) {
     if (!internalFuture.isDone() && pendingRequests.allTasksCompleted()) {
       if (rootNodeData == null) {
-        enqueueRequest(NodeDataRequest.createAccountDataRequest(header.getStateRoot()));
+        enqueueRequest(
+            NodeDataRequestFactory.createNodeDataRequest(
+                merkleAwareProvider, header.getStateRoot()));
         return false;
       }
       final Updater updater = worldStateStorage.updater();
@@ -233,4 +238,5 @@ class WorldDownloadState {
         });
     return downloadFuture;
   }
+
 }

@@ -16,15 +16,14 @@ package org.hyperledger.besu.ethereum.eth.sync.worldstate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.ethereum.rlp.RLPInput;
 import org.hyperledger.besu.ethereum.rlp.RLPOutput;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.Optional;
-import java.util.stream.Stream;
 
 public abstract class NodeDataRequest {
   private final RequestType requestType;
@@ -49,6 +48,14 @@ public abstract class NodeDataRequest {
     return new CodeNodeDataRequest(hash);
   }
 
+  public static UniNodeDataRequest createUniNodeDataRequest(final Hash hash) {
+    return new UniNodeDataRequest(hash);
+  }
+
+  public static UniNodeValueDataRequest createUniNodeValueDataRequest(final Hash hash) {
+    return new UniNodeValueDataRequest(hash);
+  }
+
   public static BytesValue serialize(final NodeDataRequest request) {
     return RLP.encode(request::writeTo);
   }
@@ -70,6 +77,12 @@ public abstract class NodeDataRequest {
         break;
       case CODE:
         deserialized = createCodeRequest(hash);
+        break;
+      case UNINODE:
+        deserialized = createUniNodeDataRequest(hash);
+        break;
+      case UNINODE_VALUE:
+        deserialized = createUniNodeValueDataRequest(hash);
         break;
       default:
         throw new IllegalArgumentException(

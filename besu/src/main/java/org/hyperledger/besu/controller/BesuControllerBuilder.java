@@ -276,6 +276,7 @@ public abstract class BesuControllerBuilder<C> {
         new SyncState(blockchain, ethProtocolManager.ethContext().getEthPeers());
     final Synchronizer synchronizer =
         new DefaultSynchronizer<>(
+            merkleAwareProvider,
             syncConfig,
             protocolSchedule,
             protocolContext,
