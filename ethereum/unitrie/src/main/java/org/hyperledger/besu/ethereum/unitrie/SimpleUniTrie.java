@@ -18,6 +18,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
+import org.hyperledger.besu.ethereum.trie.Node;
 import org.hyperledger.besu.ethereum.trie.NodeUpdater;
 import org.hyperledger.besu.ethereum.trie.Proof;
 import org.hyperledger.besu.util.bytes.Bytes32;
@@ -127,7 +128,7 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
-  public void commit(final NodeUpdater nodeUpdater) {
+  public void commit(final NodeUpdater nodeUpdater, final NodeUpdater valueUpdater) {
     // Nothing to do here
   }
 

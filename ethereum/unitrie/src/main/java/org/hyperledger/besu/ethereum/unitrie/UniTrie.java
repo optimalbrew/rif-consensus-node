@@ -93,9 +93,10 @@ public interface UniTrie<K, V> {
   /**
    * Commits any pending changes to the underlying storage.
    *
-   * @param nodeUpdater used to store the node values
+   * @param nodeUpdater used to store the encoded nodes
+   * @param valueUpdater used to store the node values
    */
-  void commit(NodeUpdater nodeUpdater);
+  void commit(NodeUpdater nodeUpdater, NodeUpdater valueUpdater);
 
   /**
    * Visit all nodes in this unitrie.

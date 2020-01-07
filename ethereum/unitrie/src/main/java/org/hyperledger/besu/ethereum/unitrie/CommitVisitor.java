@@ -20,10 +20,12 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class CommitVisitor implements UniNodeVisitor {
 
-  private final DataUpdater updater;
+  private final DataUpdater nodeUpdater;
+  private final DataUpdater valueUpdater;
 
-  public CommitVisitor(final DataUpdater updater) {
-    this.updater = updater;
+  CommitVisitor(final DataUpdater nodeUpdater, final DataUpdater valueUpdater) {
+    this.nodeUpdater = nodeUpdater;
+    this.valueUpdater = valueUpdater;
   }
 
   @Override
@@ -51,7 +53,7 @@ public class CommitVisitor implements UniNodeVisitor {
       node.getValue()
           .flatMap(value -> node.getValueHash().map(hash -> new HashedValue(hash, value)))
           .ifPresentOrElse(
-              hashedValue -> updater.store(hashedValue.hash, hashedValue.value),
+              hashedValue -> valueUpdater.store(hashedValue.hash, hashedValue.value),
               () -> {
                 throw new IllegalStateException("Long valued node provides no hash or value");
               });
@@ -59,7 +61,7 @@ public class CommitVisitor implements UniNodeVisitor {
 
     // If node is not embedded in its parent it must be explicitly stored
     if (node.isReferencedByHash()) {
-      updater.store(node.getHash(), node.getEncoding());
+      nodeUpdater.store(node.getHash(), node.getEncoding());
     }
   }
 
@@ -68,7 +70,7 @@ public class CommitVisitor implements UniNodeVisitor {
     final Bytes32 hash;
     final BytesValue value;
 
-    public HashedValue(final Bytes32 hash, final BytesValue value) {
+    HashedValue(final Bytes32 hash, final BytesValue value) {
       this.hash = hash;
       this.value = value;
     }

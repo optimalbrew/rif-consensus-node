@@ -322,7 +322,7 @@ public abstract class AbstractUniTrieTest {
 
     MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
     List<UniNode> nodes =
-        new UniTrieNodeDecoder(storage).decodeNodes(valueWithProof.getProofRelatedNodes().get(1));
+        new UniTrieNodeDecoder(storage::get).decodeNodes(valueWithProof.getProofRelatedNodes().get(1));
 
     assertThat(new String(nodes.get(1).getValue().get().extractArray(), StandardCharsets.UTF_8))
         .isEqualTo(value2);
@@ -363,7 +363,7 @@ public abstract class AbstractUniTrieTest {
 
     MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
     List<UniNode> nodes =
-        new UniTrieNodeDecoder(storage).decodeNodes(valueWithProof.getProofRelatedNodes().get(0));
+        new UniTrieNodeDecoder(storage::get).decodeNodes(valueWithProof.getProofRelatedNodes().get(0));
 
     assertThat(nodes.size()).isEqualTo(1);
 

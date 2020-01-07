@@ -50,7 +50,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
   public void shouldDecodeCorrectly() {
     trie.put(BytesValue.fromHexString("0x0400"), "a");
     trie.put(BytesValue.fromHexString("0x0800"), "b");
-    trie.commit(merkleStorage::put);
+    trie.commit(merkleStorage::put, merkleStorage::put);
 
     final Bytes32 rootHash = trie.getRootHash();
     final StoredUniTrie<BytesValue, String> newTrie =
@@ -62,7 +62,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
   public void shouldDecodeCorrectlyAfterChanges() {
     trie.put(BytesValue.fromHexString("0x0400"), "a");
     trie.put(BytesValue.fromHexString("0x0800"), "b");
-    trie.commit(merkleStorage::put);
+    trie.commit(merkleStorage::put, merkleStorage::put);
 
     final Bytes32 rootHash = trie.getRootHash();
     final StoredUniTrie<BytesValue, String> newTrie =
@@ -70,7 +70,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
 
     newTrie.put(BytesValue.fromHexString("0x0800"), "c");
     final Bytes32 newHash = newTrie.getRootHash();
-    newTrie.commit(merkleStorage::put);
+    newTrie.commit(merkleStorage::put, merkleStorage::put);
 
     final StoredUniTrie<BytesValue, String> modifiedTrie =
         new StoredUniTrie<>(merkleStorage::get, newHash, valueSerializer, valueDeserializer);
@@ -87,19 +87,19 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
     final String value1 = "value1";
     trie.put(key1, value1);
     final Bytes32 hash1 = trie.getRootHash();
-    trie.commit(merkleStorage::put);
+    trie.commit(merkleStorage::put, merkleStorage::put);
 
     final String value2 = "value2";
     trie.put(key2, value2);
     final String value3 = "value3";
     trie.put(key3, value3);
     final Bytes32 hash2 = trie.getRootHash();
-    trie.commit(merkleStorage::put);
+    trie.commit(merkleStorage::put, merkleStorage::put);
 
     final String value4 = "value4";
     trie.put(key1, value4);
     final Bytes32 hash3 = trie.getRootHash();
-    trie.commit(merkleStorage::put);
+    trie.commit(merkleStorage::put, merkleStorage::put);
 
     // Check the root hashes for 3 tries are all distinct
     assertThat(hash1).isNotEqualTo(hash2);
@@ -148,7 +148,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
     for (int i = 0; i < 1000; i++) {
       trie.put(toKey(i), toValue(i));
     }
-    trie.commit(merkleStorage::put);
+    trie.commit(merkleStorage::put, merkleStorage::put);
 
     UniTrie<BytesValue, String> loadedTrie =
         new StoredUniTrie<>(

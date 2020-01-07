@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.storage.keyvalue;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage.Updater;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorageTransaction;
 import org.hyperledger.besu.util.Subscribers;
@@ -148,6 +149,13 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
         // Don't save empty nodes
         return this;
       }
+      addedNodes.add(nodeHash);
+      transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
+      return this;
+    }
+
+    @Override
+    public WorldStateStorage.Updater rawPut(final Bytes32 nodeHash, final BytesValue node) {
       addedNodes.add(nodeHash);
       transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
       return this;

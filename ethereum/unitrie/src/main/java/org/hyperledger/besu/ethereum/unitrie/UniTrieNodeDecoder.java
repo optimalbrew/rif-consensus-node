@@ -17,10 +17,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import org.hyperledger.besu.ethereum.trie.MerkleStorage;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
+import com.google.common.collect.Streams;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -30,15 +27,15 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import com.google.common.collect.Streams;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class UniTrieNodeDecoder {
 
   private final StoredUniNodeFactory nodeFactory;
 
-  public UniTrieNodeDecoder(final MerkleStorage storage) {
-    nodeFactory = new StoredUniNodeFactory(storage::get);
+  public UniTrieNodeDecoder(final DataLoader loader) {
+    nodeFactory = new StoredUniNodeFactory(loader);
   }
 
   /**

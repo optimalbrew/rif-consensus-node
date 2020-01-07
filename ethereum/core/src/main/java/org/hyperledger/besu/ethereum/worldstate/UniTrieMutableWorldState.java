@@ -94,7 +94,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
   @Override
   public void persist() {
     final WorldStateStorage.Updater stateUpdater = worldStateStorage.updater();
-    trie.commit(stateUpdater::putAccountStateTrieNode);
+    trie.commit(stateUpdater::putAccountStateTrieNode, stateUpdater::rawPut);
     updatedAccountCode.clear();
     stateUpdater.commit();
   }

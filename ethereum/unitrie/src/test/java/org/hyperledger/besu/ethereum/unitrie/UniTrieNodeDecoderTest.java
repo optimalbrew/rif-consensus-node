@@ -25,7 +25,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
-import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
@@ -52,7 +51,7 @@ public class UniTrieNodeDecoderTest {
         BytesValue.fromHexString("0x" + Strings.repeat("bad", 50)));
 
     // Save nodes to storage
-    trie.commit(storage::put);
+    trie.commit(storage::put, storage::put);
 
     // Get and flatten root node
     final BytesValue encodedRoot =
@@ -63,7 +62,7 @@ public class UniTrieNodeDecoderTest {
                   throw new IllegalStateException("Unable to decode trie root");
                 });
 
-    UniTrieNodeDecoder decoder = new UniTrieNodeDecoder(storage);
+    UniTrieNodeDecoder decoder = new UniTrieNodeDecoder(storage::get);
 
     final List<UniNode> nodes = decoder.decodeNodes(encodedRoot);
     assertThat(nodes.size()).isEqualTo(3);
@@ -101,7 +100,7 @@ public class UniTrieNodeDecoderTest {
         BytesValue.fromHexString("0x" + Strings.repeat("bad", 50)));
 
     // Save nodes to storage
-    trie.commit(storage::put);
+    trie.commit(storage::put, storage::put);
 
     // Decode 1st level (just root)
     final List<UniNode> depth0Nodes =
@@ -166,7 +165,7 @@ public class UniTrieNodeDecoderTest {
       g.nextBytes(val);
       trie.put(BytesValue.wrap(key), BytesValue.wrap(val));
     }
-    trie.commit(fullStorage::put);
+    trie.commit(fullStorage::put, fullStorage::put);
 
     // Get root node
     UniNode rootNode =
@@ -199,7 +198,7 @@ public class UniTrieNodeDecoderTest {
     UniTrie<BytesValue, BytesValue> trie =
         new StoredUniTrie<>(storage::get, Function.identity(), Function.identity());
     trie.put(BytesValue.fromHexString("0x100000"), BytesValue.of(1));
-    trie.commit(storage::put);
+    trie.commit(storage::put, storage::put);
 
     List<UniNode> result =
         UniTrieNodeDecoder.breadthFirstDecoder(storage::get, trie.getRootHash())

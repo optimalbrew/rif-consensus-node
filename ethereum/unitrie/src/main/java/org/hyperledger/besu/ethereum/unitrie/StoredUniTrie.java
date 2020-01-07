@@ -113,8 +113,8 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
-  public void commit(final NodeUpdater nodeUpdater) {
-    final CommitVisitor commitVisitor = new CommitVisitor(nodeUpdater::store);
+  public void commit(final NodeUpdater nodeUpdater, final NodeUpdater valueUpdater) {
+    final CommitVisitor commitVisitor = new CommitVisitor(nodeUpdater::store, valueUpdater::store);
     root.accept(commitVisitor);
     // Make sure root node was stored
     if (root.isDirty() && !root.isReferencedByHash()) {

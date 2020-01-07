@@ -68,7 +68,7 @@ public class UniTrieWorldStateProofProviderTest {
   @Test
   public void getProofWhenWorldStateAvailable() {
     final UniTrie<BytesValue, BytesValue> trie = unitrie();
-    prepareForStorage(trie, address);
+    Hash storageRoot = prepareForStorage(trie, address);
 
     // Add some storage values
     writeStorageValue(trie, address, UInt256.of(1L), UInt256.of(2L));
@@ -76,17 +76,17 @@ public class UniTrieWorldStateProofProviderTest {
     writeStorageValue(trie, address, UInt256.of(3L), UInt256.of(6L));
 
     WorldStateStorage.Updater updater = worldStateStorage.updater();
-    trie.commit(updater::putAccountStateTrieNode);
+    trie.commit(updater::putAccountStateTrieNode, updater::rawPut);
     updater.commit();
 
     // Add account
     final Hash codeHash = Hash.hash(BytesValue.fromHexString("0x1122"));
     final StateTrieAccountValue accountValue =
-        new StateTrieAccountValue(1L, Wei.of(2L), Hash.ZERO, codeHash, 0);
+        new StateTrieAccountValue(1L, Wei.of(2L), storageRoot, codeHash, 0);
     trie.put(keyMapper.getAccountKey(address), RLP.encode(accountValue::writeTo));
 
     updater = worldStateStorage.updater();
-    trie.commit(updater::putAccountStateTrieNode);
+    trie.commit(updater::putAccountStateTrieNode, updater::rawPut);
     updater.commit();
 
     final List<UInt256> storageKeys = Arrays.asList(UInt256.of(1L), UInt256.of(3L), UInt256.of(6L));
