@@ -76,4 +76,13 @@ public interface MerkleAwareProvider {
       MutableBlockchain blockchain,
       KeyValueStorage pruningStorage,
       ObservableMetricsSystem metricsSystem);
+
+  /**
+   * Accept a {@link MerkleAwareProviderVisitor}.
+   *
+   * @param visitor  visitor to accept
+   * @param <T> type of result returned by visitor
+   * @return result returned by visitor
+   */
+  <T> T accept(MerkleAwareProviderVisitor<T> visitor);
 }

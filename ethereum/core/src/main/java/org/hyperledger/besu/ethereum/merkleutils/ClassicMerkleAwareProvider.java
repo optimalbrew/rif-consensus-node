@@ -64,6 +64,11 @@ public class ClassicMerkleAwareProvider implements MerkleAwareProvider {
   }
 
   @Override
+  public <T> T accept(final MerkleAwareProviderVisitor<T> visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
   public String toString() {
     return getClass().getSimpleName();
   }
