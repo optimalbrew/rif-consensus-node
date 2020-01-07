@@ -19,10 +19,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.BlockHeaderTestFixture;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.eth.manager.task.EthTask;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
@@ -30,15 +36,24 @@ import org.hyperledger.besu.services.tasks.CachingTaskCollection;
 import org.hyperledger.besu.services.tasks.InMemoryTaskQueue;
 import org.hyperledger.besu.testutil.TestClock;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class WorldDownloadStateTest {
+
+  @Parameters(name="use unitrie={0}")
+  public static Object[] data() {
+    // Use or not UniNodeDataRequests as opposed to classic NodeDataRequests
+    return new Object[]{false, true};
+  }
+
+  @Parameter
+  public boolean useClassicalRequest;
 
   private static final BytesValue ROOT_NODE_DATA = BytesValue.of(1, 2, 3, 4);
   private static final Hash ROOT_NODE_HASH = Hash.hash(ROOT_NODE_DATA);
@@ -56,9 +71,17 @@ public class WorldDownloadStateTest {
       mock(WorldStateDownloadProcess.class);
 
   private final TestClock clock = new TestClock();
+
+  private final MerkleAwareProvider merkleAwareProvider =
+      useClassicalRequest ? new ClassicMerkleAwareProvider() : new UniTrieMerkleAwareProvider();
+
   private final WorldDownloadState downloadState =
       new WorldDownloadState(
-          pendingRequests, MAX_REQUESTS_WITHOUT_PROGRESS, MIN_MILLIS_BEFORE_STALLING, clock);
+          merkleAwareProvider,
+          pendingRequests,
+          MAX_REQUESTS_WITHOUT_PROGRESS,
+          MIN_MILLIS_BEFORE_STALLING,
+          clock);
 
   private final CompletableFuture<Void> future = downloadState.getDownloadFuture();
 
@@ -92,7 +115,7 @@ public class WorldDownloadStateTest {
 
   @Test
   public void shouldNotCompleteWhenThereArePendingTasks() {
-    pendingRequests.add(NodeDataRequest.createAccountDataRequest(Hash.EMPTY_TRIE_HASH));
+    pendingRequests.add(stubNodeDataRequest());
 
     downloadState.checkCompletion(worldStateStorage, header);
 
@@ -108,8 +131,8 @@ public class WorldDownloadStateTest {
     downloadState.addOutstandingTask(outstandingTask1);
     downloadState.addOutstandingTask(outstandingTask2);
 
-    pendingRequests.add(NodeDataRequest.createAccountDataRequest(Hash.EMPTY_TRIE_HASH));
-    pendingRequests.add(NodeDataRequest.createAccountDataRequest(Hash.EMPTY));
+    pendingRequests.add(stubNodeDataRequest());
+    pendingRequests.add(stubNodeDataRequest());
     downloadState.setWorldStateDownloadProcess(worldStateDownloadProcess);
 
     future.cancel(true);
@@ -182,9 +205,8 @@ public class WorldDownloadStateTest {
   public void shouldNotAddRequestsAfterDownloadIsCompleted() {
     downloadState.checkCompletion(worldStateStorage, header);
 
-    downloadState.enqueueRequests(
-        Stream.of(NodeDataRequest.createAccountDataRequest(Hash.EMPTY_TRIE_HASH)));
-    downloadState.enqueueRequest(NodeDataRequest.createAccountDataRequest(Hash.EMPTY_TRIE_HASH));
+    downloadState.enqueueRequests(Stream.of(stubNodeDataRequest()));
+    downloadState.enqueueRequest(stubNodeDataRequest());
 
     assertThat(pendingRequests.isEmpty()).isTrue();
   }
@@ -195,5 +217,11 @@ public class WorldDownloadStateTest {
     assertThatThrownBy(future::get)
         .isInstanceOf(ExecutionException.class)
         .hasRootCauseInstanceOf(StalledDownloadException.class);
+  }
+
+  private NodeDataRequest stubNodeDataRequest() {
+    return useClassicalRequest
+        ? NodeDataRequest.createAccountDataRequest(Hash.EMPTY_TRIE_HASH)
+        : NodeDataRequest.createUniNodeDataRequest(Hash.EMPTY_TRIE_HASH);
   }
 }

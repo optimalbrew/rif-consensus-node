@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.Optional;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.BlockHeaderTestFixture;
 import org.hyperledger.besu.ethereum.core.Hash;
@@ -27,12 +29,13 @@ import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.services.tasks.Task;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.List;
-import java.util.Optional;
-
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class PersistDataStepTest {
 
   private final WorldStateStorage worldStateStorage =
@@ -44,6 +47,15 @@ public class PersistDataStepTest {
       new BlockHeaderTestFixture().stateRoot(Hash.hash(rootNodeData)).buildHeader();
 
   private final PersistDataStep persistDataStep = new PersistDataStep(worldStateStorage);
+
+  @Parameters(name="use unitrie={0}")
+  public static Object[] data() {
+    // Use or not UniNodeDataRequests as opposed to classic NodeDataRequests
+    return new Object[]{false, true};
+  }
+
+  @Parameter
+  public boolean useClassicalRequest;
 
   @Test
   public void shouldPersistDataWhenPresent() {
@@ -103,7 +115,10 @@ public class PersistDataStepTest {
 
   private StubTask createTaskWithoutData(final BytesValue data) {
     final Hash hash = Hash.hash(data);
-    final AccountTrieNodeDataRequest request = NodeDataRequest.createAccountDataRequest(hash);
+    final NodeDataRequest request =
+        useClassicalRequest
+            ? NodeDataRequest.createAccountDataRequest(hash)
+            : NodeDataRequest.createUniNodeDataRequest(hash);
     return new StubTask(request);
   }
 
