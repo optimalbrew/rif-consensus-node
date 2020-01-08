@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.worldstate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import org.hyperledger.besu.ethereum.core.Account;
@@ -37,6 +38,7 @@ import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+import org.hyperledger.besu.util.uint.UInt256Bytes;
 import org.junit.Test;
 
 public class UniTrieMutableWorldStateTest {
@@ -579,6 +581,24 @@ public class UniTrieMutableWorldStateTest {
 
     worldState.persist();
     verifyStorage(worldState.get(ADDRESS), finalEntries);
+  }
+
+  @Test
+  public void codeLength() {
+    final BytesValue code =
+        BytesValue.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
+
+    final MutableWorldState worldState = createEmpty();
+    WorldUpdater updater = worldState.updater();
+
+    MutableAccount account = updater.createAccount(ADDRESS).getMutable();
+    account.setCode(code);
+    updater.commit();
+
+    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    worldState.persist();
+    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    System.out.println(UInt256Bytes.of(code.size()));
   }
 
   private void verifyStoragePrefixRootIsPresent(

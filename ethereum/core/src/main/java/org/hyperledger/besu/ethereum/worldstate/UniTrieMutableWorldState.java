@@ -42,6 +42,7 @@ import org.hyperledger.besu.ethereum.unitrie.UniTrieKeyMapper;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+import org.hyperledger.besu.util.uint.UInt256Bytes;
 
 /**
  * Mutable world state witnessed by Unitries.
@@ -198,7 +199,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     @Override
     public BytesValue getCode() {
-      // Attempt to read from update code cache first
+      // Attempt to read from updated code cache first
       final BytesValue updatedCode = updatedAccountCode.get(address);
       if (updatedCode != null) {
         return updatedCode;
@@ -225,6 +226,22 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     @Override
     public Hash getCodeHash() {
       return accountValue.getCodeHash();
+    }
+
+    @Override
+    public Bytes32 getCodeSize() {
+      final BytesValue updatedCode = updatedAccountCode.get(address);
+      if (updatedCode != null) {
+        return UInt256Bytes.of(updatedCode.size());
+      }
+
+      final Hash codeHash = getCodeHash();
+      if (codeHash.equals(Hash.EMPTY)) {
+        return Bytes32.ZERO;
+      }
+
+      BytesValue mappedKey = keyMapper.getAccountCodeKey(address);
+      return trie.getValueLength(mappedKey).map(UInt256Bytes::of).orElse(Bytes32.ZERO);
     }
 
     @Override

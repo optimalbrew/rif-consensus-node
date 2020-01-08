@@ -60,6 +60,14 @@ public interface UniTrie<K, V> {
   Proof<V> getValueWithProof(K key);
 
   /**
+   * Get the length in bytes of the value at the given key.
+   *
+   * @param key  The key for the value
+   * @return optional holding the length of the value, empty if no value for the given key
+   */
+  Optional<Integer> getValueLength(final K key);
+
+  /**
    * Updates the value mapped to the specified key, creating the mapping if one does not already
    * exist.
    *

@@ -17,7 +17,9 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
+import com.google.common.base.Strings;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
@@ -370,5 +372,39 @@ public abstract class AbstractUniTrieTest {
     final String nodeValue =
         new String(nodes.get(0).getValue().get().extractArray(), StandardCharsets.UTF_8);
     assertThat(nodeValue).isEqualTo(value1);
+  }
+
+  @Test
+  public void getValueLength_nonExistentValue() {
+    final BytesValue key1 = BytesValue.of(1, 5, 9);
+    final String value1 = "value1";
+    trie.put(key1, value1);
+
+    final BytesValue key2 = BytesValue.of(1, 5, 2);
+    final String value2 = "value2";
+    trie.put(key2, value2);
+
+    final BytesValue key3 = BytesValue.of(1, 9, 1);
+    final String value3 = "value3";
+    trie.put(key3, value3);
+
+    assertThat(trie.getValueLength(BytesValue.of(1, 2, 3, 4, 5, 5, 6))).isEmpty();
+  }
+
+  @Test
+  public void getValueLength() {
+    final BytesValue key1 = BytesValue.of(1, 5, 9);
+    final String value1 = "value1";
+    trie.put(key1, value1);
+
+    final BytesValue key2 = BytesValue.of(1, 5, 2);
+    final String value2 = Strings.repeat("x", 1021);
+    trie.put(key2, value2);
+
+    final BytesValue key3 = BytesValue.of(1, 9, 1);
+    final String value3 = "value3";
+    trie.put(key3, value3);
+
+    assertThat(trie.getValueLength(key2)).contains(1021);
   }
 }

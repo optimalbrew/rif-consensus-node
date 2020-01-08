@@ -88,6 +88,11 @@ public interface WorldState extends WorldView {
     }
 
     @Override
+    public Bytes32 getCodeSize() {
+      return accountState.getCodeSize();
+    }
+
+    @Override
     public int getVersion() {
       return accountState.getVersion();
     }

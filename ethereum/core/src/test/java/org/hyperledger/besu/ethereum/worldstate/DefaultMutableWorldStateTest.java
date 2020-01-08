@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.worldstate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryWorldState;
 
+import com.google.common.base.Strings;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -43,6 +44,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hyperledger.besu.util.uint.UInt256Bytes;
 import org.junit.Test;
 
 // TODO: make that an abstract mutable world state test, and create sub-class for all world state
@@ -670,4 +672,23 @@ public class DefaultMutableWorldStateTest {
     worldState.persist();
     assertThat(worldState.get(ADDRESS).storageEntriesFrom(Hash.ZERO, 10)).isEqualTo(finalEntries);
   }
+
+  @Test
+  public void codeLength() {
+    final BytesValue code =
+        BytesValue.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
+
+    final MutableWorldState worldState = createEmpty();
+    WorldUpdater updater = worldState.updater();
+
+    MutableAccount account = updater.createAccount(ADDRESS).getMutable();
+    account.setCode(code);
+    updater.commit();
+
+    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    worldState.persist();
+    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    System.out.println(UInt256Bytes.of(code.size()));
+  }
+
 }

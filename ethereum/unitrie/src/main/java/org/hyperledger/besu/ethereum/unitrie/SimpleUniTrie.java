@@ -17,18 +17,17 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
-import org.hyperledger.besu.ethereum.trie.Node;
-import org.hyperledger.besu.ethereum.trie.NodeUpdater;
-import org.hyperledger.besu.ethereum.trie.Proof;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.hyperledger.besu.ethereum.trie.NodeUpdater;
+import org.hyperledger.besu.ethereum.trie.Proof;
+import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Simple in-memory Unitrie.
@@ -63,17 +62,6 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
     this.root = NullUniNode.instance();
   }
 
-  // For creating a sub unitrie only
-  private SimpleUniTrie(
-      final UniNode root,
-      final Function<V, BytesValue> valueSerializer,
-      final Function<BytesValue, V> valueDeserializer) {
-
-    this.root = root;
-    this.valueSerializer = valueSerializer;
-    this.valueDeserializer = valueDeserializer;
-  }
-
   @Override
   public Optional<V> get(final K key) {
     checkNotNull(key);
@@ -95,6 +83,15 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
     final List<BytesValue> proof =
         proofVisitor.getProof().stream().map(UniNode::getEncoding).collect(Collectors.toList());
     return new Proof<>(value, proof);
+  }
+
+  @Override
+  public Optional<Integer> getValueLength(final K key) {
+    checkNotNull(key);
+    return root.accept(getVisitor, bytesToPath(key))
+        .getValueWrapper()
+        .getLength()
+        .map(UInt24::toInt);
   }
 
   @Override

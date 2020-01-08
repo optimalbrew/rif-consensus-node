@@ -78,6 +78,11 @@ public class DefaultEvmAccount implements EvmAccount {
   }
 
   @Override
+  public Bytes32 getCodeSize() {
+    return mutableAccount.getCodeSize();
+  }
+
+  @Override
   public int getVersion() {
     return mutableAccount.getVersion();
   }

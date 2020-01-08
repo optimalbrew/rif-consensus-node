@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
+import org.hyperledger.besu.util.uint.UInt256Bytes;
 
 /**
  * An abstract implementation of a {@link WorldUpdater} that buffers update over the {@link
@@ -284,6 +285,16 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     }
 
     @Override
+    public Bytes32 getCodeSize() {
+      if (updatedCode == null) {
+        // Note that we set code for new account, so it's only null if account isn't.
+        return account.getCodeSize();
+      } else {
+        return UInt256Bytes.of(updatedCode.size());
+      }
+    }
+
+    @Override
     public boolean hasCode() {
       // Note that we set code for new account, so it's only null if account isn't.
       return updatedCode == null ? account.hasCode() : !updatedCode.isEmpty();
@@ -292,6 +303,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     @Override
     public void setCode(final BytesValue code) {
       this.updatedCode = code;
+      this.updatedCodeHash = null;
     }
 
     @Override

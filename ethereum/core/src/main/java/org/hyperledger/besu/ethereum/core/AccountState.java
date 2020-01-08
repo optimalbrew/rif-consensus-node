@@ -79,6 +79,13 @@ public interface AccountState {
   Hash getCodeHash();
 
   /**
+   * Get size in bytes of the EVM bytecode associated with this account.
+   *
+   * @return  code size in bytes, or zero if account has no code.
+   */
+  Bytes32 getCodeSize();
+
+  /**
    * Whether the account has (non empty) EVM bytecode associated to it.
    *
    * <p>This is functionally equivalent to {@code !code().isEmpty()}, though could be implemented

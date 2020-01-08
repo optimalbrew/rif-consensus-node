@@ -14,6 +14,16 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountState;
@@ -32,17 +42,7 @@ import org.hyperledger.besu.ethereum.trie.StoredMerklePatriciaTrie;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.stream.Stream;
+import org.hyperledger.besu.util.uint.UInt256Bytes;
 
 public class DefaultMutableWorldState implements MutableWorldState {
 
@@ -281,6 +281,23 @@ public class DefaultMutableWorldState implements MutableWorldState {
     @Override
     public Hash getCodeHash() {
       return accountValue.getCodeHash();
+    }
+
+    @Override
+    public Bytes32 getCodeSize() {
+      final BytesValue updatedCode = updatedAccountCode.get(address);
+      if (updatedCode != null) {
+        return UInt256Bytes.of(updatedCode.size());
+      }
+      // No code is common, save the KV-store lookup.
+      final Hash codeHash = getCodeHash();
+      if (codeHash.equals(Hash.EMPTY)) {
+        return Bytes32.ZERO;
+      }
+      return worldStateStorage
+          .getCode(codeHash)
+          .map(code -> UInt256Bytes.of(code.size()))
+          .orElse(Bytes32.ZERO);
     }
 
     @Override

@@ -20,6 +20,8 @@ import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduleBasedBlockHeaderFunctions;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateStorage;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
@@ -27,6 +29,7 @@ import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStoragePrefixedKey
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStatePreimageKeyValueStorage;
 import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
+import org.hyperledger.besu.ethereum.worldstate.UniTrieMutableWorldState;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
@@ -52,13 +55,26 @@ public class InMemoryStorageProvider implements StorageProvider {
   public static WorldStateArchive createInMemoryWorldStateArchive() {
     return new WorldStateArchive(
         new WorldStateKeyValueStorage(new InMemoryKeyValueStorage()),
-        new WorldStatePreimageKeyValueStorage(new InMemoryKeyValueStorage()));
+        new WorldStatePreimageKeyValueStorage(new InMemoryKeyValueStorage()),
+        new ClassicMerkleAwareProvider());
+  }
+
+  public static WorldStateArchive createInMemoryUniTrieWorldStateArchive() {
+    return new WorldStateArchive(
+        new WorldStateKeyValueStorage(new InMemoryKeyValueStorage()),
+        null, // Not needed for UniTrie-based world archive
+        new UniTrieMerkleAwareProvider());
   }
 
   public static MutableWorldState createInMemoryWorldState() {
     final InMemoryStorageProvider provider = new InMemoryStorageProvider();
     return new DefaultMutableWorldState(
         provider.createWorldStateStorage(), provider.createWorldStatePreimageStorage());
+  }
+
+  public static MutableWorldState createInMemoryUniTrieWorldState() {
+    final InMemoryStorageProvider provider = new InMemoryStorageProvider();
+    return new UniTrieMutableWorldState(provider.createWorldStateStorage());
   }
 
   @Override
