@@ -45,7 +45,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-@SuppressWarnings("unused")
 @RunWith(Parameterized.class)
 public class ExtCodeSizeOperationTest {
 
