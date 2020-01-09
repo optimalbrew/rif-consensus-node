@@ -17,6 +17,23 @@ package org.hyperledger.besu.tests.acceptance.dsl.node;
 import static org.hyperledger.besu.cli.config.NetworkName.DEV;
 import static org.hyperledger.besu.controller.BesuController.DATABASE_PATH;
 
+import io.vertx.core.Vertx;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hyperledger.besu.Runner;
 import org.hyperledger.besu.RunnerBuilder;
 import org.hyperledger.besu.cli.config.EthNetworkConfig;
@@ -29,6 +46,9 @@ import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
 import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.permissioning.PermissioningConfiguration;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProvider;
@@ -45,27 +65,12 @@ import org.hyperledger.besu.services.BesuEventsImpl;
 import org.hyperledger.besu.services.BesuPluginContextImpl;
 import org.hyperledger.besu.services.PicoCLIOptionsImpl;
 import org.hyperledger.besu.services.StorageServiceImpl;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.Clock;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import io.vertx.core.Vertx;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 
 public class ThreadBesuNodeRunner implements BesuNodeRunner {
+
+  private final Pattern storagePattern = Pattern.compile("--merkle-storage-mode=(.+)");
 
   private final Logger LOG = LogManager.getLogger();
   private final Map<String, Runner> besuRunners = new HashMap<>();
@@ -77,7 +82,12 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
       final BesuNode node,
       final StorageServiceImpl storageService,
       final BesuConfiguration commonPluginConfiguration) {
+
+    final List<String> cleanExtraCLIOptions =
+        cleanupCLIOptions(node.getConfiguration().getExtraCLIOptions());
+
     final CommandLine commandLine = new CommandLine(CommandSpec.create());
+
     final BesuPluginContextImpl besuPluginContext = new BesuPluginContextImpl();
     besuPluginContext.addService(StorageService.class, storageService);
     besuPluginContext.addService(PicoCLIOptions.class, new PicoCLIOptionsImpl(commandLine));
@@ -91,7 +101,7 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
     System.setProperty("besu.plugins.dir", pluginsPath.toString());
     besuPluginContext.registerPlugins(pluginsPath);
 
-    commandLine.parseArgs(node.getConfiguration().getExtraCLIOptions().toArray(new String[0]));
+    commandLine.parseArgs(cleanExtraCLIOptions.toArray(new String[0]));
 
     besuPluginContext.addService(BesuConfiguration.class, commonPluginConfiguration);
 
@@ -103,6 +113,9 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
 
   @Override
   public void startNode(final BesuNode node) {
+    final MerkleAwareProvider merkleAwareProvider =
+        merkleAwareProvider(node.getConfiguration().getExtraCLIOptions());
+
     if (nodeExecutor == null || nodeExecutor.isShutdown()) {
       nodeExecutor = Executors.newCachedThreadPool();
     }
@@ -140,7 +153,7 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
     try {
       besuController =
           builder
-              .merkleAwareProvider(new ClassicMerkleAwareProvider())
+              .merkleAwareProvider(merkleAwareProvider)
               .synchronizerConfiguration(new SynchronizerConfiguration.Builder().build())
               .dataDirectory(node.homeDirectory())
               .miningParameters(node.getMiningParameters())
@@ -246,5 +259,31 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
         throw new RuntimeException("Error shutting down node " + name, e);
       }
     }
+  }
+
+  private List<String> cleanupCLIOptions(final List<String> extraCLIOptions) {
+    return extraCLIOptions.stream()
+        .filter(s -> !s.contains("--merkle-storage-mode"))
+        .collect(Collectors.toList());
+  }
+
+  private MerkleAwareProvider merkleAwareProvider(final List<String> extraCLIOptions) {
+    return extraCLIOptions.stream()
+        .filter(s -> s.contains("--merkle-storage-mode"))
+        .findFirst()
+        .map(this::fromCLIOption)
+        .orElseGet(ClassicMerkleAwareProvider::new);
+  }
+
+  private MerkleAwareProvider fromCLIOption(final String cliOption) {
+    MerkleAwareProvider merkleAwareProvider = new ClassicMerkleAwareProvider();
+    Matcher m = storagePattern.matcher(cliOption);
+    if (m.matches()) {
+      MerkleStorageMode merkleStorageMode = MerkleStorageMode.fromString(m.group(1));
+      if (merkleStorageMode == MerkleStorageMode.UNITRIE) {
+        merkleAwareProvider = new UniTrieMerkleAwareProvider();
+      }
+    }
+    return merkleAwareProvider;
   }
 }
