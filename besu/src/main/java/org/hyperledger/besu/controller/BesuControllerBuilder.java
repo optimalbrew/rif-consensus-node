@@ -218,6 +218,8 @@ public abstract class BesuControllerBuilder<C> {
 
     prepForBuild();
 
+    LOG.info("Merkle aware provider is: {}", merkleAwareProvider);
+
     final ProtocolSchedule<C> protocolSchedule = createProtocolSchedule();
     final GenesisState genesisState =
         GenesisState.fromConfig(genesisConfig, protocolSchedule, merkleAwareProvider);
