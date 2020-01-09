@@ -598,7 +598,6 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
     worldState.persist();
     assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
-    System.out.println(UInt256Bytes.of(code.size()));
   }
 
   private void verifyStoragePrefixRootIsPresent(
