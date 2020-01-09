@@ -17,44 +17,51 @@ package org.hyperledger.besu.tests.acceptance.dsl.node.configuration;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
-import org.hyperledger.besu.ethereum.api.jsonrpc.JsonRpcConfiguration;
-import org.hyperledger.besu.ethereum.api.jsonrpc.RpcApi;
-import org.hyperledger.besu.ethereum.api.jsonrpc.websocket.WebSocketConfiguration;
-import org.hyperledger.besu.tests.acceptance.dsl.node.BesuNode;
-import org.hyperledger.besu.tests.acceptance.dsl.node.Node;
-import org.hyperledger.besu.tests.acceptance.dsl.node.RunnableNode;
-import org.hyperledger.besu.tests.acceptance.dsl.node.configuration.genesis.GenesisConfigurationFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
+import org.hyperledger.besu.ethereum.api.jsonrpc.JsonRpcConfiguration;
+import org.hyperledger.besu.ethereum.api.jsonrpc.RpcApi;
+import org.hyperledger.besu.ethereum.api.jsonrpc.websocket.WebSocketConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
+import org.hyperledger.besu.tests.acceptance.dsl.node.BesuNode;
+import org.hyperledger.besu.tests.acceptance.dsl.node.Node;
+import org.hyperledger.besu.tests.acceptance.dsl.node.RunnableNode;
+import org.hyperledger.besu.tests.acceptance.dsl.node.configuration.genesis.GenesisConfigurationFactory;
 
 public class BesuNodeFactory {
 
   private final GenesisConfigurationFactory genesis = new GenesisConfigurationFactory();
   private final NodeConfigurationFactory node = new NodeConfigurationFactory();
 
+  private final MerkleStorageMode merkleStorageMode;
+
+  public BesuNodeFactory(final MerkleStorageMode merkleStorageMode) {
+    this.merkleStorageMode = merkleStorageMode;
+  }
+
   public BesuNode create(final BesuNodeConfiguration config) throws IOException {
     return new BesuNode(
-        config.getName(),
-        config.getMiningParameters(),
-        config.getJsonRpcConfiguration(),
-        config.getWebSocketConfiguration(),
-        config.getMetricsConfiguration(),
-        config.getPermissioningConfiguration(),
-        config.getKeyFilePath(),
-        config.isDevMode(),
-        config.getGenesisConfigProvider(),
-        config.isP2pEnabled(),
-        config.getNetworkingConfiguration(),
-        config.isDiscoveryEnabled(),
-        config.isBootnodeEligible(),
-        config.isRevertReasonEnabled(),
-        config.getPlugins(),
-        config.getExtraCLIOptions(),
-        config.getStaticNodes());
+            config.getName(),
+            config.getMiningParameters(),
+            config.getJsonRpcConfiguration(),
+            config.getWebSocketConfiguration(),
+            config.getMetricsConfiguration(),
+            config.getPermissioningConfiguration(),
+            config.getKeyFilePath(),
+            config.isDevMode(),
+            config.getGenesisConfigProvider(),
+            config.isP2pEnabled(),
+            config.getNetworkingConfiguration(),
+            config.isDiscoveryEnabled(),
+            config.isBootnodeEligible(),
+            config.isRevertReasonEnabled(),
+            config.getPlugins(),
+            config.getExtraCLIOptions(),
+            config.getStaticNodes())
+        .withMerkleStorageMode(merkleStorageMode);
   }
 
   public BesuNode createMinerNode(final String name) throws IOException {

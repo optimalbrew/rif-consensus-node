@@ -21,6 +21,7 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.JsonRpcConfiguration;
 import org.hyperledger.besu.ethereum.api.jsonrpc.RpcApi;
 import org.hyperledger.besu.ethereum.api.jsonrpc.RpcApis;
 import org.hyperledger.besu.ethereum.core.Address;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.ethereum.permissioning.LocalPermissioningConfiguration;
 import org.hyperledger.besu.ethereum.permissioning.PermissioningConfiguration;
 import org.hyperledger.besu.ethereum.permissioning.SmartContractPermissioningConfiguration;
@@ -72,6 +73,8 @@ public class PermissionedNodeBuilder {
 
   private List<String> staticNodes = new ArrayList<>();
   private boolean mining = true;
+
+  private MerkleStorageMode merkleStorageMode = MerkleStorageMode.CLASSIC;
 
   public PermissionedNodeBuilder name(final String name) {
     this.name = name;
@@ -155,6 +158,11 @@ public class PermissionedNodeBuilder {
     return this;
   }
 
+  public PermissionedNodeBuilder merkleStorageMode(final MerkleStorageMode merkleStorageMode) {
+    this.merkleStorageMode = merkleStorageMode;
+    return this;
+  }
+
   public BesuNode build() {
     if (name == null) {
       name = "perm_node_" + UUID.randomUUID().toString().substring(0, 8);
@@ -194,7 +202,7 @@ public class PermissionedNodeBuilder {
     }
 
     try {
-      return new BesuNodeFactory().create(builder.build());
+      return new BesuNodeFactory(merkleStorageMode).create(builder.build());
     } catch (IOException e) {
       throw new RuntimeException("Error creating BesuNode", e);
     }

@@ -46,6 +46,7 @@ processTestResources.dependsOn(':besu:testJar')
 task acceptanceTest(type: Test) {
   dependsOn(rootProject.installDist)
   systemProperty 'acctests.runBesuAsProcess', 'true'
+  systemProperty "merkle.storage.mode", System.getProperty("merkle.storage.mode", "classic")
   mustRunAfter rootProject.subprojects*.test
   description = 'Runs Besu acceptance tests.'
   group = 'verification'
