@@ -35,4 +35,8 @@ public enum MerkleStorageMode {
     }
     return null;
   }
+
+  public String toCLI() {
+    return String.format("--merkle-storage-mode=%s", this.toString().toLowerCase());
+  }
 }
