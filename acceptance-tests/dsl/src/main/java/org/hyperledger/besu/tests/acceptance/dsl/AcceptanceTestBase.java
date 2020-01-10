@@ -68,6 +68,8 @@ public class AcceptanceTestBase {
   protected final Web3Conditions web3;
 
   protected AcceptanceTestBase() {
+    MerkleStorageMode  merkleStorageMode = merkleStorageMode();
+
     ethTransactions = new EthTransactions();
     accounts = new Accounts(ethTransactions);
     adminTransactions = new AdminTransactions();
@@ -88,9 +90,9 @@ public class AcceptanceTestBase {
     perm = new PermissioningConditions(permissioningTransactions);
     admin = new AdminConditions(adminTransactions);
     web3 = new Web3Conditions(new Web3Transactions());
-    besu = new BesuNodeFactory(merkleStorageMode());
+    besu = new BesuNodeFactory(merkleStorageMode);
     contractVerifier = new ContractVerifier(accounts.getPrimaryBenefactor());
-    permissionedNodeBuilder = new PermissionedNodeBuilder();
+    permissionedNodeBuilder = new PermissionedNodeBuilder().merkleStorageMode(merkleStorageMode);
   }
 
   @After
