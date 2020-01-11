@@ -14,8 +14,10 @@
  */
 package org.hyperledger.besu.ethereum.vm;
 
-import static org.hyperledger.besu.ethereum.vm.WorldStateMock.insertAccount;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -37,12 +39,6 @@ import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 @JsonIgnoreProperties({"_info", "postState"})
 public class BlockchainReferenceTestCaseSpec {
 
@@ -62,15 +58,15 @@ public class BlockchainReferenceTestCaseSpec {
   private final ProtocolContext<Void> protocolContext;
 
   private static WorldStateArchive buildWorldStateArchive(
-      final Map<String, WorldStateMock.AccountMock> accounts) {
+      final Map<String, AccountMock> accounts) {
     final WorldStateArchive worldStateArchive =
         InMemoryStorageProvider.createInMemoryWorldStateArchive();
 
     final MutableWorldState worldState = worldStateArchive.getMutable();
     final WorldUpdater updater = worldState.updater();
 
-    for (final Map.Entry<String, WorldStateMock.AccountMock> entry : accounts.entrySet()) {
-      insertAccount(updater, Address.fromHexString(entry.getKey()), entry.getValue());
+    for (final Map.Entry<String, AccountMock> entry : accounts.entrySet()) {
+      AccountMock.insertAccount(updater, Address.fromHexString(entry.getKey()), entry.getValue());
     }
 
     updater.commit();
@@ -90,7 +86,7 @@ public class BlockchainReferenceTestCaseSpec {
       @JsonProperty("blocks") final CandidateBlock[] candidateBlocks,
       @JsonProperty("genesisBlockHeader") final BlockHeaderMock genesisBlockHeader,
       @SuppressWarnings("unused") @JsonProperty("genesisRLP") final String genesisRLP,
-      @JsonProperty("pre") final Map<String, WorldStateMock.AccountMock> accounts,
+      @JsonProperty("pre") final Map<String, AccountMock> accounts,
       @JsonProperty("lastblockhash") final String lastBlockHash,
       @JsonProperty("sealEngine") final String sealEngine) {
     this.network = network;
