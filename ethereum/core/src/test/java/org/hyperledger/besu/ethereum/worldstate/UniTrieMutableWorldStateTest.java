@@ -252,8 +252,8 @@ public class UniTrieMutableWorldStateTest {
     updater.commit();
     assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ZERO)).isEqualTo(UInt256.ZERO);
     assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x104592fc501dfe065fd73bc07f78245ef2152ccdf1cb5ded52dd27ad137d6279"));
-    verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
+        Hash.fromHexString("0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
+    verifyStoragePrefixRootIsNotPresent(worldState, ADDRESS);
   }
 
   @Test
@@ -295,8 +295,8 @@ public class UniTrieMutableWorldStateTest {
     account.setStorageValue(UInt256.ONE, UInt256.ZERO);
     updater.commit();
     assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x104592fc501dfe065fd73bc07f78245ef2152ccdf1cb5ded52dd27ad137d6279"));
-    verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
+        Hash.fromHexString("0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
+    verifyStoragePrefixRootIsNotPresent(worldState, ADDRESS);
   }
 
   @Test

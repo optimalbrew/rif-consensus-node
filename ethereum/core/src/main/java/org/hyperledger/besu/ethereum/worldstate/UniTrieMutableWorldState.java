@@ -366,7 +366,12 @@ public class UniTrieMutableWorldState implements MutableWorldState {
                   storageKey, RLP.encode(out -> out.writeUInt256Scalar(entry.getValue())));
             }
           }
-          accountStorageRoot = wrapped.trie.getHash(storageRootPrefixKey);
+
+          if (wrapped.trie.isLeaf(storageRootPrefixKey)) {
+            wrapped.trie.remove(storageRootPrefixKey);
+          } else {
+            accountStorageRoot = wrapped.trie.getHash(storageRootPrefixKey);
+          }
        }
 
         // Finally save the new/updated account

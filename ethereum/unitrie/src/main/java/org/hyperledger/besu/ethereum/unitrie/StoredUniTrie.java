@@ -154,6 +154,15 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
+  public boolean isLeaf(final K key) {
+    checkNotNull(key);
+    UniNode node = root.accept(getVisitor, bytesToPath(key));
+    return node != NullUniNode.instance()
+        && node.getLeftChild() == NullUniNode.instance()
+        && node.getRightChild() == NullUniNode.instance();
+  }
+
+  @Override
   public String toString() {
     return getClass().getSimpleName() + "[" + getRootHash() + "]";
   }

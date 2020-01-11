@@ -75,6 +75,15 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
+  public boolean isLeaf(final K key) {
+    checkNotNull(key);
+    UniNode node = root.accept(getVisitor, bytesToPath(key));
+    return node != NullUniNode.instance()
+        && node.getLeftChild() == NullUniNode.instance()
+        && node.getRightChild() == NullUniNode.instance();
+  }
+
+  @Override
   public Proof<V> getValueWithProof(final K key) {
     checkNotNull(key);
     final ProofVisitor proofVisitor = new ProofVisitor(root);

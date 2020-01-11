@@ -99,6 +99,14 @@ public interface UniTrie<K, V> {
   Bytes32 getRootHash();
 
   /**
+   * Whether the node with the given key is present in the underlying UniTrie and is a leaf.
+   *
+   * @param key  key specifying the node to check
+   * @return  true if the node associated to the key is a left in the underlying UniTrie.
+   */
+  boolean isLeaf(K key);
+
+  /**
    * Commits any pending changes to the underlying storage.
    *
    * @param nodeUpdater used to store the encoded nodes
