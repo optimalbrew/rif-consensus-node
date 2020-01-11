@@ -21,6 +21,7 @@ import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduleBasedBlockHeaderFunctions;
 import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateStorage;
@@ -52,18 +53,20 @@ public class InMemoryStorageProvider implements StorageProvider {
         new NoOpMetricsSystem());
   }
 
-  public static WorldStateArchive createInMemoryWorldStateArchive() {
+  public static WorldStateArchive createInMemoryWorldStateArchive(
+      final MerkleAwareProvider merkleAwareProvider) {
     return new WorldStateArchive(
         new WorldStateKeyValueStorage(new InMemoryKeyValueStorage()),
         new WorldStatePreimageKeyValueStorage(new InMemoryKeyValueStorage()),
-        new ClassicMerkleAwareProvider());
+        merkleAwareProvider);
+  }
+
+  public static WorldStateArchive createInMemoryWorldStateArchive() {
+    return createInMemoryWorldStateArchive(new ClassicMerkleAwareProvider());
   }
 
   public static WorldStateArchive createInMemoryUniTrieWorldStateArchive() {
-    return new WorldStateArchive(
-        new WorldStateKeyValueStorage(new InMemoryKeyValueStorage()),
-        null, // Not needed for UniTrie-based world archive
-        new UniTrieMerkleAwareProvider());
+    return createInMemoryWorldStateArchive(new UniTrieMerkleAwareProvider());
   }
 
   public static MutableWorldState createInMemoryWorldState() {

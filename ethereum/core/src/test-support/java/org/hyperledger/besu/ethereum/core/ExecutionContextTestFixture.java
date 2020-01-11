@@ -16,6 +16,8 @@ package org.hyperledger.besu.ethereum.core;
 
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryWorldStateArchive;
 
+import java.math.BigInteger;
+import java.util.function.Function;
 import org.hyperledger.besu.config.GenesisConfigFile;
 import org.hyperledger.besu.config.StubGenesisConfigOptions;
 import org.hyperledger.besu.ethereum.ProtocolContext;
@@ -25,14 +27,13 @@ import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolScheduleBuilder;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStoragePrefixedKeyBlockchainStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-
-import java.math.BigInteger;
-import java.util.function.Function;
 
 public class ExecutionContextTestFixture {
 
@@ -45,7 +46,10 @@ public class ExecutionContextTestFixture {
   private final ProtocolContext<Void> protocolContext;
 
   private ExecutionContextTestFixture(
-      final ProtocolSchedule<Void> protocolSchedule, final KeyValueStorage keyValueStorage) {
+      final MerkleAwareProvider merkleAwareProvider,
+      final ProtocolSchedule<Void> protocolSchedule,
+      final KeyValueStorage keyValueStorage) {
+
     final GenesisState genesisState =
         GenesisState.fromConfig(GenesisConfigFile.mainnet(), protocolSchedule);
     this.genesis = genesisState.getBlock();
@@ -56,7 +60,7 @@ public class ExecutionContextTestFixture {
             new KeyValueStoragePrefixedKeyBlockchainStorage(
                 keyValueStorage, new MainnetBlockHeaderFunctions()),
             new NoOpMetricsSystem());
-    this.stateArchive = createInMemoryWorldStateArchive();
+    this.stateArchive = createInMemoryWorldStateArchive(merkleAwareProvider);
     this.protocolSchedule = protocolSchedule;
     this.protocolContext = new ProtocolContext<>(blockchain, stateArchive, null);
     genesisState.writeStateTo(stateArchive.getMutable());
@@ -96,8 +100,14 @@ public class ExecutionContextTestFixture {
 
   public static class Builder {
 
+    private MerkleAwareProvider merkleAwareProvider;
     private KeyValueStorage keyValueStorage;
     private ProtocolSchedule<Void> protocolSchedule;
+
+    public Builder setMerkleAwareProvider(final MerkleAwareProvider merkleAwareProvider) {
+      this.merkleAwareProvider = merkleAwareProvider;
+      return this;
+    }
 
     public Builder keyValueStorage(final KeyValueStorage keyValueStorage) {
       this.keyValueStorage = keyValueStorage;
@@ -110,6 +120,10 @@ public class ExecutionContextTestFixture {
     }
 
     public ExecutionContextTestFixture build() {
+      if (merkleAwareProvider == null) {
+        merkleAwareProvider = new ClassicMerkleAwareProvider();
+      }
+
       if (protocolSchedule == null) {
         protocolSchedule =
             new ProtocolScheduleBuilder<>(
@@ -120,10 +134,12 @@ public class ExecutionContextTestFixture {
                     false)
                 .createProtocolSchedule();
       }
+
       if (keyValueStorage == null) {
         keyValueStorage = new InMemoryKeyValueStorage();
       }
-      return new ExecutionContextTestFixture(protocolSchedule, keyValueStorage);
+      return new ExecutionContextTestFixture(
+          merkleAwareProvider, protocolSchedule, keyValueStorage);
     }
   }
 }

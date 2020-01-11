@@ -16,6 +16,11 @@ package org.hyperledger.besu.ethereum.core;
 
 import static org.hyperledger.besu.ethereum.vm.MessageFrame.DEFAULT_MAX_STACK_SIZE;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Optional;
 import org.hyperledger.besu.ethereum.chain.Blockchain;
 import org.hyperledger.besu.ethereum.vm.BlockHashLookup;
 import org.hyperledger.besu.ethereum.vm.Code;
@@ -23,12 +28,6 @@ import org.hyperledger.besu.ethereum.vm.MessageFrame;
 import org.hyperledger.besu.ethereum.vm.MessageFrame.Type;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Optional;
 
 public class MessageFrameTestFixture {
 
@@ -157,6 +156,24 @@ public class MessageFrameTestFixture {
   }
 
   public MessageFrame build() {
+    // Sanity check #1: if ExecutionContextTestFeature is set and it defines a world state,
+    // it better be the same as the one set in this builder.
+    if (executionContextTestFixture != null
+        && worldState.isPresent()
+        && worldState.get() != createDefaultWorldState()) {
+      throw new IllegalStateException(
+          "MessageFrameTestFixture and ExecutionContextTestFixture define different world states");
+    }
+
+    // Sanity check #2: if ExecutionContextTestFeature is set and it defines a blockchain,
+    // it better be the same as the one set in this builder.
+    if (executionContextTestFixture != null
+        && blockchain.isPresent()
+        && blockchain.get() != createDefaultBlockchain()) {
+      throw new IllegalStateException(
+          "MessageFrameTestFixture and ExecutionContextTestFixture define different blockchains");
+    }
+
     final Blockchain blockchain = this.blockchain.orElseGet(this::createDefaultBlockchain);
     final BlockHeader blockHeader =
         this.blockHeader.orElseGet(() -> blockchain.getBlockHeader(0).get());
