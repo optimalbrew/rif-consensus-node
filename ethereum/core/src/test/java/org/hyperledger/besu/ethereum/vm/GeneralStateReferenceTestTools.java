@@ -16,24 +16,26 @@ package org.hyperledger.besu.ethereum.vm;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.LogSeries;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.Transaction;
-import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.mainnet.TransactionProcessor;
 import org.hyperledger.besu.ethereum.mainnet.TransactionValidationParams;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.rlp.RLP;
-import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
 import org.hyperledger.besu.testutil.JsonTestParameters;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import org.hyperledger.besu.testutil.JsonTestParameters.Generator;
 
 public class GeneralStateReferenceTestTools {
   private static final ReferenceTestProtocolSchedules REFERENCE_TEST_PROTOCOL_SCHEDULES =
@@ -58,49 +60,83 @@ public class GeneralStateReferenceTestTools {
     EIPS_TO_RUN = Arrays.asList(eips.split(","));
   }
 
-  private static final JsonTestParameters<?, ?> params =
+  private static final JsonTestParameters<?, ?> classicParams =
       JsonTestParameters.create(GeneralStateTestCaseSpec.class, GeneralStateTestCaseEipSpec.class)
-          .generator(
-              (testName, stateSpec, collector) -> {
-                final String prefix = testName + "-";
-                for (final Map.Entry<String, List<GeneralStateTestCaseEipSpec>> entry :
-                    stateSpec.finalStateSpecs().entrySet()) {
-                  final String eip = entry.getKey();
-                  final boolean runTest = EIPS_TO_RUN.contains(eip);
-                  final List<GeneralStateTestCaseEipSpec> eipSpecs = entry.getValue();
-                  if (eipSpecs.size() == 1) {
-                    collector.add(prefix + eip, eipSpecs.get(0), runTest);
-                  } else {
-                    for (int i = 0; i < eipSpecs.size(); i++) {
-                      collector.add(prefix + eip + '[' + i + ']', eipSpecs.get(i), runTest);
-                    }
-                  }
-                }
-              });
+          .generator(generator(new ClassicMerkleAwareProvider()));
 
-  static {
+  private static final JsonTestParameters<?, ?> uniTrieParams =
+      JsonTestParameters.create(
+              UniTrieGeneralStateTestCaseSpec.class, GeneralStateTestCaseEipSpec.class)
+          .generator(generator(new UniTrieMerkleAwareProvider()));
+
+  private static void setupParams(final JsonTestParameters<?, ?> params) {
     if (EIPS_TO_RUN.isEmpty()) {
       params.blacklistAll();
     }
+
     // Known incorrect test.
     params.blacklist(
         "RevertPrecompiledTouch(_storage)?-(EIP158|Byzantium|Constantinople|ConstantinopleFix)");
+
     // Gas integer value is too large to construct a valid transaction.
     params.blacklist("OverflowGasRequire");
+
     // Consumes a huge amount of memory
     params.blacklist("static_Call1MB1024Calldepth-(Byzantium|Constantinople|ConstantinopleFix)");
   }
 
+  static {
+    setupParams(classicParams);
+    setupParams(uniTrieParams);
+  }
+
+  /**
+   * Generate either classic or UniTrie {@link GeneralStateTestCaseEipSpec} instances.
+   *
+   * @param merkleAwareProvider provider for the corresponding Merkle storage mode
+   * @param <S> type of general test case spec to use as input
+   * @return generator providing classic or UniTrie tests
+   */
+  private static <S extends AbstractGeneralStateTestCaseSpec> Generator<S, GeneralStateTestCaseEipSpec>
+      generator(final MerkleAwareProvider merkleAwareProvider) {
+
+    return (testName, stateSpec, collector) -> {
+      final String prefix = merkleAwareProvider.toString().toLowerCase() + "-" + testName + "-";
+      for (final Map.Entry<String, List<GeneralStateTestCaseEipSpec>> entry :
+          stateSpec.finalStateSpecs().entrySet()) {
+        final String eip = entry.getKey();
+        final boolean runTest = EIPS_TO_RUN.contains(eip);
+        final List<GeneralStateTestCaseEipSpec> eipSpecs = entry.getValue();
+        if (eipSpecs.size() == 1) {
+          collector.add(prefix + eip, eipSpecs.get(0), runTest);
+        } else {
+          for (int i = 0; i < eipSpecs.size(); i++) {
+            collector.add(prefix + eip + '[' + i + ']', eipSpecs.get(i), runTest);
+          }
+        }
+      }
+    };
+  }
+
   public static Collection<Object[]> generateTestParametersForConfig(final String[] filePath) {
-    return params.generate(filePath);
+    String exclude = System.getProperty("test.general.state.exclude");
+    if (exclude.equalsIgnoreCase("unitrie")) {
+      return classicParams.generate(filePath);
+    }
+    if (exclude.equalsIgnoreCase("classic")) {
+      return uniTrieParams.generate(filePath);
+    }
+    Collection<Object[]> specs = classicParams.generate(filePath);
+    specs.addAll(uniTrieParams.generate(filePath));
+    return specs;
   }
 
   public static void executeTest(final GeneralStateTestCaseEipSpec spec) {
     final BlockHeader blockHeader = spec.blockHeader();
-    final WorldState initialWorldState = spec.initialWorldState();
     final Transaction transaction = spec.transaction();
 
-    final MutableWorldState worldState = new DefaultMutableWorldState(initialWorldState);
+    final MutableWorldState worldState = spec.getRuntimeWorldState();
+
     // Several of the GeneralStateTests check if the transaction could potentially
     // consume more gas than is left for the block it's attempted to be included in.
     // This check is performed within the `BlockImporter` rather than inside the
@@ -128,11 +164,15 @@ public class GeneralStateReferenceTestTools {
     }
     worldStateUpdater.commit();
 
-    // Check the world state root hash.
-    final Hash expectedRootHash = spec.expectedRootHash();
-    assertThat(worldState.rootHash())
-        .withFailMessage("Unexpected world state root hash; computed state: %s", worldState)
-        .isEqualByComparingTo(expectedRootHash);
+    // If the EIP test spec allows it, check the world state root hash.
+    // We don't want to do the check when using UniTries, which encode
+    // differently ans thus give a distinct hash.
+    if (spec.shouldCheckRootHash()) {
+      final Hash expectedRootHash = spec.expectedRootHash();
+      assertThat(worldState.rootHash())
+          .withFailMessage("Unexpected world state root hash; computed state: %s", worldState)
+          .isEqualByComparingTo(expectedRootHash);
+    }
 
     // Check the logs.
     final Hash expectedLogsHash = spec.expectedLogsHash();

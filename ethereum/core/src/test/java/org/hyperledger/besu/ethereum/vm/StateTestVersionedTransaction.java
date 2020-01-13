@@ -42,10 +42,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *   <li>in the state test json, gas, value and data for the transaction are arrays. This is how
  *       state tests deal with milestone versioning: for a given milestone, the actual value to use
  *       is defined by the indexes of the "post" section of the json. Those indexes are passed to
- *       this class in {@link #get(Indexes)}.
+ *       this class in {@link #get(AbstractGeneralStateTestCaseSpec.Indexes)}.
  *   <li>the signature of the transaction is not provided in the json directly. Instead, the private
  *       key of the sender is provided, and the transaction must thus be signed (also in {@link
- *       #get(Indexes)}) through {@link Transaction.Builder#signAndBuild(KeyPair)}.
+ *       #get(AbstractGeneralStateTestCaseSpec.Indexes)})
+ *       through {@link Transaction.Builder#signAndBuild(KeyPair)}.
  * </ul>
  */
 public class StateTestVersionedTransaction {
@@ -89,7 +90,7 @@ public class StateTestVersionedTransaction {
     return res;
   }
 
-  public Transaction get(final GeneralStateTestCaseSpec.Indexes indexes) {
+  public Transaction get(final AbstractGeneralStateTestCaseSpec.Indexes indexes) {
     return Transaction.builder()
         .nonce(nonce)
         .gasPrice(gasPrice)

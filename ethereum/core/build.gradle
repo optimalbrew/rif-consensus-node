@@ -188,6 +188,8 @@ task referenceTests(type: Test, dependsOn: [
   include 'org/hyperledger/besu/ethereum/vm/blockchain/**.class'
   include 'org/hyperledger/besu/ethereum/vm/generalstate/**.class'
   include 'org/hyperledger/besu/ethereum/core/TransactionTest.class'
+
+  systemProperty "test.general.state.exclude", System.getProperty("test.general.state.exclude")
 }
 
 artifacts {
