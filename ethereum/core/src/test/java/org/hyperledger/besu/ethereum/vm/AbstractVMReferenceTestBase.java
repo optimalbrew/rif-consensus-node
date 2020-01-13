@@ -31,9 +31,8 @@ import org.hyperledger.besu.ethereum.mainnet.MutableProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSpec;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransactionValidator;
 import org.hyperledger.besu.ethereum.vm.ehalt.ExceptionalHaltException;
-import org.hyperledger.besu.ethereum.worldstate.UniTrieMutableWorldState;
 
-public abstract class AbstractVMReferenceTest extends AbstractRetryingTest {
+public abstract class AbstractVMReferenceTestBase extends AbstractRetryingTest {
 
   /** The path where all of the VM test configuration files live. */
   static final String[] TEST_CONFIG_FILE_DIR_PATHS = {
@@ -92,7 +91,7 @@ public abstract class AbstractVMReferenceTest extends AbstractRetryingTest {
 
   private final AbstractVMReferenceTestCaseSpec spec;
 
-  public AbstractVMReferenceTest(
+  public AbstractVMReferenceTestBase(
       final String name, final AbstractVMReferenceTestCaseSpec spec, final boolean runTest) {
     this.name = name;
     this.spec = spec;
