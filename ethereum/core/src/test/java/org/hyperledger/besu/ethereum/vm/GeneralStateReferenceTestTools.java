@@ -120,10 +120,10 @@ public class GeneralStateReferenceTestTools {
 
   public static Collection<Object[]> generateTestParametersForConfig(final String[] filePath) {
     String exclude = System.getProperty("test.general.state.exclude");
-    if (exclude.equalsIgnoreCase("unitrie")) {
+    if (exclude != null && exclude.equalsIgnoreCase("unitrie")) {
       return classicParams.generate(filePath);
     }
-    if (exclude.equalsIgnoreCase("classic")) {
+    if (exclude != null && exclude.equalsIgnoreCase("classic")) {
       return uniTrieParams.generate(filePath);
     }
     Collection<Object[]> specs = classicParams.generate(filePath);
