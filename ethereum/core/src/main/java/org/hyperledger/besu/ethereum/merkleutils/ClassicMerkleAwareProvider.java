@@ -70,6 +70,6 @@ public class ClassicMerkleAwareProvider implements MerkleAwareProvider {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName();
+    return "classic";
   }
 }

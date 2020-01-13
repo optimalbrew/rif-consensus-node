@@ -70,6 +70,6 @@ public class UniTrieMerkleAwareProvider implements MerkleAwareProvider {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName();
+    return "unitrie";
   }
 }

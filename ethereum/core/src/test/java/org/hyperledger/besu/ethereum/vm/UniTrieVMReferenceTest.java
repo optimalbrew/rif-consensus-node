@@ -25,7 +25,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class UniTrieVMReferenceTest extends AbstractVMReferenceTest {
+public class UniTrieVMReferenceTest extends AbstractVMReferenceTestBase {
 
   @Parameters(name = "Name: {0}")
   public static Collection<Object[]> getTestParametersForConfig() throws Exception {

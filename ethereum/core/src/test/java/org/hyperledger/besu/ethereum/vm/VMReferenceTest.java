@@ -25,7 +25,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 /** The VM operation testing framework entry point. */
 @RunWith(Parameterized.class)
-public class VMReferenceTest extends AbstractVMReferenceTest {
+public class VMReferenceTest extends AbstractVMReferenceTestBase {
 
   @Parameters(name = "Name: {0}")
   public static Collection<Object[]> getTestParametersForConfig() throws Exception {
