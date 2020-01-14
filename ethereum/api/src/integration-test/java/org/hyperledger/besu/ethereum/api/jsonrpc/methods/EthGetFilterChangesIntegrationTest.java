@@ -21,6 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Optional;
+import org.assertj.core.util.Lists;
 import org.hyperledger.besu.crypto.SECP256K1.KeyPair;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.JsonRpcRequest;
@@ -41,6 +45,7 @@ import org.hyperledger.besu.ethereum.core.BlockBody;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.BlockHeaderTestFixture;
 import org.hyperledger.besu.ethereum.core.ExecutionContextTestFixture;
+import org.hyperledger.besu.ethereum.core.MerkleAwareTest;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.TransactionReceipt;
 import org.hyperledger.besu.ethereum.core.Wei;
@@ -52,27 +57,18 @@ import org.hyperledger.besu.ethereum.eth.transactions.PendingTransactions;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool.TransactionBatchAddedListener;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.plugin.services.MetricsSystem;
 import org.hyperledger.besu.testutil.TestClock;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
-
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Optional;
-
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class EthGetFilterChangesIntegrationTest {
+public class EthGetFilterChangesIntegrationTest extends MerkleAwareTest {
 
-  @Mock private TransactionBatchAddedListener batchAddedListener;
+  private TransactionBatchAddedListener batchAddedListener;
   private MutableBlockchain blockchain;
   private final String ETH_METHOD = "eth_getFilterChanges";
   private final String JSON_RPC_VERSION = "2.0";
@@ -96,7 +92,11 @@ public class EthGetFilterChangesIntegrationTest {
 
   @Before
   public void setUp() {
-    final ExecutionContextTestFixture executionContext = ExecutionContextTestFixture.create();
+    batchAddedListener = mock(TransactionBatchAddedListener.class);
+
+    final MerkleAwareProvider merkleAwareProvider = getMerkleAwareProvider();
+    final ExecutionContextTestFixture executionContext =
+        ExecutionContextTestFixture.builder().merkleAwareProvider(merkleAwareProvider).build();
     blockchain = executionContext.getBlockchain();
     final ProtocolContext<Void> protocolContext = executionContext.getProtocolContext();
 

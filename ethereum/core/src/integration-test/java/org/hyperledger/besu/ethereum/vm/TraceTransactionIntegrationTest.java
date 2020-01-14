@@ -17,12 +17,16 @@ package org.hyperledger.besu.ethereum.vm;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 import org.hyperledger.besu.crypto.SECP256K1.KeyPair;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
 import org.hyperledger.besu.ethereum.core.ExecutionContextTestFixture;
 import org.hyperledger.besu.ethereum.core.Gas;
+import org.hyperledger.besu.ethereum.core.MerkleAwareTest;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Wei;
@@ -33,20 +37,16 @@ import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.TransactionProcessor;
 import org.hyperledger.besu.ethereum.mainnet.TransactionProcessor.Result;
 import org.hyperledger.besu.ethereum.mainnet.TransactionValidationParams;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.rlp.BytesValueRLPInput;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
-
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Stream;
-
 import org.junit.Before;
 import org.junit.Test;
 
-public class TraceTransactionIntegrationTest {
+public class TraceTransactionIntegrationTest extends MerkleAwareTest {
 
   private static final String CONTRACT_CREATION_TX =
       "0xf9014880808347b7608080b8fb608060405234801561001057600080fd5b5060dc8061001f6000396000f3006080604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680633fa4f24514604e57806355241077146076575b600080fd5b348015605957600080fd5b50606060a0565b6040518082815260200191505060405180910390f35b348015608157600080fd5b50609e6004803603810190808035906020019092919050505060a6565b005b60005481565b80600081905550505600a165627a7a723058202bdbba2e694dba8fff33d9d0976df580f57bff0a40e25a46c398f8063b4c003600291ca057095e0bd8b08b1311ce81cf202fbaebf1f5bafeadbe9870cec3c0f5dd93bd0ea03639e8e40eedd640eb3565097a96c6c0c553d7e74ecc7b4b571eb9875d23d871";
@@ -63,7 +63,9 @@ public class TraceTransactionIntegrationTest {
 
   @Before
   public void setUp() {
-    final ExecutionContextTestFixture contextTestFixture = ExecutionContextTestFixture.create();
+    MerkleAwareProvider merkleAwareProvider = getMerkleAwareProvider();
+    final ExecutionContextTestFixture contextTestFixture =
+        ExecutionContextTestFixture.builder().merkleAwareProvider(merkleAwareProvider).build();
     genesisBlock = contextTestFixture.getGenesis();
     blockchain = contextTestFixture.getBlockchain();
     worldStateArchive = contextTestFixture.getStateArchive();

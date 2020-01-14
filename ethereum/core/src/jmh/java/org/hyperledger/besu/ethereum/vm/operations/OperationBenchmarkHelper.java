@@ -16,25 +16,24 @@ package org.hyperledger.besu.ethereum.vm.operations;
 
 import static java.util.Collections.emptyList;
 
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Block;
 import org.hyperledger.besu.ethereum.core.BlockBody;
 import org.hyperledger.besu.ethereum.core.BlockHeaderTestFixture;
 import org.hyperledger.besu.ethereum.core.ExecutionContextTestFixture;
 import org.hyperledger.besu.ethereum.core.MessageFrameTestFixture;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.vm.MessageFrame;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.plugin.services.storage.rocksdb.configuration.RocksDBConfigurationBuilder;
 import org.hyperledger.besu.plugin.services.storage.rocksdb.unsegmented.RocksDBKeyValueStorage;
 import org.hyperledger.besu.util.uint.UInt256;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import com.google.common.io.MoreFiles;
-import com.google.common.io.RecursiveDeleteOption;
 
 public class OperationBenchmarkHelper {
 
@@ -51,7 +50,9 @@ public class OperationBenchmarkHelper {
     this.messageFrame = messageFrame;
   }
 
-  public static OperationBenchmarkHelper create() throws IOException {
+  public static OperationBenchmarkHelper create(MerkleAwareProvider merkleAwareProvider)
+      throws IOException {
+
     final Path storageDirectory = Files.createTempDirectory("benchmark");
     final KeyValueStorage keyValueStorage =
         new RocksDBKeyValueStorage(
@@ -59,7 +60,10 @@ public class OperationBenchmarkHelper {
             new NoOpMetricsSystem());
 
     final ExecutionContextTestFixture executionContext =
-        ExecutionContextTestFixture.builder().keyValueStorage(keyValueStorage).build();
+        ExecutionContextTestFixture.builder()
+            .merkleAwareProvider(merkleAwareProvider)
+            .keyValueStorage(keyValueStorage)
+            .build();
     final MutableBlockchain blockchain = executionContext.getBlockchain();
 
     for (int i = 1; i < 256; i++) {

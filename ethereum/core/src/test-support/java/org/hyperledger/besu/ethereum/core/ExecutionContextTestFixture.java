@@ -51,7 +51,7 @@ public class ExecutionContextTestFixture {
       final KeyValueStorage keyValueStorage) {
 
     final GenesisState genesisState =
-        GenesisState.fromConfig(GenesisConfigFile.mainnet(), protocolSchedule);
+        GenesisState.fromConfig(GenesisConfigFile.mainnet(), protocolSchedule, merkleAwareProvider);
     this.genesis = genesisState.getBlock();
     this.keyValueStorage = keyValueStorage;
     this.blockchain =
@@ -104,7 +104,7 @@ public class ExecutionContextTestFixture {
     private KeyValueStorage keyValueStorage;
     private ProtocolSchedule<Void> protocolSchedule;
 
-    public Builder setMerkleAwareProvider(final MerkleAwareProvider merkleAwareProvider) {
+    public Builder merkleAwareProvider(final MerkleAwareProvider merkleAwareProvider) {
       this.merkleAwareProvider = merkleAwareProvider;
       return this;
     }

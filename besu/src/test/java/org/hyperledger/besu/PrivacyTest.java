@@ -27,15 +27,13 @@ import org.hyperledger.besu.crypto.SECP256K1.KeyPair;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
+import org.hyperledger.besu.ethereum.core.MerkleAwareTest;
 import org.hyperledger.besu.ethereum.core.MiningParametersTestBuilder;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
 import org.hyperledger.besu.ethereum.mainnet.PrecompiledContract;
-import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
-import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
-import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueSegmentIdentifier;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProviderBuilder;
@@ -47,14 +45,8 @@ import org.hyperledger.besu.testutil.TestClock;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
-@SuppressWarnings("unused")
-public class PrivacyTest {
+public class PrivacyTest extends MerkleAwareTest {
 
   private static final int MAX_OPEN_FILES = 1024;
   private static final long CACHE_CAPACITY = 8388608;
@@ -63,16 +55,6 @@ public class PrivacyTest {
 
   private static final Integer ADDRESS = 9;
   @Rule public final TemporaryFolder folder = new TemporaryFolder();
-
-  @Parameters(name = "Provider = {0}")
-  public static MerkleAwareProvider[] providers() {
-    return new MerkleAwareProvider[] {
-      new ClassicMerkleAwareProvider(), new UniTrieMerkleAwareProvider()
-    };
-  }
-
-  @Parameter
-  public MerkleAwareProvider merkleAwareProvider;
 
   @Test
   public void privacyPrecompiled() throws IOException {
@@ -83,12 +65,12 @@ public class PrivacyTest {
             .setPrivacyAddress(ADDRESS)
             .setEnabled(true)
             .setStorageProvider(createKeyValueStorageProvider(dataDir, dbDir))
-            .setMerkleAwareProvider(merkleAwareProvider)
+            .setMerkleAwareProvider(getMerkleAwareProvider())
             .build();
     final BesuController<?> besuController =
         new BesuController.Builder()
             .fromGenesisConfig(GenesisConfigFile.mainnet())
-            .merkleAwareProvider(merkleAwareProvider)
+            .merkleAwareProvider(getMerkleAwareProvider())
             .synchronizerConfiguration(SynchronizerConfiguration.builder().build())
             .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
             .storageProvider(new InMemoryStorageProvider())

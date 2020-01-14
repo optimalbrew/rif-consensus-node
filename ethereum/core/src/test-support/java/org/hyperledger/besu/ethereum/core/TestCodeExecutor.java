@@ -14,21 +14,23 @@
  */
 package org.hyperledger.besu.ethereum.core;
 
+import java.math.BigInteger;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.function.Consumer;
 import org.hyperledger.besu.crypto.SECP256K1.Signature;
 import org.hyperledger.besu.ethereum.mainnet.MainnetMessageCallProcessor;
 import org.hyperledger.besu.ethereum.mainnet.PrecompileContractRegistry;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSpec;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.vm.Code;
 import org.hyperledger.besu.ethereum.vm.MessageFrame;
 import org.hyperledger.besu.ethereum.vm.OperationTracer;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.math.BigInteger;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.function.Consumer;
 
 public class TestCodeExecutor {
 
@@ -37,7 +39,17 @@ public class TestCodeExecutor {
   private static final Address SENDER_ADDRESS = AddressHelpers.ofValue(244259721);
 
   public TestCodeExecutor(final ProtocolSchedule<Void> protocolSchedule) {
-    fixture = ExecutionContextTestFixture.builder().protocolSchedule(protocolSchedule).build();
+    this(new ClassicMerkleAwareProvider(), protocolSchedule);
+  }
+
+  public TestCodeExecutor(
+      final MerkleAwareProvider merkleAwareProvider,
+      final ProtocolSchedule<Void> protocolSchedule) {
+    fixture =
+        ExecutionContextTestFixture.builder()
+            .merkleAwareProvider(merkleAwareProvider)
+            .protocolSchedule(protocolSchedule)
+            .build();
   }
 
   public MessageFrame executeCode(

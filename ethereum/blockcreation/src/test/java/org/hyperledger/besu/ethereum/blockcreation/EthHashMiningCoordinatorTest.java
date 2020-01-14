@@ -19,20 +19,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import org.hyperledger.besu.ethereum.core.ExecutionContextTestFixture;
 import org.hyperledger.besu.ethereum.core.Hash;
+import org.hyperledger.besu.ethereum.core.MerkleAwareTest;
 import org.hyperledger.besu.ethereum.eth.sync.state.SyncState;
 import org.hyperledger.besu.ethereum.mainnet.EthHashSolution;
 import org.hyperledger.besu.util.bytes.Bytes32;
-
-import java.util.Optional;
-
 import org.junit.Before;
 import org.junit.Test;
 
-public class EthHashMiningCoordinatorTest {
+public class EthHashMiningCoordinatorTest extends MerkleAwareTest {
 
-  private final ExecutionContextTestFixture executionContext = ExecutionContextTestFixture.create();
+  private final ExecutionContextTestFixture executionContext =
+      ExecutionContextTestFixture.builder()
+          .merkleAwareProvider(getMerkleAwareProvider())
+          .build();
+
   private final SyncState syncState = mock(SyncState.class);
   private final EthHashMinerExecutor executor = mock(EthHashMinerExecutor.class);
   private final EthHashBlockMiner miner = mock(EthHashBlockMiner.class);
