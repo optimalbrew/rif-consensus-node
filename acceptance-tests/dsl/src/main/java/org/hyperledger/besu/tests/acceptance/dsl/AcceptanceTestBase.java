@@ -68,7 +68,7 @@ public class AcceptanceTestBase {
   protected final Web3Conditions web3;
 
   protected AcceptanceTestBase() {
-    MerkleStorageMode  merkleStorageMode = merkleStorageMode();
+    MerkleStorageMode merkleStorageMode = merkleStorageMode();
 
     ethTransactions = new EthTransactions();
     accounts = new Accounts(ethTransactions);

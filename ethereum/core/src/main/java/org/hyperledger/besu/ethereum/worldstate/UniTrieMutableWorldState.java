@@ -15,15 +15,6 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
-import com.google.common.annotations.VisibleForTesting;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.SortedMap;
-import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
@@ -43,6 +34,17 @@ import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 import org.hyperledger.besu.util.uint.UInt256Bytes;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.stream.Stream;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Mutable world state witnessed by Unitries.
@@ -107,15 +109,15 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
   @Override
   public Stream<StreamableAccount> streamAccounts(final Bytes32 startKeyHash, final int limit) {
-    throw new UnsupportedOperationException("Unitries don't associate account entries to their "
-        + "hashes, so they don't support iterating from a given account entry hash");
+    throw new UnsupportedOperationException(
+        "Unitries don't associate account entries to their "
+            + "hashes, so they don't support iterating from a given account entry hash");
   }
 
   @Override
   public Account get(final Address address) {
     final BytesValue mappedKey = keyMapper.getAccountKey(address);
-    return trie
-        .get(mappedKey)
+    return trie.get(mappedKey)
         .map(bytes -> deserializeAccount(address, Hash.hash(address), bytes))
         .orElse(null);
   }
@@ -160,8 +162,8 @@ public class UniTrieMutableWorldState implements MutableWorldState {
   }
 
   /**
-   * Immutable account class representing an individual account as stored
-   * in the world state's underlying Unitrie.
+   * Immutable account class representing an individual account as stored in the world state's
+   * underlying Unitrie.
    */
   protected class WorldStateAccount implements Account {
 
@@ -265,8 +267,9 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     @Override
     public NavigableMap<Bytes32, AccountStorageEntry> storageEntriesFrom(
         final Bytes32 startKeyHash, final int limit) {
-      throw new UnsupportedOperationException("Unitries don't associate storage entries to their "
-          + "hashes, so they don't support iterating from a given storage entry hash");
+      throw new UnsupportedOperationException(
+          "Unitries don't associate storage entries to their "
+              + "hashes, so they don't support iterating from a given storage entry hash");
     }
 
     private UInt256 convertToUInt256(final BytesValue value) {
@@ -289,11 +292,10 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     }
   }
 
-  /**
-   * Mutable world updater.
-   */
-  protected static class Updater extends
-      AbstractWorldUpdater<UniTrieMutableWorldState, UniTrieMutableWorldState.WorldStateAccount> {
+  /** Mutable world updater. */
+  protected static class Updater
+      extends AbstractWorldUpdater<
+          UniTrieMutableWorldState, UniTrieMutableWorldState.WorldStateAccount> {
 
     protected Updater(final UniTrieMutableWorldState world) {
       super(world);
@@ -303,7 +305,8 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     protected UniTrieMutableWorldState.WorldStateAccount getForMutation(final Address address) {
       final UniTrieMutableWorldState wrapped = wrappedWorldView();
       final BytesValue mappedKey = wrapped.keyMapper.getAccountKey(address);
-      return wrapped.trie
+      return wrapped
+          .trie
           .get(mappedKey)
           .map(bytes -> wrapped.deserializeAccount(address, Hash.hash(address), bytes))
           .orElse(null);
@@ -372,7 +375,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
           } else {
             accountStorageRoot = wrapped.trie.getHash(storageRootPrefixKey);
           }
-       }
+        }
 
         // Finally save the new/updated account
         final BytesValue account =

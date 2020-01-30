@@ -26,8 +26,7 @@ import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 
 /**
- * Abstraction layer for creating instances of classes depending on
- * different Merkle storage models.
+ * Abstraction layer for creating instances of classes depending on different Merkle storage models.
  *
  * @author ppedemon
  */
@@ -80,7 +79,7 @@ public interface MerkleAwareProvider {
   /**
    * Accept a {@link MerkleAwareProviderVisitor}.
    *
-   * @param visitor  visitor to accept
+   * @param visitor visitor to accept
    * @param <T> type of result returned by visitor
    * @return result returned by visitor
    */

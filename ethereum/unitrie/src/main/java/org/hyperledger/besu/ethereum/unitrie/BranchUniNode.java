@@ -125,7 +125,8 @@ public class BranchUniNode implements UniNode {
         "%s%s%s%s",
         Strings.repeat(" ", indent),
         String.format(
-            "(key = %s (%d), cs = %s, val = %s)", PathEncoding.encodePath(path), path.size(), childrenSize, valueWrapper),
+            "(key = %s (%d), cs = %s, val = %s)",
+            PathEncoding.encodePath(path), path.size(), childrenSize, valueWrapper),
         String.format("\n%s", leftChild.print(indent + 2)),
         String.format("\n%s", rightChild.print(indent + 2)));
   }
@@ -270,9 +271,9 @@ public class BranchUniNode implements UniNode {
    *       the parent path and pos bit).
    * </ul>
    *
-   * <p>So, for a branch with path p, no value and a left child with path q, return
-   * the left child with path p:0:q. Conversely, if the branch has no value and a
-   * right child with path q, return the right child with path p:1:q.
+   * <p>So, for a branch with path p, no value and a left child with path q, return the left child
+   * with path p:0:q. Conversely, if the branch has no value and a right child with path q, return
+   * the right child with path p:1:q.
    *
    * @param node node to possible coalesce
    * @param nodeFactory node factory used to create a new node in case of coalescing

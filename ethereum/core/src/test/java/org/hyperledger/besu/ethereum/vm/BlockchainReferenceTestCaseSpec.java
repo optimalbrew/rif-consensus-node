@@ -14,10 +14,6 @@
  */
 package org.hyperledger.besu.ethereum.vm;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -39,6 +35,12 @@ import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @JsonIgnoreProperties({"_info", "postState"})
 public class BlockchainReferenceTestCaseSpec {
 
@@ -57,8 +59,7 @@ public class BlockchainReferenceTestCaseSpec {
 
   private final ProtocolContext<Void> protocolContext;
 
-  private static WorldStateArchive buildWorldStateArchive(
-      final Map<String, AccountMock> accounts) {
+  private static WorldStateArchive buildWorldStateArchive(final Map<String, AccountMock> accounts) {
     final WorldStateArchive worldStateArchive =
         InMemoryStorageProvider.createInMemoryWorldStateArchive();
 

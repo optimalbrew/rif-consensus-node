@@ -17,9 +17,6 @@ package org.hyperledger.besu.ethereum.worldstate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.base.Strings;
-import java.util.ArrayList;
-import java.util.List;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -39,6 +36,11 @@ import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 import org.hyperledger.besu.util.uint.UInt256Bytes;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.base.Strings;
 import org.junit.Test;
 
 public class UniTrieMutableWorldStateTest {
@@ -203,8 +205,10 @@ public class UniTrieMutableWorldStateTest {
     updater.createAccount(ADDRESS).getMutable().setNonce(1L);
     updater.commit();
     assertThat(worldState.get(ADDRESS).getNonce()).isEqualTo(1L);
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x4d8a20c3ae9ea6fe7bf3572cc06caf98ecd698b0f5366d414cd9c86b1e41e294"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x4d8a20c3ae9ea6fe7bf3572cc06caf98ecd698b0f5366d414cd9c86b1e41e294"));
   }
 
   @Test
@@ -225,8 +229,10 @@ public class UniTrieMutableWorldStateTest {
     updater.createAccount(ADDRESS).getMutable().setBalance(Wei.of(100000));
     updater.commit();
     assertThat(worldState.get(ADDRESS).getBalance()).isEqualTo(Wei.of(100000));
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
   }
 
   @Test
@@ -238,8 +244,10 @@ public class UniTrieMutableWorldStateTest {
     account.setBalance(Wei.of(200000));
     updater.commit();
     assertThat(worldState.get(ADDRESS).getBalance()).isEqualTo(Wei.of(200000));
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x54bafbd3c59251a8e846c3fa1475539d3a81b8d982f801ffb24fb973b2fd4510"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x54bafbd3c59251a8e846c3fa1475539d3a81b8d982f801ffb24fb973b2fd4510"));
   }
 
   @Test
@@ -251,8 +259,10 @@ public class UniTrieMutableWorldStateTest {
     account.setStorageValue(UInt256.ZERO, UInt256.ZERO);
     updater.commit();
     assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ZERO)).isEqualTo(UInt256.ZERO);
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
     verifyStoragePrefixRootIsNotPresent(worldState, ADDRESS);
   }
 
@@ -265,8 +275,10 @@ public class UniTrieMutableWorldStateTest {
     account.setStorageValue(UInt256.ONE, UInt256.of(2));
     updater.commit();
     assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ONE)).isEqualTo(UInt256.of(2));
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x62cf83cdee2625f893d6f732ef7babf4cab92d4a62fbe16fa25a71341f342ebb"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x62cf83cdee2625f893d6f732ef7babf4cab92d4a62fbe16fa25a71341f342ebb"));
     verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
   }
 
@@ -280,8 +292,10 @@ public class UniTrieMutableWorldStateTest {
     account.setStorageValue(UInt256.ONE, UInt256.of(3));
     updater.commit();
     assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ONE)).isEqualTo(UInt256.of(3));
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0xbccbcd3d653b88a6dacf8da7e0fb23eeb018a452363daffaf752eb98e9ccd519"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0xbccbcd3d653b88a6dacf8da7e0fb23eeb018a452363daffaf752eb98e9ccd519"));
     verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
   }
 
@@ -294,8 +308,10 @@ public class UniTrieMutableWorldStateTest {
     account.setStorageValue(UInt256.ONE, UInt256.of(2));
     account.setStorageValue(UInt256.ONE, UInt256.ZERO);
     updater.commit();
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x3019b5c8af2e0353f2f12e7da1d0adb9b3743a6d3f33ba24006ffafb20b04141"));
     verifyStoragePrefixRootIsNotPresent(worldState, ADDRESS);
   }
 
@@ -500,8 +516,10 @@ public class UniTrieMutableWorldStateTest {
     updater.commit();
     assertThat(worldState.get(ADDRESS).getCode()).isEqualByComparingTo(BytesValue.of(3, 2, 1));
     assertThat(worldState.get(ADDRESS).getVersion()).isEqualTo(Account.DEFAULT_VERSION);
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0xd9d1907a41478313386eff05f812473d33a9e47ba1eae0f5147113a1da0fb927"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0xd9d1907a41478313386eff05f812473d33a9e47ba1eae0f5147113a1da0fb927"));
   }
 
   @Test
@@ -523,8 +541,10 @@ public class UniTrieMutableWorldStateTest {
     updater2.commit();
     assertThat(worldState.get(ADDRESS).getBalance()).isEqualTo(Wei.of(200000));
 
-    assertThat(worldState.rootHash()).isEqualTo(
-        Hash.fromHexString("0x54bafbd3c59251a8e846c3fa1475539d3a81b8d982f801ffb24fb973b2fd4510"));
+    assertThat(worldState.rootHash())
+        .isEqualTo(
+            Hash.fromHexString(
+                "0x54bafbd3c59251a8e846c3fa1475539d3a81b8d982f801ffb24fb973b2fd4510"));
   }
 
   @Test
@@ -613,11 +633,14 @@ public class UniTrieMutableWorldStateTest {
   }
 
   private void verifyStorage(final Account account, final List<AccountStorageEntry> entries) {
-    for (AccountStorageEntry entry: entries) {
-      entry.getKey().ifPresentOrElse(
-          key -> assertThat(account.getStorageValue(key)).isEqualTo(entry.getValue()),
-          () -> { throw new IllegalStateException("No key in entry"); }
-      );
+    for (AccountStorageEntry entry : entries) {
+      entry
+          .getKey()
+          .ifPresentOrElse(
+              key -> assertThat(account.getStorageValue(key)).isEqualTo(entry.getValue()),
+              () -> {
+                throw new IllegalStateException("No key in entry");
+              });
     }
   }
 }

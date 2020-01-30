@@ -24,17 +24,19 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.BlockHeaderTestFixture;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.eth.manager.task.EthTask;
 import org.hyperledger.besu.services.tasks.Task;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,14 +67,13 @@ public class RequestDataStepTest {
 
   private final RequestDataStep requestDataStep = new RequestDataStep(getNodeDataTaskFactory);
 
-  @Parameters(name="use unitrie={0}")
+  @Parameters(name = "use unitrie={0}")
   public static Object[] data() {
     // Use or not UniNodeDataRequests as opposed to classic NodeDataRequests
-    return new Object[]{false, true};
+    return new Object[] {false, true};
   }
 
-  @Parameter
-  public boolean useClassicalRequest;
+  @Parameter public boolean useClassicalRequest;
 
   @Before
   public void setUp() {

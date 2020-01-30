@@ -81,7 +81,7 @@ public class BlockHashOperationBenchmark {
   }
 
   private MerkleAwareProvider createMerkleAwareProvider(final MerkleStorageMode merkleStorageMode) {
-    switch(merkleStorageMode) {
+    switch (merkleStorageMode) {
       case UNITRIE:
         return new UniTrieMerkleAwareProvider();
       case CLASSIC:

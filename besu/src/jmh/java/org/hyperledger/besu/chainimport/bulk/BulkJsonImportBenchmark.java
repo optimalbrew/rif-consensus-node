@@ -17,15 +17,6 @@ package org.hyperledger.besu.chainimport.bulk;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.google.common.io.Files;
-import com.google.common.io.MoreFiles;
-import com.google.common.io.RecursiveDeleteOption;
-import com.google.common.io.Resources;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 import org.hyperledger.besu.chainimport.JsonBlockImporter;
 import org.hyperledger.besu.config.GenesisConfigFile;
 import org.hyperledger.besu.controller.BesuController;
@@ -44,6 +35,17 @@ import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.testutil.TestClock;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
+
+import com.google.common.io.Files;
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
+import com.google.common.io.Resources;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -55,11 +57,12 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.infra.Blackhole;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.SingleShotTime)
-@Fork(value = 2, jvmArgsAppend = {"-server", "-disablesystemassertions"})
+@Fork(
+    value = 2,
+    jvmArgsAppend = {"-server", "-disablesystemassertions"})
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class BulkJsonImportBenchmark {
 
@@ -130,7 +133,7 @@ public class BulkJsonImportBenchmark {
   }
 
   private MerkleAwareProvider merkleAwareProvider(final MerkleStorageMode merkleStorageMode) {
-    switch(merkleStorageMode) {
+    switch (merkleStorageMode) {
       case UNITRIE:
         return new UniTrieMerkleAwareProvider();
       case CLASSIC:

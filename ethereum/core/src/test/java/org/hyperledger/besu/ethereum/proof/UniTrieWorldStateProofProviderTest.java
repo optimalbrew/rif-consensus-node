@@ -17,11 +17,6 @@ package org.hyperledger.besu.ethereum.proof;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.Wei;
@@ -36,6 +31,12 @@ import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -125,7 +126,8 @@ public class UniTrieWorldStateProofProviderTest {
     assertThat(accountProof).isEmpty();
   }
 
-  private Hash prepareForStorage(final UniTrie<BytesValue, BytesValue> trie, final Address address) {
+  private Hash prepareForStorage(
+      final UniTrie<BytesValue, BytesValue> trie, final Address address) {
     BytesValue storagePrefixKey = keyMapper.getAccountStoragePrefixKey(address);
     trie.put(storagePrefixKey, BytesValue.of(0));
     return Hash.wrap(trie.getHash(storagePrefixKey));
@@ -145,7 +147,6 @@ public class UniTrieWorldStateProofProviderTest {
   }
 
   private UniTrie<BytesValue, BytesValue> unitrie() {
-    return new StoredUniTrie<>(
-        worldStateStorage::getAccountStateTrieNode, b -> b, b -> b);
+    return new StoredUniTrie<>(worldStateStorage::getAccountStateTrieNode, b -> b, b -> b);
   }
 }

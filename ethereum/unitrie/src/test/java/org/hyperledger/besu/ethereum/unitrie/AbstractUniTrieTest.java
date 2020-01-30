@@ -17,18 +17,19 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
-import com.google.common.base.Strings;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.ethereum.trie.Proof;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
+
+import com.google.common.base.Strings;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,8 +51,7 @@ public abstract class AbstractUniTrieTest {
 
   @Test
   public void emptyTreeHasKnownRootHash() {
-    assertThat(trie.getRootHash().toString())
-        .isEqualTo(UniTrie.NULL_UNINODE_HASH.toString());
+    assertThat(trie.getRootHash().toString()).isEqualTo(UniTrie.NULL_UNINODE_HASH.toString());
   }
 
   @Test(expected = NullPointerException.class)
@@ -324,7 +324,8 @@ public abstract class AbstractUniTrieTest {
 
     MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
     List<UniNode> nodes =
-        new UniTrieNodeDecoder(storage::get).decodeNodes(valueWithProof.getProofRelatedNodes().get(1));
+        new UniTrieNodeDecoder(storage::get)
+            .decodeNodes(valueWithProof.getProofRelatedNodes().get(1));
 
     assertThat(new String(nodes.get(1).getValue().get().extractArray(), StandardCharsets.UTF_8))
         .isEqualTo(value2);
@@ -365,7 +366,8 @@ public abstract class AbstractUniTrieTest {
 
     MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
     List<UniNode> nodes =
-        new UniTrieNodeDecoder(storage::get).decodeNodes(valueWithProof.getProofRelatedNodes().get(0));
+        new UniTrieNodeDecoder(storage::get)
+            .decodeNodes(valueWithProof.getProofRelatedNodes().get(0));
 
     assertThat(nodes.size()).isEqualTo(1);
 

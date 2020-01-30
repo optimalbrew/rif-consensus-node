@@ -350,8 +350,7 @@ public class UniTrieKeyValueTest {
         .contains(BytesValue.of(1));
     assertThat(stripped.accept(new GetVisitor(), BytesValue.EMPTY).getValue())
         .contains(BytesValue.of(4));
-    assertThat(stripped.accept(new GetVisitor(), BytesValue.of(0, 0, 0)).getValue())
-        .isEmpty();
+    assertThat(stripped.accept(new GetVisitor(), BytesValue.of(0, 0, 0)).getValue()).isEmpty();
     assertThat(stripped.accept(new GetVisitor(), BytesValue.of(0, 0, 0, 1, 0)).getValue())
         .isEmpty();
   }

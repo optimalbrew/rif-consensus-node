@@ -17,7 +17,6 @@ package org.hyperledger.besu.ethereum.worldstate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryWorldState;
 
-import com.google.common.base.Strings;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -36,6 +35,7 @@ import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+import org.hyperledger.besu.util.uint.UInt256Bytes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hyperledger.besu.util.uint.UInt256Bytes;
+import com.google.common.base.Strings;
 import org.junit.Test;
 
 // TODO: make that an abstract mutable world state test, and create sub-class for all world state
@@ -690,5 +690,4 @@ public class DefaultMutableWorldStateTest {
     assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
     System.out.println(UInt256Bytes.of(code.size()));
   }
-
 }

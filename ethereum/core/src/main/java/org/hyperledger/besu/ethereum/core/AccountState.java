@@ -81,7 +81,7 @@ public interface AccountState {
   /**
    * Get size in bytes of the EVM bytecode associated with this account.
    *
-   * @return  code size in bytes, or zero if account has no code.
+   * @return code size in bytes, or zero if account has no code.
    */
   Bytes32 getCodeSize();
 

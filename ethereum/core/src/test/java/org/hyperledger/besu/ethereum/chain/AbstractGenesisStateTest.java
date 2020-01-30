@@ -18,9 +18,6 @@ package org.hyperledger.besu.ethereum.chain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-import org.bouncycastle.util.encoders.Hex;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
@@ -35,6 +32,10 @@ import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import org.bouncycastle.util.encoders.Hex;
+
 public class AbstractGenesisStateTest {
 
   private static final String EXPECTED_CODE =
@@ -44,10 +45,11 @@ public class AbstractGenesisStateTest {
       final MerkleAwareProvider merkleAwareProvider, final Hash expectedStateRoot)
       throws Exception {
 
-    final GenesisState genesisState = GenesisState.fromJson(
-        Resources.toString(GenesisStateTest.class.getResource("genesis1.json"), Charsets.UTF_8),
-        MainnetProtocolSchedule.create(),
-        merkleAwareProvider);
+    final GenesisState genesisState =
+        GenesisState.fromJson(
+            Resources.toString(GenesisStateTest.class.getResource("genesis1.json"), Charsets.UTF_8),
+            MainnetProtocolSchedule.create(),
+            merkleAwareProvider);
     final BlockHeader header = genesisState.getBlock().getHeader();
     assertThat(header.getStateRoot()).isEqualTo(expectedStateRoot);
     assertThat(header.getTransactionsRoot()).isEqualTo(Hash.EMPTY_TRIE_HASH);
@@ -68,8 +70,8 @@ public class AbstractGenesisStateTest {
     assertThat(second.getBalance().toLong()).isEqualTo(222222222L);
   }
 
-  protected void doCreateFromJsonNoAllocs(
-      final MerkleAwareProvider merkleAwareProvider) throws Exception {
+  protected void doCreateFromJsonNoAllocs(final MerkleAwareProvider merkleAwareProvider)
+      throws Exception {
 
     final GenesisState genesisState =
         GenesisState.fromJson(

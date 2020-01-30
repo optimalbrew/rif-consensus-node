@@ -15,10 +15,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.util.bytes.BytesValue;
+
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
-import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Lexicographically collect values from some {@link UniNode}, starting from a given path.

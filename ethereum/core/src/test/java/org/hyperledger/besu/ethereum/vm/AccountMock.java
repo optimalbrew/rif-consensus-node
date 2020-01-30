@@ -16,15 +16,17 @@
 
 package org.hyperledger.besu.ethereum.vm;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashMap;
-import java.util.Map;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.MutableAccount;
 import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AccountMock {
   private final long nonce;
@@ -48,7 +50,7 @@ public class AccountMock {
     account.setBalance(toCopy.getBalance());
     account.setCode(toCopy.getCode());
     account.setVersion(toCopy.getVersion());
-    for (final Map.Entry<UInt256, UInt256> entry: toCopy.getStorage().entrySet()) {
+    for (final Map.Entry<UInt256, UInt256> entry : toCopy.getStorage().entrySet()) {
       account.setStorageValue(entry.getKey(), entry.getValue());
     }
   }

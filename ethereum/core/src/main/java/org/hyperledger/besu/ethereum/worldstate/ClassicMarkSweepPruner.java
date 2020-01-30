@@ -14,7 +14,6 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
-import java.util.function.Function;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.rlp.RLP;
@@ -24,6 +23,8 @@ import org.hyperledger.besu.metrics.ObservableMetricsSystem;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.function.Function;
 
 public class ClassicMarkSweepPruner extends AbstractMarkSweepPruner {
 

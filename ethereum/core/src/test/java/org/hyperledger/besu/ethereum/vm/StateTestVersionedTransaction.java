@@ -45,8 +45,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *       this class in {@link #get(AbstractGeneralStateTestCaseSpec.Indexes)}.
  *   <li>the signature of the transaction is not provided in the json directly. Instead, the private
  *       key of the sender is provided, and the transaction must thus be signed (also in {@link
- *       #get(AbstractGeneralStateTestCaseSpec.Indexes)})
- *       through {@link Transaction.Builder#signAndBuild(KeyPair)}.
+ *       #get(AbstractGeneralStateTestCaseSpec.Indexes)}) through {@link
+ *       Transaction.Builder#signAndBuild(KeyPair)}.
  * </ul>
  */
 public class StateTestVersionedTransaction {

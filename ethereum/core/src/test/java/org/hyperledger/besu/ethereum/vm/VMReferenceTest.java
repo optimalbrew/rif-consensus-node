@@ -14,11 +14,13 @@
  */
 package org.hyperledger.besu.ethereum.vm;
 
-import java.util.Collection;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
 import org.hyperledger.besu.testutil.JsonTestParameters;
+
+import java.util.Collection;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -36,7 +38,7 @@ public class VMReferenceTest extends AbstractVMReferenceTestBase {
 
   public VMReferenceTest(
       final String name, final VMReferenceTestCaseSpec spec, final boolean runTest) {
-   super(name, spec, runTest);
+    super(name, spec, runTest);
   }
 
   @Override

@@ -16,11 +16,6 @@ package org.hyperledger.besu.ethereum.vm;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Hash;
@@ -36,6 +31,11 @@ import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.testutil.JsonTestParameters;
 import org.hyperledger.besu.testutil.JsonTestParameters.Generator;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class GeneralStateReferenceTestTools {
   private static final ReferenceTestProtocolSchedules REFERENCE_TEST_PROTOCOL_SCHEDULES =
@@ -97,8 +97,9 @@ public class GeneralStateReferenceTestTools {
    * @param <S> type of general test case spec to use as input
    * @return generator providing classic or UniTrie tests
    */
-  private static <S extends AbstractGeneralStateTestCaseSpec> Generator<S, GeneralStateTestCaseEipSpec>
-      generator(final MerkleAwareProvider merkleAwareProvider) {
+  private static <S extends AbstractGeneralStateTestCaseSpec>
+      Generator<S, GeneralStateTestCaseEipSpec> generator(
+          final MerkleAwareProvider merkleAwareProvider) {
 
     return (testName, stateSpec, collector) -> {
       final String prefix = merkleAwareProvider.toString().toLowerCase() + "-" + testName + "-";

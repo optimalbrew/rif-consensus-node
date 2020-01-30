@@ -18,10 +18,6 @@ package org.hyperledger.besu.ethereum.vm;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
-import java.math.BigInteger;
-import java.util.ArrayDeque;
-import java.util.Optional;
-import java.util.OptionalInt;
 import org.hyperledger.besu.ethereum.core.Gas;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
@@ -32,18 +28,23 @@ import org.hyperledger.besu.ethereum.mainnet.ProtocolSpec;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransactionValidator;
 import org.hyperledger.besu.ethereum.vm.ehalt.ExceptionalHaltException;
 
+import java.math.BigInteger;
+import java.util.ArrayDeque;
+import java.util.Optional;
+import java.util.OptionalInt;
+
 public abstract class AbstractVMReferenceTestBase extends AbstractRetryingTest {
 
   /** The path where all of the VM test configuration files live. */
   static final String[] TEST_CONFIG_FILE_DIR_PATHS = {
-      "VMTests/vmArithmeticTest",
-      "VMTests/vmBitwiseLogicOperation",
-      "VMTests/vmBlockInfoTest",
-      "VMTests/vmEnvironmentalInfo",
-      "VMTests/vmIOandFlowOperations",
-      "VMTests/vmLogTest",
-      "VMTests/vmSha3Test",
-      "VMTests/vmSystemOperations"
+    "VMTests/vmArithmeticTest",
+    "VMTests/vmBitwiseLogicOperation",
+    "VMTests/vmBlockInfoTest",
+    "VMTests/vmEnvironmentalInfo",
+    "VMTests/vmIOandFlowOperations",
+    "VMTests/vmLogTest",
+    "VMTests/vmSha3Test",
+    "VMTests/vmSystemOperations"
   };
 
   // The blacklisted test cases fall into two categories:
@@ -57,34 +58,34 @@ public abstract class AbstractVMReferenceTestBase extends AbstractRetryingTest {
   // Additionally, the GeneralStateTests provide coverage of these
   // operations so the proper functionality does get tested somewhere.
   static final String[] BLACKLISTED_TESTS = {
-      "balance0",
-      "balanceAddressInputTooBig",
-      "balanceCaller3",
-      "balanceAddressInputTooBigRightMyAddress",
-      "ExtCodeSizeAddressInputTooBigRightMyAddress",
-      "env1",
-      "extcodecopy0AddressTooBigRight",
-      "PostToNameRegistrator0",
-      "CallToReturn1",
-      "CallRecursiveBomb0",
-      "createNameRegistratorValueTooHigh",
-      "suicideNotExistingAccount",
-      "callstatelessToReturn1",
-      "CallRecursiveBomb1",
-      "ABAcallsSuicide1",
-      "suicideSendEtherToMe",
-      "suicide0",
-      "CallToNameRegistrator0",
-      "callstatelessToNameRegistrator0",
-      "PostToReturn1",
-      "callcodeToReturn1",
-      "ABAcalls0",
-      "CallRecursiveBomb2",
-      "CallRecursiveBomb3",
-      "ABAcallsSuicide0",
-      "callcodeToNameRegistrator0",
-      "CallToPrecompiledContract",
-      "createNameRegistrator"
+    "balance0",
+    "balanceAddressInputTooBig",
+    "balanceCaller3",
+    "balanceAddressInputTooBigRightMyAddress",
+    "ExtCodeSizeAddressInputTooBigRightMyAddress",
+    "env1",
+    "extcodecopy0AddressTooBigRight",
+    "PostToNameRegistrator0",
+    "CallToReturn1",
+    "CallRecursiveBomb0",
+    "createNameRegistratorValueTooHigh",
+    "suicideNotExistingAccount",
+    "callstatelessToReturn1",
+    "CallRecursiveBomb1",
+    "ABAcallsSuicide1",
+    "suicideSendEtherToMe",
+    "suicide0",
+    "CallToNameRegistrator0",
+    "callstatelessToNameRegistrator0",
+    "PostToReturn1",
+    "callcodeToReturn1",
+    "ABAcalls0",
+    "CallRecursiveBomb2",
+    "CallRecursiveBomb3",
+    "ABAcallsSuicide0",
+    "callcodeToNameRegistrator0",
+    "CallToPrecompiledContract",
+    "createNameRegistrator"
   };
   private static final Optional<BigInteger> CHAIN_ID = Optional.of(BigInteger.ONE);
   private final String name;

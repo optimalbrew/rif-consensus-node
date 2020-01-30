@@ -17,18 +17,20 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.base.Strings;
+import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
+import org.hyperledger.besu.ethereum.trie.MerkleStorage;
+import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
-import org.hyperledger.besu.ethereum.trie.MerkleStorage;
-import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
+
+import com.google.common.base.Strings;
 import org.junit.Test;
 
 public class UniTrieNodeDecoderTest {
@@ -185,8 +187,7 @@ public class UniTrieNodeDecoderTest {
   @Test
   public void breadthFirstDecode_emptyTrie() {
     List<UniNode> result =
-        UniTrieNodeDecoder.breadthFirstDecoder(
-                __ -> Optional.empty(), UniTrie.NULL_UNINODE_HASH)
+        UniTrieNodeDecoder.breadthFirstDecoder(__ -> Optional.empty(), UniTrie.NULL_UNINODE_HASH)
             .collect(Collectors.toList());
     assertThat(result.size()).isEqualTo(0);
   }

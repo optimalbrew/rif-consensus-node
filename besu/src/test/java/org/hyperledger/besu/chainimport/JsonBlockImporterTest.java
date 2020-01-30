@@ -18,16 +18,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.io.Resources;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import org.hyperledger.besu.config.GenesisConfigFile;
 import org.hyperledger.besu.config.JsonUtil;
 import org.hyperledger.besu.controller.BesuController;
@@ -52,6 +42,18 @@ import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.testutil.TestClock;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.io.Resources;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -63,13 +65,12 @@ public abstract class JsonBlockImporterTest {
 
   @Rule public final TemporaryFolder folder = new TemporaryFolder();
 
-  final private String consensusEngine;
+  private final String consensusEngine;
   final MerkleAwareProvider merkleAwareProvider;
   final GenesisConfigFile genesisConfigFile;
   final boolean isEthash;
 
-  JsonBlockImporterTest(
-      final String consensusEngine, final MerkleAwareProvider merkleAwareProvider)
+  JsonBlockImporterTest(final String consensusEngine, final MerkleAwareProvider merkleAwareProvider)
       throws IOException {
     this.consensusEngine = consensusEngine;
     this.merkleAwareProvider = merkleAwareProvider;
@@ -116,10 +117,10 @@ public abstract class JsonBlockImporterTest {
     @Parameters(name = "Name: {0}[{1}]")
     public static Collection<Object[]> getParameters() {
       final Object[][] params = {
-          {"ethash", new ClassicMerkleAwareProvider()},
-          {"clique", new ClassicMerkleAwareProvider()},
-          {"ethash", new UniTrieMerkleAwareProvider()},
-          {"clique", new UniTrieMerkleAwareProvider()},
+        {"ethash", new ClassicMerkleAwareProvider()},
+        {"clique", new ClassicMerkleAwareProvider()},
+        {"ethash", new UniTrieMerkleAwareProvider()},
+        {"clique", new UniTrieMerkleAwareProvider()},
       };
       return Arrays.asList(params);
     }
@@ -422,8 +423,7 @@ public abstract class JsonBlockImporterTest {
     return Resources.toString(fileURL, UTF_8);
   }
 
-  BesuController<?> createController()
-      throws IOException {
+  BesuController<?> createController() throws IOException {
     return createController(merkleAwareProvider, genesisConfigFile);
   }
 

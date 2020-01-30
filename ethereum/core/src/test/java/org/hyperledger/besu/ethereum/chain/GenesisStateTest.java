@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.chain;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+
 import org.junit.Test;
 
 public final class GenesisStateTest extends AbstractGenesisStateTest {

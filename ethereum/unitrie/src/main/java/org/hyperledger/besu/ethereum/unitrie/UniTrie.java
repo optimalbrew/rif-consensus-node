@@ -17,18 +17,17 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.hyperledger.besu.crypto.Hash.keccak256;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Consumer;
 import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.ethereum.trie.NodeUpdater;
 import org.hyperledger.besu.ethereum.trie.Proof;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
-/**
- * Interface for UniTrie data structure.
- */
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
+
+/** Interface for UniTrie data structure. */
 public interface UniTrie<K, V> {
 
   BytesValue NULL_UNINODE_ENCODING = RLP.NULL;
@@ -43,11 +42,11 @@ public interface UniTrie<K, V> {
   Optional<V> get(K key);
 
   /**
-   * Get the hash of the UniTrie node associated to the given key, or
-   * the null uninode hash if the key is not present.
+   * Get the hash of the UniTrie node associated to the given key, or the null uninode hash if the
+   * key is not present.
    *
    * @param key key specifying node whose hash will be retrieved
-   * @return  node hash if key existis; otherwise null uninode hash
+   * @return node hash if key existis; otherwise null uninode hash
    */
   Bytes32 getHash(K key);
 
@@ -62,7 +61,7 @@ public interface UniTrie<K, V> {
   /**
    * Get the length in bytes of the value at the given key.
    *
-   * @param key  The key for the value
+   * @param key The key for the value
    * @return optional holding the length of the value, empty if no value for the given key
    */
   Optional<Integer> getValueLength(final K key);
@@ -84,10 +83,10 @@ public interface UniTrie<K, V> {
   void remove(K key);
 
   /**
-   * Deletes the value mapped to the specified key, and all the values that are
-   * below the given one in the underlying UniTrie storage.
+   * Deletes the value mapped to the specified key, and all the values that are below the given one
+   * in the underlying UniTrie storage.
    *
-   * @param key  key specifying the root of the UniTrie subtree to remove.
+   * @param key key specifying the root of the UniTrie subtree to remove.
    */
   void removeRecursive(K key);
 
@@ -101,8 +100,8 @@ public interface UniTrie<K, V> {
   /**
    * Whether the node with the given key is present in the underlying UniTrie and is a leaf.
    *
-   * @param key  key specifying the node to check
-   * @return  true if the node associated to the key is a left in the underlying UniTrie.
+   * @param key key specifying the node to check
+   * @return true if the node associated to the key is a left in the underlying UniTrie.
    */
   boolean isLeaf(K key);
 
@@ -116,13 +115,14 @@ public interface UniTrie<K, V> {
 
   /**
    * Visit all nodes in this unitrie.
-   * @param visitor  unitrie visitor.
+   *
+   * @param visitor unitrie visitor.
    */
   void visitAll(Consumer<UniNode> visitor);
 
   /**
-   * Retrieve up to {@code limit} entries beginning from the first entry with path equal to
-   * or greater than {@code starPath}.
+   * Retrieve up to {@code limit} entries beginning from the first entry with path equal to or
+   * greater than {@code starPath}.
    *
    * @param startPath the first path to return.
    * @param limit the maximum number of entries to return.

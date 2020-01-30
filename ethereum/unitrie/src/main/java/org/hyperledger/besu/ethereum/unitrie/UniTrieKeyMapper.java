@@ -15,15 +15,16 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.plugin.data.Address;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Produce Unitrie keys for accounts, code, and storage.

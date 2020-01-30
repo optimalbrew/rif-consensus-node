@@ -14,11 +14,12 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import java.util.Optional;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.Optional;
 
 /**
  * Interface for nodes in a Unitrie. A node has a path and an optional value.

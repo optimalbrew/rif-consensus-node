@@ -15,13 +15,15 @@
  */
 package org.hyperledger.besu.ethereum.vm;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Map;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.worldstate.UniTrieMutableWorldState;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class UniTrieWorldStateMock extends UniTrieMutableWorldState {
 

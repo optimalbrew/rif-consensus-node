@@ -18,6 +18,7 @@ package org.hyperledger.besu.ethereum.chain;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
+
 import org.junit.Test;
 
 public class UniTrieGenesisStateTest extends AbstractGenesisStateTest {

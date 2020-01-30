@@ -16,16 +16,17 @@
 package org.hyperledger.besu.ethereum.merkleutils;
 
 /**
- * Trie storage mode: we can use a "classic" merkle patricia tree model
- * as described in the yellow paper, or a Unitrie.
+ * Trie storage mode: we can use a "classic" merkle patricia tree model as described in the yellow
+ * paper, or a Unitrie.
  *
  * <p>For a detailed discussion of Unitrie-based storage, check:
- *    https://blog.rsk.co/noticia/towards-higher-onchain-scalability-with-the-unitrie/
+ * https://blog.rsk.co/noticia/towards-higher-onchain-scalability-with-the-unitrie/
  *
  * @author ppedemon
  */
 public enum MerkleStorageMode {
-  CLASSIC, UNITRIE;
+  CLASSIC,
+  UNITRIE;
 
   public static MerkleStorageMode fromString(final String str) {
     for (final MerkleStorageMode mode : MerkleStorageMode.values()) {

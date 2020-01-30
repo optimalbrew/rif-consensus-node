@@ -14,10 +14,11 @@
  */
 package org.hyperledger.besu.ethereum.trie;
 
-import java.util.List;
-import java.util.Optional;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface Node<V> {
 

@@ -27,8 +27,7 @@ import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
  *
  * @author ppedemon
  */
-class NodeDataRequestFactory
-    implements MerkleAwareProviderVisitor<NodeDataRequest> {
+class NodeDataRequestFactory implements MerkleAwareProviderVisitor<NodeDataRequest> {
 
   static NodeDataRequest createNodeDataRequest(
       final MerkleAwareProvider merkleAwareProvider, final Hash hash) {

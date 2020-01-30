@@ -14,10 +14,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.util.bytes.BytesValue;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
-import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Path visitor traversing a Unitrie.
@@ -121,8 +122,8 @@ public class UniTrieIterator implements UniPathVisitor {
   }
 
   /**
-   * Leaf handler: given a leaf node and its path, process the leaf and
-   * return the new iteration state.
+   * Leaf handler: given a leaf node and its path, process the leaf and return the new iteration
+   * state.
    */
   @FunctionalInterface
   public interface LeafHandler {

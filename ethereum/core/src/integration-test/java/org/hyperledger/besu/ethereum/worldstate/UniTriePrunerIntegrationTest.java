@@ -18,16 +18,6 @@ package org.hyperledger.besu.ethereum.worldstate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryBlockchain;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import org.assertj.core.api.Assertions;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
@@ -48,6 +38,18 @@ import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.testutil.MockExecutorService;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 public class UniTriePrunerIntegrationTest {
@@ -149,8 +151,7 @@ public class UniTriePrunerIntegrationTest {
       }
 
       if (accountsPerBlock != 0) {
-        assertThat(hashValueStore.size())
-            .isGreaterThanOrEqualTo(expectedNodes.size());
+        assertThat(hashValueStore.size()).isGreaterThanOrEqualTo(expectedNodes.size());
       }
 
       // Assert that blocks from mark point onward are still accessible
@@ -158,7 +159,7 @@ public class UniTriePrunerIntegrationTest {
         final Hash stateRoot = blockchain.getBlockHeader(i).get().getStateRoot();
         assertThat(worldStateArchive.get(stateRoot)).isPresent();
         final WorldState markedState = worldStateArchive.get(stateRoot).get();
-        verifyAccounts(markedState, allGeneratedAccounts.subList(0, accountsPerBlock*i));
+        verifyAccounts(markedState, allGeneratedAccounts.subList(0, accountsPerBlock * i));
       }
 
       // All other state roots should have been removed
@@ -215,8 +216,7 @@ public class UniTriePrunerIntegrationTest {
     }
   }
 
-  private void collectUniTrieNodes(
-      final Hash stateRoot, final Set<BytesValue> collector) {
+  private void collectUniTrieNodes(final Hash stateRoot, final Set<BytesValue> collector) {
 
     UniTrie<BytesValue, BytesValue> trie = createUniTrie(stateRoot);
     final Bytes32 rootHash = trie.getRootHash();

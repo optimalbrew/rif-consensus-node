@@ -14,11 +14,12 @@
  */
 package org.hyperledger.besu.ethereum.proof;
 
-import java.util.List;
-import java.util.Optional;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.util.uint.UInt256;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Specification for classes that can provide world state Merkle proofs.
@@ -33,8 +34,8 @@ public interface WorldStateProofProvider {
    * @param worldStateRoot world state root hash
    * @param accountAddress account address
    * @param accountStorageKeys storage keys for the account to process
-   * @return optional world state proof, empty if:
-   *     there's world state for the given root hash or account doesn't exist for the given state
+   * @return optional world state proof, empty if: there's world state for the given root hash or
+   *     account doesn't exist for the given state
    */
   Optional<WorldStateProof> getAccountProof(
       Hash worldStateRoot, Address accountAddress, List<UInt256> accountStorageKeys);

@@ -15,10 +15,12 @@
  */
 package org.hyperledger.besu.ethereum.core;
 
-import java.util.Arrays;
 import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
+
+import java.util.Arrays;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -27,8 +29,8 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * Base class for tests parametrized with a {@link MerkleAwareProvider}.
  *
- * Tests parameterized on merkle aware provider should extend this class
- * and access the merkle aware probvider by means of the getter method.
+ * <p>Tests parameterized on merkle aware provider should extend this class and access the merkle
+ * aware probvider by means of the getter method.
  *
  * @author ppedemon
  */
@@ -40,8 +42,7 @@ public class MerkleAwareTest {
     return Arrays.asList(new ClassicMerkleAwareProvider(), new UniTrieMerkleAwareProvider());
   }
 
-  @Parameter
-  public MerkleAwareProvider merkleAwareProvider;
+  @Parameter public MerkleAwareProvider merkleAwareProvider;
 
   public MerkleAwareProvider getMerkleAwareProvider() {
     return merkleAwareProvider;

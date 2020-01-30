@@ -15,9 +15,10 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import org.hyperledger.besu.util.bytes.BytesValue;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class SimpleUniTrieTest extends AbstractUniTrieTest {
 

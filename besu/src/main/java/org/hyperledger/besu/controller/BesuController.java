@@ -34,7 +34,6 @@ import org.hyperledger.besu.ethereum.p2p.config.SubProtocolConfiguration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 
 public class BesuController<C> implements java.io.Closeable {
 

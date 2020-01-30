@@ -15,10 +15,6 @@
  */
 package org.hyperledger.besu.ethereum.proof;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.rlp.RLP;
@@ -31,6 +27,11 @@ import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class UniTrieWorldStateProofProvider implements WorldStateProofProvider {
 
@@ -75,10 +76,11 @@ public class UniTrieWorldStateProofProvider implements WorldStateProofProvider {
       final List<UInt256> accountStorageKeys) {
 
     final SortedMap<UInt256, Proof<BytesValue>> storageProofs = new TreeMap<>();
-    accountStorageKeys.forEach(key -> {
-      BytesValue mappedKey = keyMapper.getAccountStorageKey(accountAddress, key);
-      storageProofs.put(key, trie.getValueWithProof(mappedKey));
-    });
+    accountStorageKeys.forEach(
+        key -> {
+          BytesValue mappedKey = keyMapper.getAccountStorageKey(accountAddress, key);
+          storageProofs.put(key, trie.getValueWithProof(mappedKey));
+        });
     return storageProofs;
   }
 

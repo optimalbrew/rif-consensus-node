@@ -14,13 +14,14 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import java.nio.ByteBuffer;
-import java.util.Objects;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt8;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.nio.ByteBuffer;
+import java.util.Objects;
 
 /**
  * Encode or decode {@link UniNode}s.

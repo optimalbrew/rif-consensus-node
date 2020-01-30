@@ -22,7 +22,6 @@ public enum RequestType {
   UNINODE((byte) 11),
   UNINODE_VALUE((byte) 12);
 
-
   private final byte value;
 
   RequestType(final byte value) {
@@ -35,7 +34,7 @@ public enum RequestType {
 
   public static RequestType fromValue(final byte value) {
     switch (value) {
-      // Classic Trie node requests
+        // Classic Trie node requests
       case (byte) 1:
         return ACCOUNT_TRIE_NODE;
       case (byte) 2:
@@ -43,7 +42,7 @@ public enum RequestType {
       case (byte) 3:
         return CODE;
 
-      // UniNode requests
+        // UniNode requests
       case (byte) 11:
         return UNINODE;
       case (byte) 12:

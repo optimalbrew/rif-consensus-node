@@ -20,16 +20,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.services.pipeline.Pipe;
 import org.hyperledger.besu.services.tasks.Task;
 import org.hyperledger.besu.util.bytes.BytesValue;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -58,14 +60,14 @@ public class LoadLocalDataStepTest {
 
   @Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {
-        {request, task},
-        {uniRequest, uniTask}
-    });
+    return Arrays.asList(
+        new Object[][] {
+          {request, task},
+          {uniRequest, uniTask}
+        });
   }
 
-  @Parameter
-  public NodeDataRequest currentRequest;
+  @Parameter public NodeDataRequest currentRequest;
 
   @Parameter(value = 1)
   public Task<NodeDataRequest> currentTask;

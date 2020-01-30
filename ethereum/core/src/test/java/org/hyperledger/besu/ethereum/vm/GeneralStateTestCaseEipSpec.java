@@ -14,12 +14,13 @@
  */
 package org.hyperledger.besu.ethereum.vm;
 
-import java.util.function.Supplier;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.WorldState;
+
+import java.util.function.Supplier;
 
 public class GeneralStateTestCaseEipSpec {
 
