@@ -50,7 +50,7 @@ public class OperationBenchmarkHelper {
     this.messageFrame = messageFrame;
   }
 
-  public static OperationBenchmarkHelper create(MerkleAwareProvider merkleAwareProvider)
+  public static OperationBenchmarkHelper create(final MerkleAwareProvider merkleAwareProvider)
       throws IOException {
 
     final Path storageDirectory = Files.createTempDirectory("benchmark");
