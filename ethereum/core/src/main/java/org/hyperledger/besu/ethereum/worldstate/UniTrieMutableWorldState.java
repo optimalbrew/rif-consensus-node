@@ -15,6 +15,16 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
+import com.google.common.annotations.VisibleForTesting;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
@@ -34,17 +44,6 @@ import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.uint.UInt256;
 import org.hyperledger.besu.util.uint.UInt256Bytes;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.SortedMap;
-import java.util.stream.Stream;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Mutable world state witnessed by Unitries.
@@ -146,18 +145,13 @@ public class UniTrieMutableWorldState implements MutableWorldState {
       final Address address, final Hash addressHash, final BytesValue encoded) throws RLPException {
 
     final RLPInput in = RLP.input(encoded);
-    final StateTrieAccountValue accountValue = StateTrieAccountValue.readFrom(in);
+    final UniTrieAccountValue accountValue = UniTrieAccountValue.readFrom(in);
     return new WorldStateAccount(address, addressHash, accountValue);
   }
 
   private static BytesValue serializeAccount(
-      final long nonce,
-      final Wei balance,
-      final Hash storageRoot,
-      final Hash codeHash,
-      final int version) {
-    final StateTrieAccountValue accountValue =
-        new StateTrieAccountValue(nonce, balance, storageRoot, codeHash, version);
+      final long nonce, final Wei balance, final int version) {
+    final UniTrieAccountValue accountValue = new UniTrieAccountValue(nonce, balance, version);
     return RLP.encode(accountValue::writeTo);
   }
 
@@ -169,10 +163,11 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     private final Address address;
     private final Hash addressHash;
-    final StateTrieAccountValue accountValue;
+    private final UniTrieAccountValue accountValue;
+    private SoftReference<Hash> codeHash;
 
     private WorldStateAccount(
-        final Address address, final Hash addressHash, final StateTrieAccountValue accountValue) {
+        final Address address, final Hash addressHash, final UniTrieAccountValue accountValue) {
 
       this.address = address;
       this.addressHash = addressHash;
@@ -208,10 +203,10 @@ public class UniTrieMutableWorldState implements MutableWorldState {
       }
 
       // Cache miss. Let's see if code hash is empty. In that case the account has no code.
-      final Hash codeHash = getCodeHash();
-      if (codeHash.equals(Hash.EMPTY)) {
-        return BytesValue.EMPTY;
-      }
+      //final Hash codeHash = getCodeHash();
+      //if (codeHash.equals(Hash.EMPTY)) {
+      //  return BytesValue.EMPTY;
+      //}
 
       // The account has code, we must retrieve it from the Unitrie. Since Unitries
       // don't associate code entries to the code hash, the lookup key can't be the
@@ -227,7 +222,16 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     @Override
     public Hash getCodeHash() {
-      return accountValue.getCodeHash();
+      if (Objects.nonNull(codeHash)) {
+        Hash h = codeHash.get();
+        if (Objects.nonNull(h)) {
+          return h;
+        }
+      }
+      BytesValue code = getCode();
+      Hash h = code.isEmpty()? Hash.EMPTY : Hash.hash(code);
+      codeHash = new SoftReference<>(h);
+      return h;
     }
 
     @Override
@@ -280,15 +284,12 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     @Override
     public String toString() {
-      final StringBuilder builder = new StringBuilder();
-      builder.append("AccountState").append("{");
-      builder.append("address=").append(getAddress()).append(", ");
-      builder.append("nonce=").append(getNonce()).append(", ");
-      builder.append("balance=").append(getBalance()).append(", ");
-      builder.append("storageRoot=").append(accountValue.getStorageRoot()).append(", ");
-      builder.append("codeHash=").append(getCodeHash());
-      builder.append("version=").append(getVersion());
-      return builder.append("}").toString();
+      return "AccountState" + "{"
+          + "address=" + getAddress() + ", "
+          + "nonce=" + getNonce() + ", "
+          + "balance=" + getBalance() + ", "
+          + "version=" + getVersion()
+          + "}";
     }
   }
 
@@ -337,18 +338,14 @@ public class UniTrieMutableWorldState implements MutableWorldState {
           updatedAccounts()) {
 
         Address address = updated.getAddress();
-        final UniTrieMutableWorldState.WorldStateAccount origin = updated.getWrappedAccount();
 
         // Persist updated code if necessary
-        Hash accountCodeHash = origin == null ? Hash.EMPTY : origin.getCodeHash();
         if (updated.codeWasUpdated()) {
-          accountCodeHash = Hash.hash(updated.getCode());
           wrapped.updatedAccountCode.put(address, updated.getCode());
           wrapped.trie.put(wrapped.keyMapper.getAccountCodeKey(address), updated.getCode());
         }
 
         // Persist account storage
-        Bytes32 accountStorageRoot = UniTrie.NULL_UNINODE_HASH;
         BytesValue storageRootPrefixKey = wrapped.keyMapper.getAccountStoragePrefixKey(address);
 
         if (updated.getStorageWasCleared()) {
@@ -372,19 +369,12 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
           if (wrapped.trie.isLeaf(storageRootPrefixKey)) {
             wrapped.trie.remove(storageRootPrefixKey);
-          } else {
-            accountStorageRoot = wrapped.trie.getHash(storageRootPrefixKey);
           }
         }
 
         // Finally save the new/updated account
         final BytesValue account =
-            serializeAccount(
-                updated.getNonce(),
-                updated.getBalance(),
-                Hash.wrap(accountStorageRoot),
-                accountCodeHash,
-                updated.getVersion());
+            serializeAccount(updated.getNonce(), updated.getBalance(), updated.getVersion());
 
         BytesValue accountKey = wrapped.keyMapper.getAccountKey(address);
         wrapped.trie.put(accountKey, account);
