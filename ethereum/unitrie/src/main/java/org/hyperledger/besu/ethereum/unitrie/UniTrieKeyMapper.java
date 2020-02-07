@@ -118,17 +118,12 @@ public class UniTrieKeyMapper {
     buffer.put(strippedSubkeyBytes);
   }
 
-  private synchronized BytesValue hashDigestPrefix(final byte[] value) {
+  private BytesValue hashDigestPrefix(final byte[] value) {
     BytesValue v = BytesValue.wrap(value);
-
-    if (digestPrefixCache.containsKey(v)) {
-      return digestPrefixCache.get(v);
-    }
-
-    Bytes32 hash = Hash.keccak256(BytesValue.wrap(value));
-    BytesValue prefix = hash.slice(0, HASH_DIGEST_PREFIX_SIZE);
-    digestPrefixCache.put(v, prefix);
-    return prefix;
+    return digestPrefixCache.computeIfAbsent(v, __ -> {
+      Bytes32 hash = Hash.keccak256(v);
+      return hash.slice(0, HASH_DIGEST_PREFIX_SIZE);
+    });
   }
 
   private byte[] stripLeadingZeros(final byte[] bytes) {
