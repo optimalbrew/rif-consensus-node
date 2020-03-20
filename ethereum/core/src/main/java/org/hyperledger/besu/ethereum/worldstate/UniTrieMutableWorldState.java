@@ -83,6 +83,10 @@ public class UniTrieMutableWorldState implements MutableWorldState {
         worldStateStorage::getAccountStateTrieNode, rootHash, b -> b, b -> b);
   }
 
+  public UniTrie<BytesValue, BytesValue> getTrie() {
+    return trie;
+  }
+
   @Override
   public Hash rootHash() {
     return Hash.wrap(trie.getRootHash());

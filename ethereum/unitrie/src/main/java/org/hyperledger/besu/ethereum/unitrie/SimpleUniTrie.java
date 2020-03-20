@@ -17,18 +17,15 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.hyperledger.besu.ethereum.trie.NodeUpdater;
-import org.hyperledger.besu.ethereum.trie.Proof;
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.hyperledger.besu.ethereum.trie.NodeUpdater;
+import org.hyperledger.besu.ethereum.trie.Proof;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Simple in-memory Unitrie.
@@ -39,18 +36,19 @@ import java.util.stream.Collectors;
  */
 public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
 
-  private final GetVisitor getVisitor = new GetVisitor();
-  private final RemoveVisitor removeVisitor = new RemoveVisitor();
-  private final RemoveVisitor recursiveRemoveVisitor = new RemoveVisitor(true);
-
   // Since this is an in-memory data store, UniNodes and their values won't be persisted.
   // Therefore we should never require to solveUniNode values from storage. Hence it is
-  // safe to pass a dummy data loader to the UniNodeFactory instance.
-  private final DefaultUniNodeFactory nodeFactory =
-      new DefaultUniNodeFactory(__ -> Optional.empty());
+  // safe to use a dummy data loader.
+  private static final DataLoader loader = __ -> Optional.empty();
 
-  private final Function<V, BytesValue> valueSerializer;
-  private final Function<BytesValue, V> valueDeserializer;
+  private final DefaultUniNodeFactory nodeFactory = new DefaultUniNodeFactory();
+
+  private final GetVisitor getVisitor = new GetVisitor();
+  private final RemoveVisitor removeVisitor = new RemoveVisitor(nodeFactory);
+  private final RemoveVisitor recursiveRemoveVisitor = new RemoveVisitor(true, nodeFactory);
+
+  private final Function<V, byte[]> valueSerializer;
+  private final Function<byte[], V> valueDeserializer;
 
   private UniNode root;
 
@@ -58,21 +56,22 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
       final Function<V, BytesValue> valueSerializer,
       final Function<BytesValue, V> valueDeserializer) {
 
-    this.valueSerializer = valueSerializer;
-    this.valueDeserializer = valueDeserializer;
+    this.valueSerializer = valueSerializer.andThen(BytesValue::getArrayUnsafe);
+    this.valueDeserializer = valueDeserializer.compose(BytesValue::of);
     this.root = NullUniNode.instance();
   }
 
   @Override
   public Optional<V> get(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key)).getValue().map(valueDeserializer);
+    return root.accept(getVisitor, bytesToPath(key)).getValue(loader).map(valueDeserializer);
   }
 
   @Override
   public Bytes32 getHash(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key)).getHash();
+    byte[] h = root.accept(getVisitor, bytesToPath(key)).getHash();
+    return Bytes32.wrap(h);
   }
 
   @Override
@@ -89,10 +88,12 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
     checkNotNull(key);
     final ProofVisitor proofVisitor = new ProofVisitor(root);
     final Optional<V> value =
-        root.accept(proofVisitor, bytesToPath(key)).getValue().map(valueDeserializer);
-    final List<BytesValue> proof =
+        root.accept(proofVisitor, bytesToPath(key))
+            .getValue(loader)
+            .map(valueDeserializer);
+    final List<byte[]> proof =
         proofVisitor.getProof().stream().map(UniNode::getEncoding).collect(Collectors.toList());
-    return new Proof<>(value, proof);
+    return new Proof<>(value, proof.stream().map(BytesValue::of).collect(Collectors.toList()));
   }
 
   @Override
@@ -100,8 +101,7 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
     checkNotNull(key);
     return root.accept(getVisitor, bytesToPath(key))
         .getValueWrapper()
-        .getLength()
-        .map(UInt24::toInt);
+        .getLength();
   }
 
   @Override
@@ -126,7 +126,7 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
 
   @Override
   public Bytes32 getRootHash() {
-    return root.getHash();
+    return Bytes32.wrap(root.getHash());
   }
 
   @Override
@@ -142,11 +142,6 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   @Override
   public void visitAll(final Consumer<UniNode> visitor) {
     root.accept(new AllUniNodesVisitor(visitor));
-  }
-
-  @Override
-  public Map<BytesValue, V> entriesFrom(final BytesValue startPath, final int limit) {
-    return UniTrieCollector.collectEntries(root, startPath, limit, valueDeserializer);
   }
 
   private BytesValue bytesToPath(final BytesValue key) {

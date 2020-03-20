@@ -15,12 +15,18 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import java.util.Optional;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class SimpleUniTrieTest extends AbstractUniTrieTest {
+
+  @Override
+  DataLoader loader() {
+    return __ -> Optional.empty();
+  }
 
   @Override
   UniTrie<BytesValue, String> createTrie() {

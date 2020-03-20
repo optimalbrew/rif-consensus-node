@@ -14,21 +14,20 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import java.nio.ByteBuffer;
+import java.util.Objects;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt8;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
-import java.nio.ByteBuffer;
-import java.util.Objects;
-
 /**
  * Encode or decode {@link UniNode}s.
  *
  * @author ppedemon
  */
-public class UniNodeEncoding {
+class UniNodeEncoding {
 
   /**
    * Encode a {@link BranchUniNode}.
@@ -38,28 +37,23 @@ public class UniNodeEncoding {
    */
   BytesValue encode(final BranchUniNode node) {
     byte flags = getFlags(node);
-    int pathSize = node.getPath().size();
-    BytesValue encodedPath = PathEncoding.encodePath(node.getPath());
+    int pathSize = node.getPath().length;
+    BytesValue encodedPath = PathEncoding.encodePath(BytesValue.of(node.getPath()));
 
     int encodingSize =
         1
             + encodedPathSize(pathSize, encodedPath)
             + encodedChildSize(node.getLeftChild())
             + encodedChildSize(node.getRightChild())
-            + (node.isLeaf() ? 0 : node.getChildrenSize().getSizeInBytes())
             + (node.getValueWrapper().isLong()
                 ? Bytes32.SIZE + UInt24.BYTES
-                : node.getValueLength().map(UInt24::toInt).orElse(0));
+                : node.getValueLength().orElse(0));
 
     ByteBuffer buffer = ByteBuffer.allocate(encodingSize);
     buffer.put(flags);
     encodePath(pathSize, encodedPath, buffer);
     encodeChild(node.getLeftChild(), buffer);
     encodeChild(node.getRightChild(), buffer);
-
-    if (!node.isLeaf()) {
-      buffer.put(node.getChildrenSize().encode());
-    }
 
     node.getValueWrapper().encodeTo(buffer);
 
@@ -79,7 +73,7 @@ public class UniNodeEncoding {
       flags = (byte) (flags | 0b00100000);
     }
 
-    if (node.getPath().size() > 0) {
+    if (node.getPath().length > 0) {
       flags = (byte) (flags | 0b00010000);
     }
 
@@ -180,7 +174,7 @@ public class UniNodeEncoding {
   private int encodedChildSize(final UniNode child) {
     if (isNotEmpty(child)) {
       if (isEmbeddable(child)) {
-        return 1 + child.getEncoding().size();
+        return 1 + child.getEncoding().length;
       }
       return Bytes32.SIZE;
     }
@@ -196,11 +190,11 @@ public class UniNodeEncoding {
   private void encodeChild(final UniNode child, final ByteBuffer buffer) {
     if (isNotEmpty(child)) {
       if (isEmbeddable(child)) {
-        BytesValue v = child.getEncoding();
-        buffer.put(new UInt8(v.size()).toByteArray());
-        buffer.put(v.getArrayUnsafe());
+        byte[] v = child.getEncoding();
+        buffer.put(new UInt8(v.length).toByteArray());
+        buffer.put(v);
       } else {
-        buffer.put(child.getHash().getArrayUnsafe());
+        buffer.put(child.getHash());
       }
     }
   }
@@ -209,31 +203,27 @@ public class UniNodeEncoding {
    * Decode a {@link UniNode} from the given bytes value.
    *
    * @param value bytes value to decode from
-   * @param loader {@link DataLoader} used to lazily solve node values
    * @param nodeFactory {@link StoredUniNodeFactory} used to lazily solve nodes referenced by hash
    * @return decode node
    */
-  UniNode decode(
-      final BytesValue value, final DataLoader loader, final StoredUniNodeFactory nodeFactory) {
+  UniNode decode(final BytesValue value, final StoredUniNodeFactory nodeFactory) {
 
     if (value.equals(UniTrie.NULL_UNINODE_ENCODING)) {
       return NullUniNode.instance();
     }
 
     ByteBuffer buffer = ByteBuffer.wrap(value.extractArray());
-    return decode(buffer, loader, nodeFactory);
+    return decode(buffer, nodeFactory);
   }
 
   /**
    * Decode a {@link UniNode} from the given bytee buffer.
    *
    * @param buffer byte buffer to decode from
-   * @param loader {@link DataLoader} used to lazily solve node values
    * @param nodeFactory {@link StoredUniNodeFactory} used to lazily solve nodes referenced by hash
    * @return decode node
    */
-  private UniNode decode(
-      final ByteBuffer buffer, final DataLoader loader, final StoredUniNodeFactory nodeFactory) {
+  private UniNode decode(final ByteBuffer buffer, final StoredUniNodeFactory nodeFactory) {
 
     byte flags = buffer.get();
 
@@ -244,19 +234,13 @@ public class UniNodeEncoding {
     boolean leftChildEmbedded = (flags & 0b00000010) == 0b00000010;
     boolean rightChildEmbedded = (flags & 0b00000001) == 0b00000001;
 
-    BytesValue path = BytesValue.EMPTY;
+    byte[] path = new byte[0];
     if (hasPath) {
       path = decodePath(buffer);
     }
 
-    UniNode leftChild = decodeChild(buffer, hasLeftChild, leftChildEmbedded, loader, nodeFactory);
-    UniNode rightChild =
-        decodeChild(buffer, hasRightChild, rightChildEmbedded, loader, nodeFactory);
-
-    VarInt childrenSize = new VarInt(0);
-    if (hasLeftChild || hasRightChild) {
-      childrenSize = readVarInt(buffer);
-    }
+    UniNode leftChild = decodeChild(buffer, hasLeftChild, leftChildEmbedded, nodeFactory);
+    UniNode rightChild = decodeChild(buffer, hasRightChild, rightChildEmbedded, nodeFactory);
 
     ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
 
@@ -264,8 +248,7 @@ public class UniNodeEncoding {
       throw new IllegalArgumentException("The message had more data than expected");
     }
 
-    return new BranchUniNode(
-        path, valueWrapper, leftChild, rightChild, childrenSize, loader, nodeFactory);
+    return new BranchUniNode(path, valueWrapper, leftChild, rightChild);
   }
 
   /**
@@ -274,7 +257,7 @@ public class UniNodeEncoding {
    * @param buffer buffer to extract path from
    * @return extracted path
    */
-  private BytesValue decodePath(final ByteBuffer buffer) {
+  private byte[] decodePath(final ByteBuffer buffer) {
     int pathLengthInBits;
     int firstLengthByte = Byte.toUnsignedInt(buffer.get());
 
@@ -289,7 +272,7 @@ public class UniNodeEncoding {
     int encodedLength = PathEncoding.encodedPathLength(pathLengthInBits);
     byte[] encodedPath = new byte[encodedLength];
     buffer.get(encodedPath);
-    return PathEncoding.decodePath(BytesValue.wrap(encodedPath), pathLengthInBits);
+    return PathEncoding.decodePath(BytesValue.wrap(encodedPath), pathLengthInBits).getArrayUnsafe();
   }
 
   /**
@@ -324,7 +307,6 @@ public class UniNodeEncoding {
    * @param hasChild whether we should actually decode a child (otherwise return a {@link
    *     NullUniNode})
    * @param isChildEmbedded whether child is embedded or we expect to find its hash
-   * @param loader {@link DataLoader} used to lazily solve node values
    * @param nodeFactory node factory for solving node hashes lazily
    * @return decode child node
    */
@@ -332,7 +314,6 @@ public class UniNodeEncoding {
       final ByteBuffer buffer,
       final boolean hasChild,
       final boolean isChildEmbedded,
-      final DataLoader loader,
       final StoredUniNodeFactory nodeFactory) {
 
     if (hasChild && isChildEmbedded) {
@@ -341,12 +322,11 @@ public class UniNodeEncoding {
       UInt8 childLength = UInt8.fromBytes(lengthBytes);
       byte[] serializedNode = new byte[childLength.intValue()];
       buffer.get(serializedNode);
-      return decode(ByteBuffer.wrap(serializedNode), loader, nodeFactory);
+      return decode(ByteBuffer.wrap(serializedNode), nodeFactory);
     } else if (hasChild) {
       byte[] childHashBytes = new byte[Bytes32.SIZE];
       buffer.get(childHashBytes);
-      Bytes32 childHash = Bytes32.wrap(childHashBytes);
-      return new StoredUniNode(childHash, nodeFactory);
+      return new StoredUniNode(childHashBytes, nodeFactory);
     }
 
     return NullUniNode.instance();

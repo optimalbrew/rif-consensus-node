@@ -39,13 +39,18 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
   private Function<BytesValue, String> valueDeserializer;
 
   @Override
+  DataLoader loader() {
+    return merkleStorage::get;
+  }
+
+  @Override
   UniTrie<BytesValue, String> createTrie() {
     keyValueStore = new InMemoryKeyValueStorage();
     merkleStorage = new KeyValueMerkleStorage(keyValueStore);
     valueSerializer =
         s -> Objects.isNull(s) ? null : BytesValue.wrap(s.getBytes(StandardCharsets.UTF_8));
     valueDeserializer = v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8);
-    return new StoredUniTrie<>(merkleStorage::get, valueSerializer, valueDeserializer);
+    return new StoredUniTrie<>(loader(), valueSerializer, valueDeserializer);
   }
 
   @Test

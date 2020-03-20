@@ -14,19 +14,13 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.crypto.Hash;
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
-import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+import org.hyperledger.besu.crypto.Hash;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * An inner unitrie node, possibly with children. A leaf is comprised by an instance of this class
@@ -40,62 +34,39 @@ public class BranchUniNode implements UniNode {
 
   private static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
 
-  private final BytesValue path;
+  private byte[] path;
   private ValueWrapper valueWrapper;
   private final UniNode leftChild;
   private final UniNode rightChild;
-  private VarInt childrenSize;
 
-  private final DataLoader loader;
-  private final UniNodeFactory nodeFactory;
-
-  private WeakReference<BytesValue> encoding;
-  private SoftReference<Bytes32> hash;
+  private byte[] encoding;
+  private byte[] hash;
 
   private boolean dirty = false;
 
-  BranchUniNode(
-      final BytesValue path,
-      final ValueWrapper valueWrapper,
-      final DataLoader loader,
-      final UniNodeFactory nodeFactory) {
-    this(
-        path,
-        valueWrapper,
-        NullUniNode.instance(),
-        NullUniNode.instance(),
-        null,
-        loader,
-        nodeFactory);
+  BranchUniNode(final byte[] path, final ValueWrapper valueWrapper) {
+    this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance());
   }
 
   BranchUniNode(
-      final BytesValue path,
+      final byte[] path,
       final ValueWrapper valueWrapper,
       final UniNode leftChild,
-      final UniNode rightChild,
-      final VarInt childrenSize,
-      final DataLoader loader,
-      final UniNodeFactory nodeFactory) {
+      final UniNode rightChild) {
 
     Preconditions.checkNotNull(path);
     Preconditions.checkNotNull(valueWrapper);
     Preconditions.checkNotNull(leftChild);
     Preconditions.checkNotNull(rightChild);
-    Preconditions.checkNotNull(loader);
-    Preconditions.checkNotNull(nodeFactory);
 
     this.path = path;
     this.valueWrapper = valueWrapper;
     this.leftChild = leftChild;
     this.rightChild = rightChild;
-    this.childrenSize = childrenSize;
-    this.loader = loader;
-    this.nodeFactory = nodeFactory;
   }
 
   @Override
-  public BytesValue getPath() {
+  public byte[] getPath() {
     return path;
   }
 
@@ -105,17 +76,17 @@ public class BranchUniNode implements UniNode {
   }
 
   @Override
-  public Optional<BytesValue> getValue() {
+  public Optional<byte[]> getValue(final DataLoader loader) {
     return valueWrapper.solveValue(loader);
   }
 
   @Override
-  public Optional<Bytes32> getValueHash() {
+  public Optional<byte[]> getValueHash() {
     return valueWrapper.getHash();
   }
 
   @Override
-  public Optional<UInt24> getValueLength() {
+  public Optional<Integer> getValueLength() {
     return valueWrapper.getLength();
   }
 
@@ -125,8 +96,8 @@ public class BranchUniNode implements UniNode {
         "%s%s%s%s",
         Strings.repeat(" ", indent),
         String.format(
-            "(key = %s (%d), cs = %s, val = %s)",
-            PathEncoding.encodePath(path), path.size(), childrenSize, valueWrapper),
+            "(key = %s (%d), val = %s)",
+            PathEncoding.encodePath(BytesValue.wrap(path)), path.length, valueWrapper),
         String.format("\n%s", leftChild.print(indent + 2)),
         String.format("\n%s", rightChild.print(indent + 2)));
   }
@@ -157,55 +128,25 @@ public class BranchUniNode implements UniNode {
   }
 
   @Override
-  public VarInt getChildrenSize() {
-    if (Objects.isNull(childrenSize)) {
-      if (isLeaf()) {
-        childrenSize = VarInt.ZERO;
-      } else {
-        childrenSize = new VarInt(leftChild.intrinsicSize() + rightChild.intrinsicSize());
-      }
+  public byte[] getEncoding() {
+    if (Objects.isNull(encoding)) {
+      encoding = encodingHelper.encode(this).getArrayUnsafe();
     }
-    return childrenSize;
+    return encoding;
   }
 
   @Override
-  public long intrinsicSize() {
-    int valueSize =
-        valueWrapper.isLong() ? valueWrapper.getLength().map(UInt24::toInt).orElse(0) : 0;
-    return valueSize + getChildrenSize().getValue() + getEncoding().size();
-  }
-
-  @Override
-  public BytesValue getEncoding() {
-    if (Objects.nonNull(encoding)) {
-      BytesValue v = encoding.get();
-      if (Objects.nonNull(v)) {
-        return v;
-      }
+  public byte[] getHash() {
+    if (Objects.isNull(hash)) {
+      BytesValue encoding = BytesValue.of(getEncoding());
+      hash = Hash.keccak256(encoding).getArrayUnsafe();
     }
-
-    BytesValue v = encodingHelper.encode(this);
-    encoding = new WeakReference<>(v);
-    return v;
-  }
-
-  @Override
-  public Bytes32 getHash() {
-    if (Objects.nonNull(hash)) {
-      Bytes32 h = hash.get();
-      if (h != null) {
-        return h;
-      }
-    }
-
-    Bytes32 h = Hash.keccak256(getEncoding());
-    hash = new SoftReference<>(h);
-    return h;
+    return hash;
   }
 
   @Override
   public boolean isReferencedByHash() {
-    return !isLeaf() || getEncoding().size() > MAX_INLINED_NODE_SIZE;
+    return !isLeaf() || getEncoding().length > MAX_INLINED_NODE_SIZE;
   }
 
   @Override
@@ -218,17 +159,17 @@ public class BranchUniNode implements UniNode {
     dirty = true;
   }
 
-  boolean isLeaf() {
+  private boolean isLeaf() {
     return leftChild == NullUniNode.instance() && rightChild == NullUniNode.instance();
   }
 
-  UniNode removeValue() {
+  UniNode removeValue(final UniNodeFactory nodeFactory) {
     // By removing this node's value we might have a chance to coalesce
     return coalesce(
         nodeFactory.createBranch(path, ValueWrapper.EMPTY, leftChild, rightChild), nodeFactory);
   }
 
-  UniNode replaceValue(final BytesValue newValue) {
+  UniNode replaceValue(final byte[] newValue, final UniNodeFactory nodeFactory) {
     Preconditions.checkNotNull(
         newValue, "Can't call replaceValue with null, call removeValue instead");
     if (valueWrapper.wrappedValueIs(newValue)) {
@@ -237,14 +178,14 @@ public class BranchUniNode implements UniNode {
     return nodeFactory.createBranch(path, ValueWrapper.fromValue(newValue), leftChild, rightChild);
   }
 
-  UniNode replacePath(final BytesValue newPath) {
-    if (newPath.equals(path)) {
+  UniNode replacePath(final byte[] newPath, final UniNodeFactory nodeFactory) {
+    if (Arrays.equals(newPath, path)) {
       return this;
     }
     return nodeFactory.createBranch(newPath, valueWrapper, leftChild, rightChild);
   }
 
-  UniNode replaceChild(final byte pos, final UniNode newChild) {
+  UniNode replaceChild(final byte pos, final UniNode newChild, final UniNodeFactory nodeFactory) {
     if (pos == 0) {
       if (newChild == leftChild) {
         return this;
@@ -308,8 +249,14 @@ public class BranchUniNode implements UniNode {
       child = node.getRightChild();
     }
 
+    byte[] nodePath = node.getPath();
+    byte[] childPath = child.getPath();
+    byte[] newPath = Arrays.copyOf(nodePath, nodePath.length + 1 + childPath.length);
+    newPath[nodePath.length] = pos;
+    System.arraycopy(childPath, 0, newPath, nodePath.length + 1, childPath.length);
+
     return nodeFactory.createBranch(
-        node.getPath().concat(BytesValue.of(pos)).concat(child.getPath()),
+        newPath,
         child.getValueWrapper(),
         child.getLeftChild(),
         child.getRightChild());

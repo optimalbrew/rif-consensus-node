@@ -37,6 +37,8 @@ public abstract class AbstractUniTrieTest {
 
   UniTrie<BytesValue, String> trie;
 
+  abstract DataLoader loader();
+
   abstract UniTrie<BytesValue, String> createTrie();
 
   @Before
@@ -327,9 +329,9 @@ public abstract class AbstractUniTrieTest {
         new UniTrieNodeDecoder(storage::get)
             .decodeNodes(valueWithProof.getProofRelatedNodes().get(1));
 
-    assertThat(new String(nodes.get(1).getValue().get().extractArray(), StandardCharsets.UTF_8))
+    assertThat(new String(nodes.get(1).getValue(loader()).get(), StandardCharsets.UTF_8))
         .isEqualTo(value2);
-    assertThat(new String(nodes.get(2).getValue().get().extractArray(), StandardCharsets.UTF_8))
+    assertThat(new String(nodes.get(2).getValue(loader()).get(), StandardCharsets.UTF_8))
         .isEqualTo(value3);
   }
 
@@ -372,7 +374,7 @@ public abstract class AbstractUniTrieTest {
     assertThat(nodes.size()).isEqualTo(1);
 
     final String nodeValue =
-        new String(nodes.get(0).getValue().get().extractArray(), StandardCharsets.UTF_8);
+        new String(nodes.get(0).getValue(loader()).get(), StandardCharsets.UTF_8);
     assertThat(nodeValue).isEqualTo(value1);
   }
 

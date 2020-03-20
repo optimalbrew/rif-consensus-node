@@ -14,9 +14,8 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import com.google.common.base.Preconditions;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Visitor implementing put operation on a Unitrie.
@@ -25,10 +24,10 @@ import com.google.common.base.Preconditions;
  */
 public class PutVisitor implements UniPathVisitor {
 
-  private final BytesValue value;
+  private final byte[] value;
   private final UniNodeFactory nodeFactory;
 
-  public PutVisitor(final BytesValue value, final UniNodeFactory nodeFactory) {
+  public PutVisitor(final byte[] value, final UniNodeFactory nodeFactory) {
     Preconditions.checkNotNull(value, "Value to insert can't be null");
     this.value = value;
     this.nodeFactory = nodeFactory;
@@ -36,29 +35,34 @@ public class PutVisitor implements UniPathVisitor {
 
   @Override
   public UniNode visit(final NullUniNode node, final BytesValue path) {
-    return nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
+    return nodeFactory.createLeaf(path.getArrayUnsafe(), ValueWrapper.fromValue(value));
   }
 
   @Override
   public UniNode visit(final BranchUniNode node, final BytesValue path) {
-    BytesValue nodePath = node.getPath();
+    BytesValue nodePath = BytesValue.of(node.getPath());
     BytesValue commonPath = path.commonPrefix(nodePath);
 
     if (commonPath.size() == path.size() && commonPath.size() == nodePath.size()) {
-      return node.replaceValue(value);
+      return node.replaceValue(value, nodeFactory);
     }
 
     if (commonPath.size() < nodePath.size()) {
       BytesValue updatedNodePath = nodePath.slice(commonPath.size() + 1);
 
-      UniNode updatedNode = node.replacePath(updatedNodePath);
+      UniNode updatedNode = node.replacePath(updatedNodePath.getArrayUnsafe(), nodeFactory);
       byte updatedNodePos = nodePath.get(commonPath.size());
 
       if (commonPath.size() == path.size()) {
-        return splitWithoutNewLeaf(commonPath, value, updatedNode, updatedNodePos);
+        return splitWithoutNewLeaf(commonPath.getArrayUnsafe(), value, updatedNode, updatedNodePos);
       } else {
         BytesValue newLeafPath = path.slice(commonPath.size() + 1);
-        return splitWithNewLeaf(commonPath, value, updatedNode, updatedNodePos, newLeafPath);
+        return splitWithNewLeaf(
+            commonPath.getArrayUnsafe(),
+            value,
+            updatedNode,
+            updatedNodePos,
+            newLeafPath.getArrayUnsafe());
       }
     }
 
@@ -67,9 +71,9 @@ public class PutVisitor implements UniPathVisitor {
     byte pos = path.get(commonPath.size());
     BytesValue newPath = path.slice(commonPath.size() + 1);
     if (pos == 0) {
-      return node.replaceChild(pos, node.getLeftChild().accept(this, newPath));
+      return node.replaceChild(pos, node.getLeftChild().accept(this, newPath), nodeFactory);
     } else {
-      return node.replaceChild(pos, node.getRightChild().accept(this, newPath));
+      return node.replaceChild(pos, node.getRightChild().accept(this, newPath), nodeFactory);
     }
   }
 
@@ -84,8 +88,8 @@ public class PutVisitor implements UniPathVisitor {
    * @return root node of the split, holding the new value and the updated node as the only child
    */
   private UniNode splitWithoutNewLeaf(
-      final BytesValue commonPath,
-      final BytesValue value,
+      final byte[] commonPath,
+      final byte[] value,
       final UniNode updatedNode,
       final byte updatedNodePos) {
 
@@ -111,11 +115,11 @@ public class PutVisitor implements UniPathVisitor {
    * @return root node of the split, having as children the updated node and the new leaf
    */
   private UniNode splitWithNewLeaf(
-      final BytesValue commonPath,
-      final BytesValue value,
+      final byte[] commonPath,
+      final byte[] value,
       final UniNode updatedNode,
       final byte updatedNodePos,
-      final BytesValue newLeafPath) {
+      final byte[] newLeafPath) {
 
     UniNode newLeaf = nodeFactory.createLeaf(newLeafPath, ValueWrapper.fromValue(value));
     if (updatedNodePos == 0) {

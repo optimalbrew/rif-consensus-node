@@ -21,6 +21,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.spy;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.assertj.core.api.Assertions;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
@@ -40,18 +50,6 @@ import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -242,10 +240,11 @@ public class UniTrieMarkSweepPrunerTest {
     trie.visitAll(
         node -> {
           if (node.getValueWrapper().isLong()) {
-            node.getValue().ifPresent(collector::add);
+            node.getValue(worldStateStorage::getAccountStateTrieNode)
+                .ifPresent(v -> collector.add(BytesValue.of(v)));
           }
-          if (node.isReferencedByHash() || node.getHash().equals(rootHash)) {
-            collector.add(node.getEncoding());
+          if (node.isReferencedByHash() || Bytes32.wrap(node.getHash()).equals(rootHash)) {
+            collector.add(BytesValue.of(node.getEncoding()));
           }
         });
   }

@@ -14,15 +14,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
-import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
+import com.google.common.base.Strings;
 import java.util.Objects;
 import java.util.Optional;
-
-import com.google.common.base.Strings;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * A {@link UniNode} modeling a reference by hash to storage, where the actual node can be found.
@@ -31,17 +27,17 @@ import com.google.common.base.Strings;
  */
 public class StoredUniNode implements UniNode {
 
-  private final Bytes32 hash;
+  private final byte[] hash;
   private final StoredUniNodeFactory nodeFactory;
   private UniNode loadedNode;
 
-  StoredUniNode(final Bytes32 hash, final StoredUniNodeFactory nodeFactory) {
+  StoredUniNode(final byte[] hash, final StoredUniNodeFactory nodeFactory) {
     this.hash = hash;
     this.nodeFactory = nodeFactory;
   }
 
   @Override
-  public BytesValue getPath() {
+  public byte[] getPath() {
     return load().getPath();
   }
 
@@ -51,17 +47,17 @@ public class StoredUniNode implements UniNode {
   }
 
   @Override
-  public Optional<BytesValue> getValue() {
-    return load().getValue();
+  public Optional<byte[]> getValue(final DataLoader loader) {
+    return load().getValue(loader);
   }
 
   @Override
-  public Optional<Bytes32> getValueHash() {
+  public Optional<byte[]> getValueHash() {
     return load().getValueHash();
   }
 
   @Override
-  public Optional<UInt24> getValueLength() {
+  public Optional<Integer> getValueLength() {
     return load().getValueLength();
   }
 
@@ -76,19 +72,9 @@ public class StoredUniNode implements UniNode {
   }
 
   @Override
-  public VarInt getChildrenSize() {
-    return load().getChildrenSize();
-  }
-
-  @Override
-  public long intrinsicSize() {
-    return load().intrinsicSize();
-  }
-
-  @Override
   public String print(final int indent) {
     if (Objects.isNull(loadedNode)) {
-      return String.format("%sStored → %s", Strings.repeat(" ", indent), hash);
+      return String.format("%sStored → %s", Strings.repeat(" ", indent), Bytes32.wrap(hash));
     } else {
       return loadedNode.print(indent);
     }
@@ -110,12 +96,12 @@ public class StoredUniNode implements UniNode {
   }
 
   @Override
-  public BytesValue getEncoding() {
+  public byte[] getEncoding() {
     return load().getEncoding();
   }
 
   @Override
-  public Bytes32 getHash() {
+  public byte[] getHash() {
     return hash;
   }
 
@@ -144,9 +130,9 @@ public class StoredUniNode implements UniNode {
     if (loadedNode == null) {
       loadedNode =
           nodeFactory
-              .retrieve(hash)
+              .retrieve(Bytes32.wrap(hash))
               .orElseThrow(
-                  () -> new IllegalStateException("Unable to load UniNode for hash: " + hash));
+                  () -> new IllegalStateException("Unable to load UniNode for hash: " + Bytes32.wrap(hash)));
     }
     return loadedNode;
   }

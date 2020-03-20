@@ -17,15 +17,13 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.hyperledger.besu.crypto.Hash.keccak256;
 
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.ethereum.trie.NodeUpdater;
 import org.hyperledger.besu.ethereum.trie.Proof;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 /** Interface for UniTrie data structure. */
 public interface UniTrie<K, V> {
@@ -119,14 +117,4 @@ public interface UniTrie<K, V> {
    * @param visitor unitrie visitor.
    */
   void visitAll(Consumer<UniNode> visitor);
-
-  /**
-   * Retrieve up to {@code limit} entries beginning from the first entry with path equal to or
-   * greater than {@code starPath}.
-   *
-   * @param startPath the first path to return.
-   * @param limit the maximum number of entries to return.
-   * @return the requested entries as a map of entry path to entry value.
-   */
-  Map<BytesValue, V> entriesFrom(BytesValue startPath, int limit);
 }

@@ -14,12 +14,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
-import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
+import static org.hyperledger.besu.crypto.Hash.keccak256;
 
 import java.util.Optional;
+import org.hyperledger.besu.ethereum.rlp.RLP;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Interface for nodes in a Unitrie. A node has a path and an optional value.
@@ -28,12 +27,15 @@ import java.util.Optional;
  */
 public interface UniNode {
 
+  byte[] NULL_UNINODE_ENCODING = RLP.NULL.extractArray();
+  byte[] NULL_UNINODE_HASH = keccak256(RLP.NULL).extractArray();
+
   /**
    * Get path for this node.
    *
    * @return path for this node
    */
-  BytesValue getPath();
+  byte[] getPath();
 
   /**
    * Get the wrapper for this value.
@@ -45,23 +47,24 @@ public interface UniNode {
   /**
    * Get optional value for this node.
    *
+   * @param loader {@link DataLoader} used to solve value
    * @return optional holding node's value
    */
-  Optional<BytesValue> getValue();
+  Optional<byte[]> getValue(DataLoader loader);
 
   /**
    * If value is present return its hash.
    *
    * @return optional holding value's hash if present
    */
-  Optional<Bytes32> getValueHash();
+  Optional<byte[]> getValueHash();
 
   /**
    * If value is present return its length in bytes.
    *
    * @return optional holding value's length in bytes if present
    */
-  Optional<UInt24> getValueLength();
+  Optional<Integer> getValueLength();
 
   /**
    * Get left hand side child of this node.
@@ -76,21 +79,6 @@ public interface UniNode {
    * @return right hand side child of this node
    */
   UniNode getRightChild();
-
-  /**
-   * Get total size of children of this node in bytes.
-   *
-   * @return total size of children in bytes
-   */
-  VarInt getChildrenSize();
-
-  /**
-   * Get intrinsic size of this node, in bytes. Intrinsic size is defined as the value size if it's
-   * long, plus children size, plus length of node's encoding.
-   *
-   * @return intrinsic size of this node.
-   */
-  long intrinsicSize();
 
   /**
    * Pretty print a Uninode.
@@ -121,14 +109,14 @@ public interface UniNode {
    *
    * @return node encoding as dictated by RSKIP107
    */
-  BytesValue getEncoding();
+  byte[] getEncoding();
 
   /**
    * Get node hash. This will amount to the hash of the node's encoding
    *
    * @return node hash, given by the hash of the node's encoding
    */
-  Bytes32 getHash();
+  byte[] getHash();
 
   /**
    * Whether this node will be referenced by hash or inlined. This is determined by whether the

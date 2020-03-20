@@ -33,6 +33,8 @@ import java.util.stream.Stream;
 import com.google.common.base.Strings;
 import org.junit.Test;
 
+import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
+
 public class UniTrieNodeDecoderTest {
 
   @Test
@@ -70,15 +72,15 @@ public class UniTrieNodeDecoderTest {
     assertThat(nodes.size()).isEqualTo(3);
 
     {
-      final List<UniNode> children = decoder.decodeNodes(nodes.get(1).getEncoding());
+      final List<UniNode> children = decoder.decodeNodes(BytesValue.of(nodes.get(1).getEncoding()));
       assertThat(children.size()).isEqualTo(3);
-      assertThat(collectValues(children))
+      assertThat(collectValues(children, storage::get))
           .containsExactlyInAnyOrder(BytesValue.of(1), BytesValue.of(2));
     }
     {
-      final List<UniNode> children = decoder.decodeNodes(nodes.get(2).getEncoding());
+      final List<UniNode> children = decoder.decodeNodes(BytesValue.of(nodes.get(2).getEncoding()));
       assertThat(children.size()).isEqualTo(3);
-      assertThat(collectValues(children))
+      assertThat(collectValues(children, storage::get))
           .containsExactlyInAnyOrder(
               BytesValue.of(3), BytesValue.fromHexString("0x" + Strings.repeat("bad", 50)));
     }
@@ -111,7 +113,7 @@ public class UniTrieNodeDecoderTest {
 
     assertThat(depth0Nodes.size()).isEqualTo(1);
     final UniNode rootNode = depth0Nodes.get(0);
-    assertThat(rootNode.getHash()).isEqualTo(trie.getRootHash());
+    assertThat(Bytes32.wrap(rootNode.getHash())).isEqualTo(trie.getRootHash());
 
     // Decode first 2 levels
     final List<UniNode> depth0And1Nodes =
@@ -125,7 +127,7 @@ public class UniTrieNodeDecoderTest {
     List<Bytes32> expectedNodesHashes = nonNullChildrenHashes(rootNode);
     List<Bytes32> actualNodeHashes =
         depth0And1Nodes.subList(1, expectedNodeCount).stream()
-            .map(UniNode::getHash)
+            .map(n -> Bytes32.wrap(n.getHash()))
             .collect(Collectors.toList());
     assertThat(actualNodeHashes).isEqualTo(expectedNodesHashes);
 
@@ -138,9 +140,10 @@ public class UniTrieNodeDecoderTest {
     // Collect and check values
     List<BytesValue> actualValues =
         allNodes.stream()
-            .map(UniNode::getValue)
+            .map(n -> n.getValue(storage::get))
             .filter(Optional::isPresent)
             .map(Optional::get)
+            .map(BytesValue::wrap)
             .collect(Collectors.toList());
     assertThat(actualValues)
         .containsExactly(
@@ -176,7 +179,7 @@ public class UniTrieNodeDecoderTest {
             .get();
 
     // Decode partially available trie
-    partialStorage.put(trie.getRootHash(), rootNode.getEncoding());
+    partialStorage.put(trie.getRootHash(), BytesValue.wrap(rootNode.getEncoding()));
     final List<UniNode> allDecodableNodes =
         UniTrieNodeDecoder.breadthFirstDecoder(partialStorage::get, trie.getRootHash())
             .collect(Collectors.toList());
@@ -205,8 +208,8 @@ public class UniTrieNodeDecoderTest {
         UniTrieNodeDecoder.breadthFirstDecoder(storage::get, trie.getRootHash())
             .collect(Collectors.toList());
     assertThat(result.size()).isEqualTo(1);
-    assertThat(result.get(0).getValue()).contains(BytesValue.of(1));
-    BytesValue actualPath = PathEncoding.encodePath(result.get(0).getPath());
+    assertThat(result.get(0).getValue(storage::get)).contains(bytes(1));
+    BytesValue actualPath = PathEncoding.encodePath(BytesValue.of(result.get(0).getPath()));
     assertThat(actualPath).isEqualTo(BytesValue.fromHexString("0x100000"));
   }
 
@@ -219,18 +222,19 @@ public class UniTrieNodeDecoderTest {
     assertThat(result.size()).isEqualTo(0);
   }
 
-  private List<BytesValue> collectValues(final List<UniNode> nodes) {
+  private List<BytesValue> collectValues(final List<UniNode> nodes, final DataLoader loader) {
     return nodes.stream()
-        .map(UniNode::getValue)
+        .map(n -> n.getValue(loader))
         .filter(Optional::isPresent)
         .map(Optional::get)
+        .map(BytesValue::of)
         .collect(Collectors.toList());
   }
 
   private List<Bytes32> nonNullChildrenHashes(final UniNode node) {
     return Stream.of(node.getLeftChild(), node.getRightChild())
         .filter(n -> !Objects.equals(n, NullUniNode.instance()))
-        .map(UniNode::getHash)
+        .map(n -> Bytes32.wrap(n.getHash()))
         .collect(Collectors.toList());
   }
 

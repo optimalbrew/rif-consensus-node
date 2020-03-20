@@ -16,52 +16,51 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
 
-import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
-import org.hyperledger.besu.ethereum.trie.MerkleStorage;
-import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
 import org.junit.Test;
 
 public class UniTrieEncodingTest {
 
-  private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
-  private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory(storage::get);
+  private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory();
 
   @Test
   public void emptyTree_givesNullEncoding() {
-    assertThat(NullUniNode.instance().getEncoding()).isEqualTo(UniTrie.NULL_UNINODE_ENCODING);
+    assertThat(NullUniNode.instance().getEncoding())
+        .isEqualTo(UniTrie.NULL_UNINODE_ENCODING.extractArray());
   }
 
   @Test
   public void emptyPath_encodesCorrectly() {
-    BytesValue value = BytesValue.of(1, 2, 3);
-    UniNode trie = nodeFactory.createLeaf(BytesValue.EMPTY, ValueWrapper.fromValue(value));
-    assertThat(trie.getEncoding()).isEqualTo(BytesValue.of(0x40).concat(value));
+    byte[] value = bytes(1, 2, 3);
+    UniNode trie = nodeFactory.createLeaf(bytes(), ValueWrapper.fromValue(value));
+    assertThat(BytesValue.of(trie.getEncoding()))
+        .isEqualTo(BytesValue.of(0x40).concat(BytesValue.of(value)));
   }
 
   @Test
   public void leaf_encodesCorrectly() {
-    BytesValue path = BytesValue.of(1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0);
-    BytesValue value = BytesValue.of(1, 2, 3);
+    byte[] path = bytes(1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0);
+    byte[] value = bytes(1, 2, 3);
     UniNode trie = nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
-    assertThat(trie.getEncoding()).isEqualTo(BytesValue.of(0x50, 0x0a, 0xaf, 0x40).concat(value));
+    assertThat(BytesValue.of(trie.getEncoding()))
+        .isEqualTo(BytesValue.of(0x50, 0x0a, 0xaf, 0x40).concat(BytesValue.of(value)));
   }
 
   @Test
   public void embeddedChildren_encodesCorrectly() {
-    BytesValue valueTop = BytesValue.of(9);
-    BytesValue valueLeft = BytesValue.of(1, 2, 3, 4);
-    BytesValue valueRight = BytesValue.of(5, 6, 7, 8);
+    byte[] valueTop = bytes(9);
+    byte[] valueLeft = bytes(1, 2, 3, 4);
+    byte[] valueRight = bytes(5, 6, 7, 8);
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(valueLeft, nodeFactory), BytesValue.of(1, 1, 0, 0))
             .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
             .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
-    assertThat(trie.getEncoding())
-        .isEqualTo(BytesValue.fromHexString("0x5f01c0075000000102030407500080050607080e09"));
+    assertThat(BytesValue.of(trie.getEncoding()))
+        .isEqualTo(BytesValue.fromHexString("0x5f01c00750000001020304075000800506070809"));
   }
 
   @Test
@@ -74,27 +73,28 @@ public class UniTrieEncodingTest {
     BytesValue path1 = PathEncoding.decodePath(hash1, 256);
     BytesValue path2 = PathEncoding.decodePath(hash2, 256);
 
-    BytesValue value = BytesValue.wrap(makeValue(1000));
+    byte[] value = makeValue(1000);
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(value, nodeFactory), path1)
             .accept(new PutVisitor(value, nodeFactory), path2)
-            .accept(new PutVisitor(BytesValue.of(9), nodeFactory), BytesValue.of(0, 1, 0, 1, 0, 1));
+            .accept(new PutVisitor(bytes(9), nodeFactory), BytesValue.of(0, 1, 0, 1, 0, 1));
 
-    BytesValue enc = trie.getEncoding();
+    byte[] enc = trie.getEncoding();
 
     // No long val, has path, has left and right children, none embedded
-    assertThat(enc.get(0)).isEqualTo((byte) 0b01011100);
+    assertThat(enc[0]).isEqualTo((byte) 0b01011100);
 
     // Path length is 6 (encoded as 6-1 = 5)
-    assertThat(enc.get(1)).isEqualTo((byte) 5);
+    assertThat(enc[1]).isEqualTo((byte) 5);
 
     // Root node encoded path must be common part of {0x55, 0x56} = 0b010101
-    assertThat(PathEncoding.decodePath(enc.slice(2, 1), enc.get(1) + 1))
+    BytesValue b = BytesValue.of(enc);
+    assertThat(PathEncoding.decodePath(b.slice(2, 1), b.get(1) + 1))
         .isEqualTo(BytesValue.of(0, 1, 0, 1, 0, 1));
 
     // Value must be 9, at the end of the encoding
-    assertThat(enc.get(enc.size() - 1)).isEqualTo((byte) 9);
+    assertThat(enc[enc.length - 1]).isEqualTo((byte) 9);
   }
 
   private static byte[] makeValue(final int length) {

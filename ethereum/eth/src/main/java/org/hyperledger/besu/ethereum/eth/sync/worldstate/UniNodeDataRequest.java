@@ -20,6 +20,7 @@ import org.hyperledger.besu.ethereum.unitrie.UniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniTrieNodeDecoder;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage.Updater;
+import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 import java.util.List;
@@ -52,10 +53,10 @@ public class UniNodeDataRequest extends NodeDataRequest {
         .flatMap(
             node -> {
               if (nodeIsHashReferencedDescendant(node)) {
-                return Stream.of(new UniNodeDataRequest(Hash.wrap(node.getHash())));
+                return Stream.of(new UniNodeDataRequest(bytesToHash(node.getHash())));
               } else if (node.getValueWrapper().isLong()) {
                 return node.getValueHash().stream()
-                    .map(h -> new UniNodeValueDataRequest(Hash.wrap(h)));
+                    .map(h -> new UniNodeValueDataRequest(bytesToHash(h)));
               } else {
                 return Stream.empty();
               }
@@ -73,6 +74,10 @@ public class UniNodeDataRequest extends NodeDataRequest {
   }
 
   private boolean nodeIsHashReferencedDescendant(final UniNode node) {
-    return !Objects.equals(node.getHash(), getHash()) && node.isReferencedByHash();
+    return !Objects.equals(bytesToHash(node.getHash()), getHash()) && node.isReferencedByHash();
+  }
+
+  private Hash bytesToHash(final byte[] bytes) {
+    return Hash.wrap(Bytes32.wrap(bytes));
   }
 }

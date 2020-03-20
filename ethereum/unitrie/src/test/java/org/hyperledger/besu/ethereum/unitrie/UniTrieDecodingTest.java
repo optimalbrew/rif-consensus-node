@@ -24,66 +24,67 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 
 import org.junit.Test;
 
+import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
+
 public class UniTrieDecodingTest {
   private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
   private final StoredUniNodeFactory nodeFactory = new StoredUniNodeFactory(storage::get);
 
   @Test
   public void emptyPath_loadsCorrectly() {
-    BytesValue value = BytesValue.of(1, 2, 3);
-    UniNode trie = nodeFactory.createLeaf(BytesValue.EMPTY, ValueWrapper.fromValue(value));
-    BytesValue enc = trie.getEncoding();
+    UniNode trie = nodeFactory.createLeaf(bytes(), ValueWrapper.fromValue(bytes(1, 2,3 )));
+    byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());
   }
 
   @Test
   public void leaf_loadsCorrectly() {
-    BytesValue path = BytesValue.of(1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0);
-    BytesValue value = BytesValue.of(1, 2, 3);
+    byte[] path = bytes(1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0);
+    byte[] value = bytes(1, 2, 3);
     UniNode trie = nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
-    BytesValue enc = trie.getEncoding();
+    byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());
   }
 
   @Test
   public void embeddedLeftChild_loadsCorrectly() {
-    BytesValue valueTop = BytesValue.of(9);
-    BytesValue valueLeft = BytesValue.of(1, 2, 3, 4);
+    byte[] valueTop = bytes(9);
+    byte[] valueLeft = bytes(1, 2, 3, 4);
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(valueLeft, nodeFactory), BytesValue.of(1, 1, 0, 0))
             .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
-    BytesValue enc = trie.getEncoding();
+    byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());
   }
 
   @Test
   public void embeddedRightChild_loadsCorrectly() {
-    BytesValue valueTop = BytesValue.of(9);
-    BytesValue valueRight = BytesValue.of(5, 6, 7, 8);
+    byte[] valueTop = bytes(9);
+    byte[] valueRight = bytes(5, 6, 7, 8);
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
             .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
-    BytesValue enc = trie.getEncoding();
+    byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());
   }
 
   @Test
   public void embeddedChildren_loadsCorrectly() {
-    BytesValue valueTop = BytesValue.of(9);
-    BytesValue valueLeft = BytesValue.of(1, 2, 3, 4);
-    BytesValue valueRight = BytesValue.of(5, 6, 7, 8);
+    byte[] valueTop = bytes(9);
+    byte[] valueLeft = bytes(1, 2, 3, 4);
+    byte[] valueRight = bytes(5, 6, 7, 8);
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(valueLeft, nodeFactory), BytesValue.of(1, 1, 0, 0))
             .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
             .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
-    BytesValue enc = trie.getEncoding();
+    byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());
   }

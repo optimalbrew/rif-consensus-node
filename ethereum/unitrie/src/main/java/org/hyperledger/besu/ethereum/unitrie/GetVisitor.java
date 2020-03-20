@@ -30,7 +30,7 @@ public class GetVisitor implements UniPathVisitor {
 
   @Override
   public UniNode visit(final BranchUniNode node, final BytesValue path) {
-    BytesValue nodePath = node.getPath();
+    BytesValue nodePath = BytesValue.of(node.getPath());
     BytesValue commonPath = path.commonPrefix(nodePath);
 
     if (commonPath.size() == path.size() && commonPath.size() == nodePath.size()) {

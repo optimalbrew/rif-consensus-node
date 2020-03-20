@@ -32,7 +32,7 @@ public final class PathEncoding {
    * @param pathLengthInBits path length in bytes
    * @return number of bytes required to encode a path with the given length in bits
    */
-  public static int encodedPathLength(final int pathLengthInBits) {
+  static int encodedPathLength(final int pathLengthInBits) {
     return (pathLengthInBits + 7) / 8;
   }
 

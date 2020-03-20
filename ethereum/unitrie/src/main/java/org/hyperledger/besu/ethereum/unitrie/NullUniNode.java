@@ -14,14 +14,9 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
-import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.Optional;
-
 import com.google.common.base.Strings;
+import java.util.Optional;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Empty Unitrie node.
@@ -30,6 +25,7 @@ import com.google.common.base.Strings;
  */
 public class NullUniNode implements UniNode {
 
+  private static byte[] EMPTY_BYES = new byte[0];
   private static NullUniNode INSTANCE = new NullUniNode();
 
   private NullUniNode() {
@@ -41,8 +37,8 @@ public class NullUniNode implements UniNode {
   }
 
   @Override
-  public BytesValue getPath() {
-    return BytesValue.EMPTY;
+  public byte[] getPath() {
+    return EMPTY_BYES;
   }
 
   @Override
@@ -51,17 +47,17 @@ public class NullUniNode implements UniNode {
   }
 
   @Override
-  public Optional<BytesValue> getValue() {
+  public Optional<byte[]> getValue(final DataLoader loader) {
     return Optional.empty();
   }
 
   @Override
-  public Optional<Bytes32> getValueHash() {
+  public Optional<byte[]> getValueHash() {
     return Optional.empty();
   }
 
   @Override
-  public Optional<UInt24> getValueLength() {
+  public Optional<Integer> getValueLength() {
     return Optional.empty();
   }
 
@@ -73,16 +69,6 @@ public class NullUniNode implements UniNode {
   @Override
   public UniNode getRightChild() {
     return null;
-  }
-
-  @Override
-  public VarInt getChildrenSize() {
-    return VarInt.ZERO;
-  }
-
-  @Override
-  public long intrinsicSize() {
-    return 0;
   }
 
   @Override
@@ -106,13 +92,13 @@ public class NullUniNode implements UniNode {
   }
 
   @Override
-  public BytesValue getEncoding() {
-    return UniTrie.NULL_UNINODE_ENCODING;
+  public byte[] getEncoding() {
+    return NULL_UNINODE_ENCODING;
   }
 
   @Override
-  public Bytes32 getHash() {
-    return UniTrie.NULL_UNINODE_HASH;
+  public byte[] getHash() {
+    return NULL_UNINODE_HASH;
   }
 
   @Override

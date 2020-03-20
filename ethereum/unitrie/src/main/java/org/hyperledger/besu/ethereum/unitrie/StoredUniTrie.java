@@ -17,18 +17,15 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.hyperledger.besu.ethereum.trie.NodeUpdater;
-import org.hyperledger.besu.ethereum.trie.Proof;
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.hyperledger.besu.ethereum.trie.NodeUpdater;
+import org.hyperledger.besu.ethereum.trie.Proof;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
  * Unitrie backed by some key value storage.
@@ -39,13 +36,15 @@ import java.util.stream.Collectors;
  */
 public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
 
-  private final GetVisitor getVisitor = new GetVisitor();
-  private final RemoveVisitor removeVisitor = new RemoveVisitor();
-  private final RemoveVisitor recursiveRemoveVisitor = new RemoveVisitor(true);
-
+  private final DataLoader loader;
   private final StoredUniNodeFactory nodeFactory;
-  private final Function<V, BytesValue> valueSerializer;
-  private final Function<BytesValue, V> valueDeserializer;
+
+  private final GetVisitor getVisitor;
+  private final RemoveVisitor removeVisitor;
+  private final RemoveVisitor recursiveRemoveVisitor;
+
+  private final Function<V, byte[]> valueSerializer;
+  private final Function<byte[], V> valueDeserializer;
 
   private UniNode root;
 
@@ -62,25 +61,32 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
       final Function<V, BytesValue> valueSerializer,
       final Function<BytesValue, V> valueDeserializer) {
 
-    this.valueSerializer = valueSerializer;
-    this.valueDeserializer = valueDeserializer;
+    this.loader = loader;
     this.nodeFactory = new StoredUniNodeFactory(loader);
+
+    this.valueSerializer = valueSerializer.andThen(BytesValue::getArrayUnsafe);
+    this.valueDeserializer = valueDeserializer.compose(BytesValue::of);
+
+    this.getVisitor = new GetVisitor();
+    this.removeVisitor = new RemoveVisitor(nodeFactory);
+    this.recursiveRemoveVisitor = new RemoveVisitor(true, nodeFactory);
+
     this.root =
         rootHash.equals(NULL_UNINODE_HASH)
             ? NullUniNode.instance()
-            : new StoredUniNode(rootHash, nodeFactory);
+            : new StoredUniNode(rootHash.getArrayUnsafe(), nodeFactory);
   }
 
   @Override
   public Optional<V> get(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key)).getValue().map(valueDeserializer);
+    return root.accept(getVisitor, bytesToPath(key)).getValue(loader).map(valueDeserializer);
   }
 
   @Override
   public Bytes32 getHash(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key)).getHash();
+    return Bytes32.wrap(root.accept(getVisitor, bytesToPath(key)).getHash());
   }
 
   @Override
@@ -88,9 +94,12 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
     checkNotNull(key);
     final ProofVisitor proofVisitor = new ProofVisitor(root);
     final Optional<V> value =
-        root.accept(proofVisitor, bytesToPath(key)).getValue().map(valueDeserializer);
+        root.accept(proofVisitor, bytesToPath(key)).getValue(loader).map(valueDeserializer);
     final List<BytesValue> proof =
-        proofVisitor.getProof().stream().map(UniNode::getEncoding).collect(Collectors.toList());
+        proofVisitor.getProof().stream()
+            .map(UniNode::getEncoding)
+            .map(BytesValue::of)
+            .collect(Collectors.toList());
     return new Proof<>(value, proof);
   }
 
@@ -99,8 +108,7 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
     checkNotNull(key);
     return root.accept(getVisitor, bytesToPath(key))
         .getValueWrapper()
-        .getLength()
-        .map(UInt24::toInt);
+        .getLength();
   }
 
   @Override
@@ -125,16 +133,21 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
 
   @Override
   public void commit(final NodeUpdater nodeUpdater, final NodeUpdater valueUpdater) {
-    final CommitVisitor commitVisitor = new CommitVisitor(nodeUpdater::store, valueUpdater::store);
+    final CommitVisitor commitVisitor =
+        new CommitVisitor(loader, nodeUpdater::store, valueUpdater::store);
     root.accept(commitVisitor);
+
+    final byte[] rootHash = root.getHash();
+    final Bytes32 h = Bytes32.wrap(rootHash);
+
     // Make sure root node was stored
     if (root.isDirty() && !root.isReferencedByHash()) {
-      nodeUpdater.store(root.getHash(), root.getEncoding());
+      nodeUpdater.store(h, BytesValue.of(root.getEncoding()));
     }
+
     // Reset root so dirty nodes can be garbage collected
-    final Bytes32 rootHash = root.getHash();
     this.root =
-        rootHash.equals(NULL_UNINODE_HASH)
+        h.equals(NULL_UNINODE_HASH)
             ? NullUniNode.instance()
             : new StoredUniNode(rootHash, nodeFactory);
   }
@@ -145,13 +158,8 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
-  public Map<BytesValue, V> entriesFrom(final BytesValue startPath, final int limit) {
-    return UniTrieCollector.collectEntries(root, startPath, limit, valueDeserializer);
-  }
-
-  @Override
   public Bytes32 getRootHash() {
-    return root.getHash();
+    return Bytes32.wrap(root.getHash());
   }
 
   @Override

@@ -18,6 +18,16 @@ package org.hyperledger.besu.ethereum.worldstate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryBlockchain;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.assertj.core.api.Assertions;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
@@ -38,18 +48,6 @@ import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.testutil.MockExecutorService;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 public class UniTriePrunerIntegrationTest {
@@ -217,16 +215,16 @@ public class UniTriePrunerIntegrationTest {
   }
 
   private void collectUniTrieNodes(final Hash stateRoot, final Set<BytesValue> collector) {
-
     UniTrie<BytesValue, BytesValue> trie = createUniTrie(stateRoot);
     final Bytes32 rootHash = trie.getRootHash();
     trie.visitAll(
         node -> {
           if (node.getValueWrapper().isLong()) {
-            node.getValue().ifPresent(collector::add);
+            node.getValue(worldStateStorage::getAccountStateTrieNode)
+                .ifPresent(v -> collector.add(BytesValue.of(v)));
           }
-          if (node.isReferencedByHash() || node.getHash().equals(rootHash)) {
-            collector.add(node.getEncoding());
+          if (node.isReferencedByHash() || Bytes32.wrap(node.getHash()).equals(rootHash)) {
+            collector.add(BytesValue.of(node.getEncoding()));
           }
         });
   }

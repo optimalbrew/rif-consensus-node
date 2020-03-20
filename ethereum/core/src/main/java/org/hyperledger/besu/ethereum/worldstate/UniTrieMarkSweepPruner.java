@@ -60,9 +60,9 @@ public class UniTrieMarkSweepPruner extends AbstractMarkSweepPruner {
                 // our abort process consists only of handling interrupts
                 throw new RuntimeException("Interrupted while marking");
               }
-              markNode(node.getHash());
+              markNode(Bytes32.wrap(node.getHash()));
               if (node.getValueWrapper().isLong()) {
-                node.getValueHash().ifPresent(this::markNode);
+                node.getValueHash().ifPresent(h -> markNode(Bytes32.wrap(h)));
               }
             });
     LOG.debug("Completed marking used nodes for pruning");

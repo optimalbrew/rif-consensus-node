@@ -25,13 +25,15 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 public class RemoveVisitor implements UniPathVisitor {
 
   private final boolean recursiveRemove;
+  private final UniNodeFactory nodeFactory;
 
-  public RemoveVisitor() {
-    this(false);
+  public RemoveVisitor(final UniNodeFactory nodeFactory) {
+    this(false, nodeFactory);
   }
 
-  public RemoveVisitor(final boolean recursiveRemove) {
+  RemoveVisitor(final boolean recursiveRemove, final UniNodeFactory nodeFactory) {
     this.recursiveRemove = recursiveRemove;
+    this.nodeFactory = nodeFactory;
   }
 
   @Override
@@ -41,11 +43,11 @@ public class RemoveVisitor implements UniPathVisitor {
 
   @Override
   public UniNode visit(final BranchUniNode node, final BytesValue path) {
-    BytesValue nodePath = node.getPath();
+    BytesValue nodePath = BytesValue.wrap(node.getPath());
     BytesValue commonPath = path.commonPrefix(nodePath);
 
     if (commonPath.size() == path.size() && commonPath.size() == nodePath.size()) {
-      return recursiveRemove ? NullUniNode.instance() : node.removeValue();
+      return recursiveRemove ? NullUniNode.instance() : node.removeValue(nodeFactory);
     }
 
     if (commonPath.size() < nodePath.size()) {
@@ -55,9 +57,9 @@ public class RemoveVisitor implements UniPathVisitor {
     byte pos = path.get(commonPath.size());
     BytesValue newPath = path.slice(commonPath.size() + 1);
     if (pos == 0) {
-      return node.replaceChild(pos, node.getLeftChild().accept(this, newPath));
+      return node.replaceChild(pos, node.getLeftChild().accept(this, newPath), nodeFactory);
     } else {
-      return node.replaceChild(pos, node.getRightChild().accept(this, newPath));
+      return node.replaceChild(pos, node.getRightChild().accept(this, newPath), nodeFactory);
     }
   }
 }

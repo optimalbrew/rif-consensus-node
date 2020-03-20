@@ -20,12 +20,18 @@ import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class CommitVisitor implements UniNodeVisitor {
 
+  private final DataLoader loader;
   private final DataUpdater nodeUpdater;
   private final DataUpdater valueUpdater;
 
-  CommitVisitor(final DataUpdater nodeUpdater, final DataUpdater valueUpdater) {
+  private int progress;
+
+  CommitVisitor(
+      final DataLoader loader, final DataUpdater nodeUpdater, final DataUpdater valueUpdater) {
+    this.loader = loader;
     this.nodeUpdater = nodeUpdater;
     this.valueUpdater = valueUpdater;
+    this.progress = 0;
   }
 
   @Override
@@ -33,6 +39,12 @@ public class CommitVisitor implements UniNodeVisitor {
 
   @Override
   public void visit(final BranchUniNode node) {
+
+    ++progress;
+    if (progress % 1000 == 0) {
+      System.out.printf("Committed Nodes: %d\n", progress);
+    }
+
     if (!node.isDirty()) {
       return;
     }
@@ -50,10 +62,10 @@ public class CommitVisitor implements UniNodeVisitor {
   private void maybeStoreNode(final BranchUniNode node) {
     // If value is not embedded in node it must be explicitly stored
     if (node.getValueWrapper().isLong()) {
-      node.getValue()
+      node.getValue(loader)
           .flatMap(value -> node.getValueHash().map(hash -> new HashedValue(hash, value)))
           .ifPresentOrElse(
-              hashedValue -> valueUpdater.store(hashedValue.hash, hashedValue.value),
+              hashedValue -> store(valueUpdater, hashedValue.hash, hashedValue.value),
               () -> {
                 throw new IllegalStateException("Long valued node provides no hash or value");
               });
@@ -61,16 +73,20 @@ public class CommitVisitor implements UniNodeVisitor {
 
     // If node is not embedded in its parent it must be explicitly stored
     if (node.isReferencedByHash()) {
-      nodeUpdater.store(node.getHash(), node.getEncoding());
+      store(nodeUpdater, node.getHash(), node.getEncoding());
     }
+  }
+
+  private static void store(final DataUpdater updater, final byte[] hash, final byte[] value) {
+    updater.store(Bytes32.wrap(hash), BytesValue.wrap(value));
   }
 
   /** Dead simple (valueHash, value) pair. */
   private static class HashedValue {
-    final Bytes32 hash;
-    final BytesValue value;
+    final byte[] hash;
+    final byte[] value;
 
-    HashedValue(final Bytes32 hash, final BytesValue value) {
+    HashedValue(final byte[] hash, final byte[] value) {
       this.hash = hash;
       this.value = value;
     }

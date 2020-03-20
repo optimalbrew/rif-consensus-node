@@ -11,28 +11,39 @@
  * specific language governing permissions and limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
+
 package org.hyperledger.besu.ethereum.unitrie;
 
 /**
- * Vanilla implementation of a {@link UniNodeFactory}.
+ * Interface packing convenience methods to tinker with byte arrays.
  *
  * @author ppedemon
  */
-public class DefaultUniNodeFactory implements UniNodeFactory {
+public interface ByteTestUtils {
 
-  @Override
-  public UniNode createLeaf(final byte[] path, final ValueWrapper valueWrapper) {
-    return new BranchUniNode(path, valueWrapper);
+  /**
+   * Convenience byte array factory.
+   *
+   * @param bs bytes to pack into a byte array
+   * @return byte array holding the given bytes
+   */
+  static byte[] bytes(final byte... bs) {
+    return bs;
   }
 
-  @Override
-  public UniNode createBranch(
-      final byte[] path,
-      final ValueWrapper valueWrapper,
-      final UniNode leftChild,
-      final UniNode rightChild) {
-
-    return new BranchUniNode(path, valueWrapper, leftChild, rightChild);
+  /**
+   * Convenience byte array factory.
+   *
+   * @param xs integers to pack into a byte array (converted to bytes)
+   * @return byte array holding the given integer casted to bytes
+   */
+  static byte[] bytes(final int... xs) {
+    byte[] array = new byte[xs.length];
+    for (int i = 0; i < xs.length; i++) {
+      array[i] = (byte) xs[i];
+    }
+    return array;
   }
 }

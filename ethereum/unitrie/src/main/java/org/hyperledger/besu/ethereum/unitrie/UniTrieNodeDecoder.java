@@ -17,9 +17,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import org.hyperledger.besu.util.bytes.Bytes32;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
+import com.google.common.collect.Streams;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -29,8 +27,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import com.google.common.collect.Streams;
+import org.hyperledger.besu.util.bytes.Bytes32;
+import org.hyperledger.besu.util.bytes.BytesValue;
 
 public class UniTrieNodeDecoder {
 
@@ -147,7 +145,8 @@ public class UniTrieNodeDecoder {
         }
         if (child.isReferencedByHash()) {
           // Retrieve hash-referenced child
-          final Optional<UniNode> maybeChildNode = nodeFactory.retrieve(child.getHash());
+          final Optional<UniNode> maybeChildNode =
+              nodeFactory.retrieve(Bytes32.wrap(child.getHash()));
           if (maybeChildNode.isEmpty()) {
             continue;
           }

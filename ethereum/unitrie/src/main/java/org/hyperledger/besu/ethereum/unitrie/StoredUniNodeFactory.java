@@ -14,11 +14,9 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
+import java.util.Optional;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.Optional;
 
 /**
  * Factory creating nodes backed up by a {@link DataLoader}. This includes nodes referenced by hash.
@@ -35,30 +33,18 @@ public class StoredUniNodeFactory implements UniNodeFactory {
   }
 
   @Override
-  public UniNode createLeaf(final BytesValue path, final ValueWrapper valueWrapper) {
-    return handleNewNode(new BranchUniNode(path, valueWrapper, loader, this));
+  public UniNode createLeaf(final byte[] path, final ValueWrapper valueWrapper) {
+    return handleNewNode(new BranchUniNode(path, valueWrapper));
   }
 
   @Override
   public UniNode createBranch(
-      final BytesValue path,
+      final byte[] path,
       final ValueWrapper valueWrapper,
       final UniNode leftChild,
       final UniNode rightChild) {
 
-    return createBranch(path, valueWrapper, leftChild, rightChild, null);
-  }
-
-  @Override
-  public UniNode createBranch(
-      final BytesValue path,
-      final ValueWrapper valueWrapper,
-      final UniNode leftChild,
-      final UniNode rightChild,
-      final VarInt childrenSize) {
-
-    return handleNewNode(
-        new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize, loader, this));
+    return handleNewNode(new BranchUniNode(path, valueWrapper, leftChild, rightChild));
   }
 
   private UniNode handleNewNode(final UniNode node) {
@@ -79,8 +65,8 @@ public class StoredUniNodeFactory implements UniNodeFactory {
             value -> {
               UniNode node = decode(value);
               // recalculating the node.hash() is potentially expensive, so do it as an assertion
-              assert (hash.equals(node.getHash()))
-                  : "Node hash " + node.getHash() + " not equal to expected " + hash;
+              assert (hash.equals(Bytes32.wrap(node.getHash())))
+                  : "Node hash " + Bytes32.wrap(node.getHash()) + " not equal to expected " + hash;
               return node;
             });
   }
@@ -92,6 +78,16 @@ public class StoredUniNodeFactory implements UniNodeFactory {
    * @return decoded {@link UniNode} corresponding to the given value
    */
   public UniNode decode(final BytesValue value) {
-    return encoding.decode(value, loader, this);
+    return encoding.decode(value, this);
+  }
+
+  /**
+   * Decode the given value into a {@link UniNode}.
+   *
+   * @param value value to decode
+   * @return decoded {@link UniNode} corresponding to the given value
+   */
+  public UniNode decode(final byte[] value) {
+    return encoding.decode(BytesValue.wrap(value), this);
   }
 }

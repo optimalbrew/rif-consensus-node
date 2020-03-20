@@ -14,9 +14,6 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
-import org.hyperledger.besu.util.bytes.BytesValue;
-
 /**
  * Interface defining contract for {@link UniNode} factory classes.
  *
@@ -31,7 +28,7 @@ public interface UniNodeFactory {
    * @param valueWrapper value of node to create
    * @return new leaf node
    */
-  UniNode createLeaf(BytesValue path, ValueWrapper valueWrapper);
+  UniNode createLeaf(byte[] path, ValueWrapper valueWrapper);
 
   /**
    * Create a branch {@link UniNode} with unknown children size.
@@ -43,22 +40,5 @@ public interface UniNodeFactory {
    * @return new branch node
    */
   UniNode createBranch(
-      BytesValue path, ValueWrapper valueWrapper, UniNode leftChild, UniNode rightChild);
-
-  /**
-   * Create a branch {@link UniNode} with known children size.
-   *
-   * @param path path of node to create
-   * @param valueWrapper value of node to create
-   * @param leftChild left hand side child of node to create
-   * @param rightChild right hand side child of node to create
-   * @param childrenSize cumulative size of children in bytes
-   * @return new branch node
-   */
-  UniNode createBranch(
-      BytesValue path,
-      ValueWrapper valueWrapper,
-      UniNode leftChild,
-      UniNode rightChild,
-      VarInt childrenSize);
+      byte[] path, ValueWrapper valueWrapper, UniNode leftChild, UniNode rightChild);
 }
