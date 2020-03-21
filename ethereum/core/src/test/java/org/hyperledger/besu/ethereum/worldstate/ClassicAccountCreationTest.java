@@ -28,7 +28,6 @@ import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -51,24 +50,26 @@ public class ClassicAccountCreationTest {
 
   @Parameters
   public static Object[] data() {
-    return new Object[] {2_937_500};
+    return new Object[] {4_000_000};
   }
 
   @Parameter
   public int size;
 
   private int progress;
+  private int nodes;
 
   @Before
   public void setup() {
     progress = 0;
+    nodes = 0;
   }
 
   @Test
   public void test_account_creation() {
     System.out.printf("Inserting %d accounts\n", size);
 
-    final MutableWorldState worldState = createEmpty();
+    final DefaultMutableWorldState worldState = createEmpty();
     final WorldUpdater updater = worldState.updater();
 
     addresses()
@@ -82,6 +83,10 @@ public class ClassicAccountCreationTest {
         });
 
     updater.commit();
+
+    worldState.getAccountStateTrie().visitAll(__ -> ++nodes);
+    System.out.printf("Total nodes: %d\n", nodes);
+
     worldState.persist();
 
     long count = worldState.streamAccounts(Bytes32.ZERO, Integer.MAX_VALUE).count();

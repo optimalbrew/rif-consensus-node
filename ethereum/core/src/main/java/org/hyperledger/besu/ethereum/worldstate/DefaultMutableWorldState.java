@@ -95,6 +95,10 @@ public class DefaultMutableWorldState implements MutableWorldState {
         worldStateStorage::getAccountStorageTrieNode, rootHash, b -> b, b -> b);
   }
 
+  public MerklePatriciaTrie<Bytes32, BytesValue> getAccountStateTrie() {
+    return accountStateTrie;
+  }
+
   @Override
   public Hash rootHash() {
     return Hash.wrap(accountStateTrie.getRootHash());

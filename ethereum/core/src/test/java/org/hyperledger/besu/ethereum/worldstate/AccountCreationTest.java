@@ -29,7 +29,6 @@ import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.unitrie.NullUniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -50,17 +49,19 @@ public class AccountCreationTest {
 
   @Parameters
   public static Object[] data() {
-    return new Object[] {3_000_000};
+    return new Object[] {4_000_000};
   }
 
   @Parameter
   public int size;
 
   private int progress;
+  private int nodes;
 
   @Before
   public void setup() {
     progress = 0;
+    nodes = 0;
   }
 
   @Test
@@ -79,7 +80,9 @@ public class AccountCreationTest {
     });
 
     updater.commit();
-    System.out.println("Commit done");
+    worldState.getTrie().visitAll(__ -> ++nodes);
+    System.out.printf("Total nodes: %d\n", nodes);
+
     worldState.persist();
 
     UniTrie<?, ?> trie = worldState.getTrie();
@@ -87,7 +90,7 @@ public class AccountCreationTest {
     System.out.printf("Accounts in Unitrie = %d\n", noAccounts);
     assertThat(noAccounts).isEqualTo(size);
   }
-
+  
   private int count(final UniTrie<?, ?> unitrie) {
     final AtomicInteger n = new AtomicInteger(0);
     unitrie.visitAll(
