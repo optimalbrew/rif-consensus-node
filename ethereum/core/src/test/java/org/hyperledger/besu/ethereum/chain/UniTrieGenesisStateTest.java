@@ -67,7 +67,7 @@ public class UniTrieGenesisStateTest extends AbstractGenesisStateTest {
   public void createFromJsonWithNonce() throws Exception {
     doCreateFromJsonWithNonce(
         merkleAwareProvider,
-        Hash.fromHexString("0xdd1e4ccc9141358505d11740e7df87a57855ee5791f2caa870abe62d36efd487"));
+        Hash.fromHexString("0x6f0d529af164d0daf0cfc4ac62467958311ec48f9f2acd649919373441cd4b98"));
   }
 
   @Test

@@ -60,7 +60,7 @@ public class UniTrieEncodingTest {
             .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
             .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
     assertThat(BytesValue.of(trie.getEncoding()))
-        .isEqualTo(BytesValue.fromHexString("0x5f01c00750000001020304075000800506070809"));
+        .isEqualTo(BytesValue.fromHexString("0x5f01c0075000000102030407500080050607080e09"));
   }
 
   @Test

@@ -165,7 +165,7 @@ public class UniTrieMutableWorldStateTest {
     final WorldUpdater updater = worldState.updater();
     final Wei newBalance = Wei.of(100000);
     final Hash expectedRootHash =
-        Hash.fromHexString("0xeb3d6d6be942ffebdad02f3060b4b6fc07858fc96b0ebf298c41845b5bb8b905");
+        Hash.fromHexString("0x26ce2edf7658ca8f32316e9c6e2895a6db3161e2cd783a5cc335b47e7ab91c76");
 
     // Update account and assert we get the expected response from updater
     updater.createAccount(ADDRESS).getMutable().setBalance(newBalance);
@@ -208,7 +208,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0x496374cead1378adad35abaf058de90dc997c72a8068dd13cee37fd7e634461c"));
+                "0x4ac29921daf6f64c5456c91aa9b3eee05efc3f35c2d4ae27068f780112f9560f"));
   }
 
   @Test
@@ -232,7 +232,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0xeb3d6d6be942ffebdad02f3060b4b6fc07858fc96b0ebf298c41845b5bb8b905"));
+                "0x26ce2edf7658ca8f32316e9c6e2895a6db3161e2cd783a5cc335b47e7ab91c76"));
   }
 
   @Test
@@ -247,7 +247,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0xe7d358c35b85468c5fb0d766ba222a02db642e1074ac68f226f84c0453e8af61"));
+                "0xa37ff4218d7c9b518e80ae1944f8493080778b6581d365db1fab1fce6e1aad85"));
   }
 
   @Test
@@ -262,7 +262,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0xeb3d6d6be942ffebdad02f3060b4b6fc07858fc96b0ebf298c41845b5bb8b905"));
+                "0x26ce2edf7658ca8f32316e9c6e2895a6db3161e2cd783a5cc335b47e7ab91c76"));
     verifyStoragePrefixRootIsNotPresent(worldState, ADDRESS);
   }
 
@@ -278,7 +278,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0x65c840ede2f267326cf37a8f9d6189be8c82f310b29a804c5b6fc6c4954a2d5d"));
+                "0x28b0bbe83e87bffc213c71b2d9fcf5a6191255d216ea603970c1307bfddccb91"));
     verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
   }
 
@@ -295,7 +295,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0x4b89eee4b889a00129fac8fa625844ab8584a0d0f49078130ef9b52d4e93e96b"));
+                "0x8cd6c7bcba0fae12805b3ee5b47a8413cb5b256f8b8a9c40dda512e31be8f176"));
     verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
   }
 
@@ -311,7 +311,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0xeb3d6d6be942ffebdad02f3060b4b6fc07858fc96b0ebf298c41845b5bb8b905"));
+                "0x26ce2edf7658ca8f32316e9c6e2895a6db3161e2cd783a5cc335b47e7ab91c76"));
     verifyStoragePrefixRootIsNotPresent(worldState, ADDRESS);
   }
 
@@ -519,7 +519,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0x61ececed2d757a325d7c8a4a0433fbbc43dc1fceb5180a2b5d3d845502524c70"));
+                "0xba71ad6403ddd5984eb4e60d0e57b0ac9855c128447d03025aa95e0848143111"));
   }
 
   @Test
@@ -544,7 +544,7 @@ public class UniTrieMutableWorldStateTest {
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
-                "0xe7d358c35b85468c5fb0d766ba222a02db642e1074ac68f226f84c0453e8af61"));
+                "0xa37ff4218d7c9b518e80ae1944f8493080778b6581d365db1fab1fce6e1aad85"));
   }
 
   @Test

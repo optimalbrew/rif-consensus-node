@@ -206,12 +206,6 @@ public class UniTrieMutableWorldState implements MutableWorldState {
         return updatedCode;
       }
 
-      // Cache miss. Let's see if code hash is empty. In that case the account has no code.
-      //final Hash codeHash = getCodeHash();
-      //if (codeHash.equals(Hash.EMPTY)) {
-      //  return BytesValue.EMPTY;
-      //}
-
       // The account has code, we must retrieve it from the Unitrie. Since Unitries
       // don't associate code entries to the code hash, the lookup key can't be the
       // code hash. The key must come from the key mapper.
@@ -243,11 +237,6 @@ public class UniTrieMutableWorldState implements MutableWorldState {
       final BytesValue updatedCode = updatedAccountCode.get(address);
       if (updatedCode != null) {
         return UInt256Bytes.of(updatedCode.size());
-      }
-
-      final Hash codeHash = getCodeHash();
-      if (codeHash.equals(Hash.EMPTY)) {
-        return Bytes32.ZERO;
       }
 
       BytesValue mappedKey = keyMapper.getAccountCodeKey(address);
@@ -345,8 +334,13 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
         // Persist updated code if necessary
         if (updated.codeWasUpdated()) {
-          wrapped.updatedAccountCode.put(address, updated.getCode());
-          wrapped.trie.put(wrapped.keyMapper.getAccountCodeKey(address), updated.getCode());
+          BytesValue updatedCode = updated.getCode();
+          wrapped.updatedAccountCode.put(address, updatedCode);
+          if (updatedCode.isEmpty()) {
+            wrapped.trie.remove(wrapped.keyMapper.getAccountCodeKey(address));
+          } else {
+            wrapped.trie.put(wrapped.keyMapper.getAccountCodeKey(address), updatedCode);
+          }
         }
 
         // Persist account storage

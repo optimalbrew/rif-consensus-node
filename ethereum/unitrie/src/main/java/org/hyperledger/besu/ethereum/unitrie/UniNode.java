@@ -81,6 +81,21 @@ public interface UniNode {
   UniNode getRightChild();
 
   /**
+   * Get total size of children of this node in bytes.
+   *
+   * @return total size of children in bytes
+   */
+  long getChildrenSize();
+
+  /**
+   * Get intrinsic size of this node, in bytes. Intrinsic size is defined as the value size if it's
+   * long, plus children size, plus length of node's encoding.
+   *
+   * @return intrinsic size of this node.
+   */
+  long intrinsicSize();
+
+  /**
    * Pretty print a Uninode.
    *
    * @param indent indentation to prepend

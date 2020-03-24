@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,20 +40,22 @@ public class BranchUniNode implements UniNode {
   private final UniNode leftChild;
   private final UniNode rightChild;
 
-  private byte[] encoding;
+  private long childrenSize;
+  private WeakReference<byte[]> encoding;
   private byte[] hash;
 
   private boolean dirty = false;
 
   BranchUniNode(final byte[] path, final ValueWrapper valueWrapper) {
-    this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance());
+    this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance(), -1);
   }
 
   BranchUniNode(
       final byte[] path,
       final ValueWrapper valueWrapper,
       final UniNode leftChild,
-      final UniNode rightChild) {
+      final UniNode rightChild,
+      final long childrenSize) {
 
     Preconditions.checkNotNull(path);
     Preconditions.checkNotNull(valueWrapper);
@@ -63,6 +66,7 @@ public class BranchUniNode implements UniNode {
     this.valueWrapper = valueWrapper;
     this.leftChild = leftChild;
     this.rightChild = rightChild;
+    this.childrenSize = childrenSize;
   }
 
   @Override
@@ -96,8 +100,11 @@ public class BranchUniNode implements UniNode {
         "%s%s%s%s",
         Strings.repeat(" ", indent),
         String.format(
-            "(key = %s (%d), val = %s)",
-            PathEncoding.encodePath(BytesValue.wrap(path)), path.length, valueWrapper),
+            "(key = %s (%d), cs = %d, val = %s)",
+            PathEncoding.encodePath(BytesValue.wrap(path)),
+            path.length,
+            childrenSize,
+            valueWrapper),
         String.format("\n%s", leftChild.print(indent + 2)),
         String.format("\n%s", rightChild.print(indent + 2)));
   }
@@ -128,11 +135,36 @@ public class BranchUniNode implements UniNode {
   }
 
   @Override
-  public byte[] getEncoding() {
-    if (Objects.isNull(encoding)) {
-      encoding = encodingHelper.encode(this).getArrayUnsafe();
+  public long getChildrenSize() {
+    if (childrenSize == -1) {
+      if (isLeaf()) {
+        childrenSize = 0;
+      } else {
+        childrenSize = leftChild.intrinsicSize() + rightChild.intrinsicSize();
+      }
     }
-    return encoding;
+    return childrenSize;
+  }
+
+  @Override
+  public long intrinsicSize() {
+    int valueSize =
+        valueWrapper.isLong() ? valueWrapper.getLength().orElse(0) : 0;
+    return valueSize + getChildrenSize() + getEncoding().length;
+  }
+
+  @Override
+  public byte[] getEncoding() {
+    if (encoding != null) {
+      byte[] rawEnc = encoding.get();
+      if (rawEnc != null) {
+        return encoding.get();
+      }
+    }
+
+    byte[] rawEnc = encodingHelper.encode(this).getArrayUnsafe();
+    this.encoding = new WeakReference<>(rawEnc);
+    return rawEnc;
   }
 
   @Override
@@ -159,7 +191,7 @@ public class BranchUniNode implements UniNode {
     dirty = true;
   }
 
-  private boolean isLeaf() {
+  boolean isLeaf() {
     return leftChild == NullUniNode.instance() && rightChild == NullUniNode.instance();
   }
 

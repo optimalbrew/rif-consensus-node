@@ -72,6 +72,16 @@ public class NullUniNode implements UniNode {
   }
 
   @Override
+  public long getChildrenSize() {
+    return 0;
+  }
+
+  @Override
+  public long intrinsicSize() {
+    return 0;
+  }
+
+  @Override
   public String print(final int indent) {
     return String.format("%s[null]", Strings.repeat(" ", indent));
   }

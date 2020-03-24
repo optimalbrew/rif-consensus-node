@@ -40,11 +40,17 @@ class UniNodeEncoding {
     int pathSize = node.getPath().length;
     BytesValue encodedPath = PathEncoding.encodePath(BytesValue.of(node.getPath()));
 
+    VarInt childrenSize = VarInt.ZERO;
+    if (!node.isLeaf()) {
+      childrenSize = new VarInt(node.getChildrenSize());
+    }
+
     int encodingSize =
         1
             + encodedPathSize(pathSize, encodedPath)
             + encodedChildSize(node.getLeftChild())
             + encodedChildSize(node.getRightChild())
+            + (node.isLeaf() ? 0 : childrenSize.getSizeInBytes())
             + (node.getValueWrapper().isLong()
                 ? Bytes32.SIZE + UInt24.BYTES
                 : node.getValueLength().orElse(0));
@@ -54,6 +60,10 @@ class UniNodeEncoding {
     encodePath(pathSize, encodedPath, buffer);
     encodeChild(node.getLeftChild(), buffer);
     encodeChild(node.getRightChild(), buffer);
+
+    if (!node.isLeaf()) {
+      buffer.put(childrenSize.encode());
+    }
 
     node.getValueWrapper().encodeTo(buffer);
 
@@ -242,13 +252,18 @@ class UniNodeEncoding {
     UniNode leftChild = decodeChild(buffer, hasLeftChild, leftChildEmbedded, nodeFactory);
     UniNode rightChild = decodeChild(buffer, hasRightChild, rightChildEmbedded, nodeFactory);
 
+    long childrenSize = -1;
+    if (hasLeftChild || hasRightChild) {
+      childrenSize = readVarInt(buffer).getValue();
+    }
+
     ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
 
     if (buffer.hasRemaining()) {
       throw new IllegalArgumentException("The message had more data than expected");
     }
 
-    return new BranchUniNode(path, valueWrapper, leftChild, rightChild);
+    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
   }
 
   /**

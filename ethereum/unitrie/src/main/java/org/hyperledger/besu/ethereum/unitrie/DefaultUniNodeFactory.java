@@ -33,6 +33,16 @@ public class DefaultUniNodeFactory implements UniNodeFactory {
       final UniNode leftChild,
       final UniNode rightChild) {
 
-    return new BranchUniNode(path, valueWrapper, leftChild, rightChild);
+    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, -1);
+  }
+
+  @Override
+  public UniNode createBranch(
+      final byte[] path,
+      final ValueWrapper valueWrapper,
+      final UniNode leftChild,
+      final UniNode rightChild,
+      final int childrenSize) {
+    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
   }
 }

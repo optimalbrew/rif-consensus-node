@@ -173,7 +173,8 @@ public class StoredUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "[" + getRootHash() + "]";
+    //return getClass().getSimpleName() + "[" + getRootHash() + "]";
+    return root.toString();
   }
 
   private BytesValue bytesToPath(final BytesValue key) {

@@ -72,6 +72,16 @@ public class StoredUniNode implements UniNode {
   }
 
   @Override
+  public long getChildrenSize() {
+    return load().getChildrenSize();
+  }
+
+  @Override
+  public long intrinsicSize() {
+    return load().intrinsicSize();
+  }
+
+  @Override
   public String print(final int indent) {
     if (Objects.isNull(loadedNode)) {
       return String.format("%sStored → %s", Strings.repeat(" ", indent), Bytes32.wrap(hash));
