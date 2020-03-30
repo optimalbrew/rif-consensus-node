@@ -32,12 +32,7 @@ import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
 public class AccountCreationTest {
 
   private static UniTrieMutableWorldState createEmpty(final WorldStateStorage storage) {
@@ -46,25 +41,19 @@ public class AccountCreationTest {
 
   private static UniTrieMutableWorldState createEmpty() {
     final InMemoryStorageProvider provider = new InMemoryStorageProvider();
-    //preImageStorage = provider.createWorldStatePreimageStorage();
     return createEmpty(provider.createWorldStateStorage());
   }
 
-  //private static WorldStatePreimageStorage preImageStorage;
 
-  @Parameters
-  public static Object[] data() {
-    return new Object[] {1_718_750};
-  }
-
-  @Parameter
-  public int size;
-
+  private int size;
+  private double alpha;
   private int progress;
   private int nodes;
 
   @Before
   public void setup() {
+    size = Integer.parseInt(System.getProperty("stress.accounts"));
+    alpha = Double.parseDouble(System.getProperty("stress.alpha"));
     progress = 0;
     nodes = 0;
   }
@@ -75,8 +64,6 @@ public class AccountCreationTest {
 
     final UniTrieMutableWorldState worldState = createEmpty();
     final WorldUpdater updater = worldState.updater();
-
-    // final WorldStatePreimageStorage.Updater preImageUpdater = preImageStorage.updater();
 
     addresses()
         .limit(size)
@@ -89,7 +76,7 @@ public class AccountCreationTest {
               MutableAccount account = updater.createAccount(address).getMutable();
               account.setBalance(Wei.of(100000));
 
-              if (Math.random() < 0.5) {
+              if (Math.random() < alpha) {
                 account.setCode(
                     BytesValue.fromHexString(
                         "0x608060405234801561001057600080fd5b506040805180820190915260078082527f546f6b656e204100"
@@ -152,8 +139,6 @@ public class AccountCreationTest {
                             + "0190a3505050565b60008282018381101561070757600080fd5b93925050505600a165627a7a723058"
                             + "201ccccf3643bfb06a9c417e8e3da96cf446bae5a3d9fb0da7af9ad966249008e00029"));
               }
-
-              // preImageUpdater.putAccountTrieKeyPreimage(Hash.hash(address), address);
             });
 
     System.out.println("Commiting...");
@@ -161,10 +146,8 @@ public class AccountCreationTest {
     System.out.println("Commiting done...");
     worldState.getTrie().visitAll(__ -> ++nodes);
     System.out.printf("Total nodes: %d\n", nodes);
-    //System.out.printf("Trie: %s\n", worldState.getTrie());
 
     worldState.persist();
-    //preImageUpdater.commit();
 
     UniTrie<?, ?> trie = worldState.getTrie();
     int noAccounts = count(trie);

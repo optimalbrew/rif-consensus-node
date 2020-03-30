@@ -30,12 +30,7 @@ import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
 public class ClassicAccountCreationTest {
 
   private static DefaultMutableWorldState createEmpty(
@@ -49,19 +44,16 @@ public class ClassicAccountCreationTest {
         provider.createWorldStateStorage(), provider.createWorldStatePreimageStorage());
   }
 
-  @Parameters
-  public static Object[] data() {
-    return new Object[] {1_562_500};
-  }
 
-  @Parameter
-  public int size;
-
+  private int size;
+  private double alpha;
   private int progress;
   private int nodes;
 
   @Before
   public void setup() {
+    size = Integer.parseInt(System.getProperty("stress.accounts"));
+    alpha = Double.parseDouble(System.getProperty("stress.alpha"));
     progress = 0;
     nodes = 0;
   }
@@ -84,7 +76,7 @@ public class ClassicAccountCreationTest {
               MutableAccount account = updater.createAccount(address).getMutable();
               account.setBalance(Wei.of(100000));
 
-              if (Math.random() < 0.5) {
+              if (Math.random() < alpha) {
                 account.setCode(
                     BytesValue.fromHexString(
                         "0x608060405234801561001057600080fd5b506040805180820190915260078082527f546f6b656e204100"
@@ -153,7 +145,6 @@ public class ClassicAccountCreationTest {
 
     worldState.getAccountStateTrie().visitAll(__ -> ++nodes);
     System.out.printf("Total nodes: %d\n", nodes);
-
     worldState.persist();
 
     long count = worldState.streamAccounts(Bytes32.ZERO, Integer.MAX_VALUE).count();
