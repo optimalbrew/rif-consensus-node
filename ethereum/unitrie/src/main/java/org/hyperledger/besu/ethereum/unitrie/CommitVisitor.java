@@ -23,9 +23,12 @@ public class CommitVisitor implements UniNodeVisitor {
   private final DataUpdater nodeUpdater;
   private final DataUpdater valueUpdater;
 
+  private int progress;
+
   CommitVisitor(final DataUpdater nodeUpdater, final DataUpdater valueUpdater) {
     this.nodeUpdater = nodeUpdater;
     this.valueUpdater = valueUpdater;
+    this.progress = 0;
   }
 
   @Override
@@ -33,6 +36,12 @@ public class CommitVisitor implements UniNodeVisitor {
 
   @Override
   public void visit(final BranchUniNode node) {
+
+    ++progress;
+    if (progress % 1000 == 0) {
+      System.out.printf("Committed Nodes: %d\n", progress);
+    }
+
     if (!node.isDirty()) {
       return;
     }

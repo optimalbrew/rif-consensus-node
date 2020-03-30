@@ -95,6 +95,14 @@ test {
   exclude 'org/hyperledger/besu/ethereum/vm/blockchain/**.class'
   exclude 'org/hyperledger/besu/ethereum/vm/generalstate/**.class'
   exclude 'org/hyperledger/besu/ethereum/core/TransactionTest.class'
+
+  systemProperty "stress.accounts", System.getProperty("stress.accounts")
+  systemProperty "stress.alpha", System.getProperty("stress.alpha")
+
+  testLogging {
+    outputs.upToDateWhen {false}
+    showStandardStreams = true
+  }
 }
 
 def generateTestFiles(FileTree jsonPath, File templateFile, String pathstrip, String destination, String namePrefix) {

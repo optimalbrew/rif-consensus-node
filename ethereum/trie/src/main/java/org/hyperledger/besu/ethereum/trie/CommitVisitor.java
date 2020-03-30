@@ -20,12 +20,21 @@ class CommitVisitor<V> implements NodeVisitor<V> {
 
   private final NodeUpdater nodeUpdater;
 
+  private int progress;
+
   public CommitVisitor(final NodeUpdater nodeUpdater) {
     this.nodeUpdater = nodeUpdater;
+    this.progress = 0;
   }
 
   @Override
   public void visit(final ExtensionNode<V> extensionNode) {
+
+    ++progress;
+    if (progress % 1000 == 0) {
+      System.out.printf("Committed Nodes: %d\n", progress);
+    }
+
     if (!extensionNode.isDirty()) {
       return;
     }
@@ -40,6 +49,12 @@ class CommitVisitor<V> implements NodeVisitor<V> {
 
   @Override
   public void visit(final BranchNode<V> branchNode) {
+
+    ++progress;
+    if (progress % 1000 == 0) {
+      System.out.printf("Committed Nodes: %d\n", progress);
+    }
+
     if (!branchNode.isDirty()) {
       return;
     }
@@ -56,6 +71,12 @@ class CommitVisitor<V> implements NodeVisitor<V> {
 
   @Override
   public void visit(final LeafNode<V> leafNode) {
+
+    ++progress;
+    if (progress % 1000 == 0) {
+      System.out.printf("Committed Nodes: %d\n", progress);
+    }
+
     if (!leafNode.isDirty()) {
       return;
     }

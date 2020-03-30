@@ -83,6 +83,10 @@ public class UniTrieMutableWorldState implements MutableWorldState {
         worldStateStorage::getAccountStateTrieNode, rootHash, b -> b, b -> b);
   }
 
+  public UniTrie<BytesValue, BytesValue> getTrie() {
+    return trie;
+  }
+
   @Override
   public Hash rootHash() {
     return Hash.wrap(trie.getRootHash());
@@ -341,8 +345,13 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
         // Persist updated code if necessary
         if (updated.codeWasUpdated()) {
-          wrapped.updatedAccountCode.put(address, updated.getCode());
-          wrapped.trie.put(wrapped.keyMapper.getAccountCodeKey(address), updated.getCode());
+          BytesValue updatedCode = updated.getCode();
+          wrapped.updatedAccountCode.put(address, updatedCode);
+          if (updatedCode.isEmpty()) {
+            wrapped.trie.remove(wrapped.keyMapper.getAccountCodeKey(address));
+          } else {
+            wrapped.trie.put(wrapped.keyMapper.getAccountCodeKey(address), updatedCode);
+          }
         }
 
         // Persist account storage
