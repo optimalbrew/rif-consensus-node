@@ -31,7 +31,7 @@ class CommitVisitor<V> implements NodeVisitor<V> {
   public void visit(final ExtensionNode<V> extensionNode) {
 
     ++progress;
-    if (progress % 1000 == 0) {
+    if (progress % 10000 == 0) {
       System.out.printf("Committed Nodes: %d\n", progress);
     }
 
@@ -51,7 +51,7 @@ class CommitVisitor<V> implements NodeVisitor<V> {
   public void visit(final BranchNode<V> branchNode) {
 
     ++progress;
-    if (progress % 1000 == 0) {
+    if (progress % 10000 == 0) {
       System.out.printf("Committed Nodes: %d\n", progress);
     }
 
@@ -73,7 +73,7 @@ class CommitVisitor<V> implements NodeVisitor<V> {
   public void visit(final LeafNode<V> leafNode) {
 
     ++progress;
-    if (progress % 1000 == 0) {
+    if (progress % 10000 == 0) {
       System.out.printf("Committed Nodes: %d\n", progress);
     }
 

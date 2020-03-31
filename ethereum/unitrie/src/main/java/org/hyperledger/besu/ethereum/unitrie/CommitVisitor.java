@@ -41,7 +41,7 @@ public class CommitVisitor implements UniNodeVisitor {
   public void visit(final BranchUniNode node) {
 
     ++progress;
-    if (progress % 1000 == 0) {
+    if (progress % 10000 == 0) {
       System.out.printf("Committed Nodes: %d\n", progress);
     }
 

@@ -35,7 +35,7 @@ class UniNodeEncoding {
    * @param node node to encode
    * @return encoded node, as mandated by RSKIP107
    */
-  BytesValue encode(final BranchUniNode node) {
+  BytesValue encode(final ExpandedUniNode node) {
     byte flags = getFlags(node);
     int pathSize = node.getPath().length;
     BytesValue encodedPath = PathEncoding.encodePath(BytesValue.of(node.getPath()));
@@ -266,6 +266,70 @@ class UniNodeEncoding {
     return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
   }
 
+  public byte[] decodePathFromFullEncoding(final ByteBuffer buffer) {
+    byte flags = buffer.get();
+    boolean hasPath = (flags & 0b00010000) == 0b00010000;
+    byte[] path = new byte[0];
+    if (hasPath) {
+      path = decodePath(buffer);
+    }
+    return path;
+  }
+  public ValueWrapper decodeValueWrapperFromFullEncoding(final ByteBuffer buffer) {
+
+    byte flags = buffer.get();
+    boolean hasLongValue = (flags & 0b00100000) == 0b00100000;
+    boolean hasPath = (flags & 0b00010000) == 0b00010000;
+    boolean hasLeftChild = (flags & 0b00001000) == 0b00001000;
+    boolean hasRightChild = (flags & 0b00000100) == 0b00000100;
+    boolean leftChildEmbedded = (flags & 0b00000010) == 0b00000010;
+    boolean rightChildEmbedded = (flags & 0b00000001) == 0b00000001;
+
+    if (hasPath) {
+      skipPath(buffer);
+    }
+
+    skipChild(buffer, hasLeftChild, leftChildEmbedded);
+    skipChild(buffer, hasRightChild, rightChildEmbedded);
+
+    if (hasLeftChild || hasRightChild) {
+      readVarInt(buffer).getValue();
+    }
+
+    ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
+
+    return valueWrapper;
+  }
+
+  public UniNode decodeCore(final ByteBuffer buffer) {
+
+    byte flags = buffer.get();
+
+    boolean hasLongValue = (flags & 0b00100000) == 0b00100000;
+    boolean hasPath = (flags & 0b00010000) == 0b00010000;
+    boolean hasLeftChild = (flags & 0b00001000) == 0b00001000;
+    boolean hasRightChild = (flags & 0b00000100) == 0b00000100;
+    //boolean leftChildEmbedded = (flags & 0b00000010) == 0b00000010;
+    //boolean rightChildEmbedded = (flags & 0b00000001) == 0b00000001;
+
+    byte[] path = new byte[0];
+    if (hasPath) {
+      path = decodePath(buffer);
+    }
+
+    long childrenSize = -1;
+    if (hasLeftChild || hasRightChild) {
+      childrenSize = readVarInt(buffer).getValue();
+    }
+
+    ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
+
+    if (buffer.hasRemaining()) {
+      throw new IllegalArgumentException("The message had more data than expected");
+    }
+    return new ExpandedUniNode(path, valueWrapper, null, null, childrenSize);
+  }
+
   /**
    * Decode a node path at the current position of the given buffer.
    *
@@ -290,6 +354,22 @@ class UniNodeEncoding {
     return PathEncoding.decodePath(BytesValue.wrap(encodedPath), pathLengthInBits).getArrayUnsafe();
   }
 
+  private void skipPath(final ByteBuffer buffer) {
+    int pathLengthInBits;
+    int firstLengthByte = Byte.toUnsignedInt(buffer.get());
+
+    if (0 <= firstLengthByte && firstLengthByte <= 31) {
+      pathLengthInBits = firstLengthByte + 1;
+    } else if (32 <= firstLengthByte && firstLengthByte <= 254) {
+      pathLengthInBits = firstLengthByte + 128;
+    } else {
+      pathLengthInBits = (int) readVarInt(buffer).getValue();
+    }
+
+    int encodedLength = PathEncoding.encodedPathLength(pathLengthInBits);
+    //byte[] encodedPath = new byte[encodedLength];
+    buffer.position(buffer.position()+encodedLength);
+    }
   /**
    * Read a {@link VarInt} from the current position of the given buffer.
    *
@@ -345,5 +425,22 @@ class UniNodeEncoding {
     }
 
     return NullUniNode.instance();
+  }
+
+  private void skipChild(
+          final ByteBuffer buffer,
+          final boolean hasChild,
+          final boolean isChildEmbedded) {
+
+    if (hasChild && isChildEmbedded) {
+      byte[] lengthBytes = new byte[UInt8.BYTES];
+      buffer.get(lengthBytes);
+      UInt8 childLength = UInt8.fromBytes(lengthBytes);
+      byte[] serializedNode = new byte[childLength.intValue()];
+      buffer.get(serializedNode);
+    } else if (hasChild) {
+      byte[] childHashBytes = new byte[Bytes32.SIZE];
+      buffer.get(childHashBytes);
+    }
   }
 }
