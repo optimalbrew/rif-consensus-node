@@ -42,7 +42,6 @@ public class BranchUniNode implements UniNode {
 
   private long childrenSize;
   private byte[] encoding;
-  private byte[] hash;
 
   private boolean dirty = false;
 
@@ -174,13 +173,6 @@ public class BranchUniNode implements UniNode {
   @Override
   public long intrinsicSize() {
     ValueWrapper valueWrapper = getValueWrapper();
-    int l = valueWrapper.getLength().orElse(0);
-    if (l>1000) {
-      System.out.println(l);
-      valueWrapper = getValueWrapper();
-      System.out.println(valueWrapper.getHash());
-    }
-
     int valueSize =
         valueWrapper.isLong() ? valueWrapper.getLength().orElse(0) : 0;
     return valueSize + getChildrenSize() + getEncoding().length;
@@ -204,10 +196,10 @@ public class BranchUniNode implements UniNode {
 
   @Override
   public byte[] getHash() {
-    if (Objects.isNull(hash)) {
+    //if (Objects.isNull(hash)) {
       BytesValue encoding = BytesValue.of(getEncoding());
-      hash = Hash.keccak256(encoding).getArrayUnsafe();
-    }
+      byte[] hash = Hash.keccak256(encoding).getArrayUnsafe();
+
     return hash;
   }
 

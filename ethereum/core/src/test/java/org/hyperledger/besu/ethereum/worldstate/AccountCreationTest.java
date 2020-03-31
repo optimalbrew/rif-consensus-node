@@ -129,7 +129,7 @@ public class AccountCreationTest {
                     + "0190a3505050565b60008282018381101561070757600080fd5b93925050505600a165627a7a723058"
                     + "201ccccf3643bfb06a9c417e8e3da96cf446bae5a3d9fb0da7af9ad966249008e00029");
 
-    int batchCount = 1;
+    int batchCount = 10;
     for (int batch=0;batch<batchCount;batch++) {
       System.out.printf("Batch: %d\n", batch);
 
@@ -152,6 +152,7 @@ public class AccountCreationTest {
       m = java.lang.System.currentTimeMillis()-ini;
       System.out.println("("+m+") Commiting...");
       updater.commit();
+      updater.revert();
     }
     m = java.lang.System.currentTimeMillis()-ini;
     System.out.println("("+m+") Commiting done...");
