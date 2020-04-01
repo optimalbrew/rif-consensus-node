@@ -83,7 +83,7 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
 
   @Override
   public Updater updater() {
-    return new Updater(keyValueStorage.startTransaction(), nodeAddedListeners);
+    return new Updater(keyValueStorage, nodeAddedListeners);
   }
 
   @Override
@@ -103,14 +103,16 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
 
   public static class Updater implements WorldStateStorage.Updater {
 
-    private final KeyValueStorageTransaction transaction;
+    private KeyValueStorageTransaction transaction;
     private final Subscribers<NodesAddedListener> nodeAddedListeners;
     private final List<Bytes32> addedNodes = new ArrayList<>();
+    private final KeyValueStorage keyValueStorage;
 
     public Updater(
-        final KeyValueStorageTransaction transaction,
+        final KeyValueStorage keyValueStorage,
         final Subscribers<NodesAddedListener> nodeAddedListeners) {
-      this.transaction = transaction;
+      this.keyValueStorage = keyValueStorage;
+      this.transaction = keyValueStorage.startTransaction();
       this.nodeAddedListeners = nodeAddedListeners;
     }
 
@@ -140,6 +142,13 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
       }
       addedNodes.add(nodeHash);
       transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
+      if (addedNodes.size()>10000) {
+        // auto-commit
+        System.out.println("auto-commit");
+        commit();
+        addedNodes.clear();
+        transaction = keyValueStorage.startTransaction();
+      }
       return this;
     }
 

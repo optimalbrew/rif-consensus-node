@@ -153,14 +153,25 @@ public class AccountCreationTest {
       System.out.println("("+m+") Commiting...");
       updater.commit();
       updater.revert();
+      /*if ((progress % 500000==0)) {
+        worldState.getTrie().visitAll(__ -> ++nodes);
+        m = java.lang.System.currentTimeMillis()-ini;
+        System.out.printf("("+m+") counting partial  nodes: %d\n", nodes);
+        nodes = 0;
+      }*/
     }
     m = java.lang.System.currentTimeMillis()-ini;
     System.out.println("("+m+") Commiting done...");
     worldState.getTrie().visitAll(__ -> ++nodes);
     m = java.lang.System.currentTimeMillis()-ini;
     System.out.printf("("+m+") Total nodes: %d\n", nodes);
-
-    worldState.persist();
+    // Because persistence basically copies all information in an in-memory
+    // store, and because I added persistence batching, it has absolutely
+    // no effect on the size of the Unitrie that can be stored in memory
+    // Therefore I'm commenting the persistence stage.
+    // System.out.println("("+m+") Persisting...");
+    // worldState.persist();
+    // System.out.println("("+m+") Persisting done...");
 
     UniTrie<?, ?> trie = worldState.getTrie();
     int noAccounts = count(trie);
