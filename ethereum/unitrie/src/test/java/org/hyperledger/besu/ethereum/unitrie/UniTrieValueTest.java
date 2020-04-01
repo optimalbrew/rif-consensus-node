@@ -81,6 +81,8 @@ public class UniTrieValueTest {
             .accept(new PutVisitor(value, nodeFactory), key)
             .accept(new GetVisitor(), key);
 
+    (    (BranchUniNode) trie).clearWeakReferences();
+
     assertThat(trie.getValueWrapper().isLong()).isTrue();
     assertThat(trie.getValueHash()).hasValue(Hash.keccak256(BytesValue.of(value)).extractArray());
     assertThat(trie.getValueLength()).hasValue(value.length);

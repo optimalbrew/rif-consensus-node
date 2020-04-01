@@ -19,7 +19,6 @@ import com.google.common.base.Strings;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.util.bytes.BytesValue;
@@ -35,7 +34,7 @@ public class BranchUniNode implements UniNode {
   private static final int MAX_INLINED_NODE_SIZE = 44;
 
   private static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
-  private WeakReference<ValueWrapper> valueWrapperWeakReference;
+  private ValueWrapper longValueWrapper;
   private WeakReference<byte[]> pathWeakReference;
   private final UniNode leftChild;
   private final UniNode rightChild;
@@ -62,7 +61,8 @@ public class BranchUniNode implements UniNode {
     Preconditions.checkNotNull(rightChild);
 
 
-    this.valueWrapperWeakReference = new WeakReference<>(valueWrapper);
+    if (valueWrapper.isLong())
+        this.longValueWrapper = valueWrapper;
     this.pathWeakReference = new  WeakReference<>(path);
     this.leftChild = leftChild;
     this.rightChild = rightChild;
@@ -71,7 +71,10 @@ public class BranchUniNode implements UniNode {
     this.childrenSize = childrenSize;
     encode(path,valueWrapper);
   }
-
+  public void clearWeakReferences() {
+      //longValueWrapper.clear();
+      pathWeakReference.clear();
+  }
   @Override
   public byte[] getPath() {
     if (pathWeakReference != null) {
@@ -88,15 +91,11 @@ public class BranchUniNode implements UniNode {
 
   @Override
   public ValueWrapper getValueWrapper() {
-    if (valueWrapperWeakReference != null) {
-      ValueWrapper v = valueWrapperWeakReference.get();
-      if (v != null) {
-        return v;
-      }
+    if (longValueWrapper!= null) {
+        return longValueWrapper;
     }
 
     ValueWrapper valueWrapper = encodingHelper.decodeValueWrapperFromFullEncoding(ByteBuffer.wrap(encoding));
-    valueWrapperWeakReference =new WeakReference<>(valueWrapper);
     return valueWrapper;
   }
 
