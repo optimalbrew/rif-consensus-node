@@ -15,12 +15,6 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Optional;
-import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
@@ -29,14 +23,12 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  *
  * @author ppedemon
  */
-public class BranchUniNode extends LeafUniNode {
+public class BranchUniNode extends AbstractUniNode {
 
   private final UniNode leftChild;
   private final UniNode rightChild;
-
+  private final byte[] encoding;
   private long childrenSize;
-
-
 
   BranchUniNode(
       final byte[] path,
@@ -45,18 +37,25 @@ public class BranchUniNode extends LeafUniNode {
       final UniNode rightChild,
       final long childrenSize) {
 
-    super(path,valueWrapper,true);
-    Preconditions.checkNotNull(path);
-    Preconditions.checkNotNull(valueWrapper);
+    super(path, valueWrapper);
+
     Preconditions.checkNotNull(leftChild);
     Preconditions.checkNotNull(rightChild);
 
     this.leftChild = leftChild;
     this.rightChild = rightChild;
-    //System.out.println(leftChild.toString());
-    //System.out.println(rightChild.toString());
     this.childrenSize = childrenSize;
-    encode(path,valueWrapper);
+    this.encoding = encode(path, valueWrapper);
+  }
+
+  @Override
+  public UniNode accept(final UniPathVisitor visitor, final BytesValue path) {
+    return visitor.visit(this, path);
+  }
+
+  @Override
+  public void accept(final UniNodeVisitor visitor) {
+    visitor.visit(this);
   }
 
   @Override
@@ -72,17 +71,31 @@ public class BranchUniNode extends LeafUniNode {
   @Override
   public long getChildrenSize() {
     if (childrenSize == -1) {
-      if (isLeaf()) {
-        childrenSize = 0;
-      } else {
-        childrenSize = leftChild.intrinsicSize() + rightChild.intrinsicSize();
-      }
+      childrenSize = leftChild.intrinsicSize() + rightChild.intrinsicSize();
     }
     return childrenSize;
   }
 
   @Override
-  boolean isLeaf() {
-    return leftChild == NullUniNode.instance() && rightChild == NullUniNode.instance();
+  public long intrinsicSize() {
+    ValueWrapper valueWrapper = getValueWrapper();
+    int valueSize = valueWrapper.isLong() ? valueWrapper.getLength().orElse(0) : 0;
+    return valueSize + getChildrenSize() + getEncoding().length;
+  }
+
+  @Override
+  public byte[] getEncoding() {
+    return encoding;
+  }
+
+  @Override
+  public boolean isReferencedByHash() {
+    return true;
+  }
+
+  private byte[] encode(final byte[] path, final ValueWrapper valueWrapper) {
+    UniNodeEncodingData encData =
+        new UniNodeEncodingData(path, valueWrapper, leftChild, rightChild, childrenSize);
+    return encodingHelper.encode(encData).getArrayUnsafe();
   }
 }

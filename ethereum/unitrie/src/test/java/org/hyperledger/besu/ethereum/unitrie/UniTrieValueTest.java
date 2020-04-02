@@ -56,7 +56,7 @@ public class UniTrieValueTest {
   }
 
   @Test
-  public void noValueInTrieWith32BytesValue() {
+  public void noLongValueInTrieWith32BytesValue() {
     BytesValue key = BytesValue.of(0, 1);
     byte[] value = makeValue(32);
 
@@ -81,7 +81,7 @@ public class UniTrieValueTest {
             .accept(new PutVisitor(value, nodeFactory), key)
             .accept(new GetVisitor(), key);
 
-    (    (LeafUniNode) trie).clearWeakReferences();
+    ((AbstractUniNode)trie).clearWeakReferences();
 
     assertThat(trie.getValueWrapper().isLong()).isTrue();
     assertThat(trie.getValueHash()).hasValue(Hash.keccak256(BytesValue.of(value)).extractArray());

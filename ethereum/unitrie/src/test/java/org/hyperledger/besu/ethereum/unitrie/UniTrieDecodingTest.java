@@ -69,8 +69,10 @@ public class UniTrieDecodingTest {
         NullUniNode.instance()
             .accept(new PutVisitor(valueRight, nodeFactory), BytesValue.of(1, 1, 1, 1))
             .accept(new PutVisitor(valueTop, nodeFactory), BytesValue.of(1, 1));
+
     byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
+
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());
   }
 

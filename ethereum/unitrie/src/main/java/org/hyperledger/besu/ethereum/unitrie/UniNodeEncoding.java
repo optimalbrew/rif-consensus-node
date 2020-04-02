@@ -35,7 +35,7 @@ class UniNodeEncoding {
    * @param node node to encode
    * @return encoded node, as mandated by RSKIP107
    */
-  BytesValue encode(final ExpandedUniNode node) {
+  BytesValue encode(final UniNodeEncodingData node) {
     byte flags = getFlags(node);
     int pathSize = node.getPath().length;
     BytesValue encodedPath = PathEncoding.encodePath(BytesValue.of(node.getPath()));
@@ -76,7 +76,7 @@ class UniNodeEncoding {
    * @param node node to extract flags from
    * @return node flags (check RSKIP107)
    */
-  private byte getFlags(final UniNode node) {
+  private byte getFlags(final UniNodeEncodingData node) {
     byte flags = 0b01000000;
 
     if (node.getValueWrapper().isLong()) {
@@ -263,10 +263,20 @@ class UniNodeEncoding {
       throw new IllegalArgumentException("The message had more data than expected");
     }
 
-    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
+    if (hasLeftChild || hasRightChild) {
+      return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
+    } else {
+      return new LeafUniNode(path, valueWrapper);
+    }
   }
 
-  public byte[] decodePathFromFullEncoding(final ByteBuffer buffer) {
+  /**
+   * Extract path from the given byte buffer.
+   *
+   * @param buffer byte buffer
+   * @return byte array holding path
+   */
+  byte[] decodePathFromFullEncoding(final ByteBuffer buffer) {
     byte flags = buffer.get();
     boolean hasPath = (flags & 0b00010000) == 0b00010000;
     byte[] path = new byte[0];
@@ -275,7 +285,14 @@ class UniNodeEncoding {
     }
     return path;
   }
-  public ValueWrapper decodeValueWrapperFromFullEncoding(final ByteBuffer buffer) {
+
+  /**
+   * Decode {@link ValueWrapper} from the given byte buffer.
+   *
+   * @param buffer byte buffer
+   * @return decoded {@link ValueWrapper} instance
+   */
+  ValueWrapper decodeValueWrapperFromFullEncoding(final ByteBuffer buffer) {
 
     byte flags = buffer.get();
     boolean hasLongValue = (flags & 0b00100000) == 0b00100000;
@@ -293,41 +310,10 @@ class UniNodeEncoding {
     skipChild(buffer, hasRightChild, rightChildEmbedded);
 
     if (hasLeftChild || hasRightChild) {
-      readVarInt(buffer).getValue();
+      skipVarInt(buffer);
     }
 
-    ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
-
-    return valueWrapper;
-  }
-
-  public UniNode decodeCore(final ByteBuffer buffer) {
-
-    byte flags = buffer.get();
-
-    boolean hasLongValue = (flags & 0b00100000) == 0b00100000;
-    boolean hasPath = (flags & 0b00010000) == 0b00010000;
-    boolean hasLeftChild = (flags & 0b00001000) == 0b00001000;
-    boolean hasRightChild = (flags & 0b00000100) == 0b00000100;
-    //boolean leftChildEmbedded = (flags & 0b00000010) == 0b00000010;
-    //boolean rightChildEmbedded = (flags & 0b00000001) == 0b00000001;
-
-    byte[] path = new byte[0];
-    if (hasPath) {
-      path = decodePath(buffer);
-    }
-
-    long childrenSize = -1;
-    if (hasLeftChild || hasRightChild) {
-      childrenSize = readVarInt(buffer).getValue();
-    }
-
-    ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
-
-    if (buffer.hasRemaining()) {
-      throw new IllegalArgumentException("The message had more data than expected");
-    }
-    return new ExpandedUniNode(path, valueWrapper, null, null, childrenSize);
+    return ValueWrapper.decodeFrom(buffer, hasLongValue);
   }
 
   /**
@@ -354,6 +340,11 @@ class UniNodeEncoding {
     return PathEncoding.decodePath(BytesValue.wrap(encodedPath), pathLengthInBits).getArrayUnsafe();
   }
 
+  /**
+   * Move the buffer position pass the encoded path
+   *
+   * @param buffer byte buffer
+   */
   private void skipPath(final ByteBuffer buffer) {
     int pathLengthInBits;
     int firstLengthByte = Byte.toUnsignedInt(buffer.get());
@@ -367,9 +358,10 @@ class UniNodeEncoding {
     }
 
     int encodedLength = PathEncoding.encodedPathLength(pathLengthInBits);
-    //byte[] encodedPath = new byte[encodedLength];
-    buffer.position(buffer.position()+encodedLength);
-    }
+    // byte[] encodedPath = new byte[encodedLength];
+    buffer.position(buffer.position() + encodedLength);
+  }
+
   /**
    * Read a {@link VarInt} from the current position of the given buffer.
    *
@@ -393,6 +385,29 @@ class UniNodeEncoding {
 
     message.get(bytes);
     return new VarInt(bytes, 0);
+  }
+
+  /**
+   * Skip a {@link VarInt} from the current position of the given buffer.
+   *
+   * @param message buffer to read var int from
+   */
+  private void skipVarInt(final ByteBuffer message) {
+    // read without touching the buffer position so when we read into bytes it contains the header
+    int first = Byte.toUnsignedInt(message.get(message.position()));
+
+    int increment;
+    if (first < 253) {
+      increment = 1;
+    } else if (first == 253) {
+      increment = 3;
+    } else if (first == 254) {
+      increment = 5;
+    } else {
+      increment = 9;
+    }
+
+    incrementPosition(message, increment);
   }
 
   /**
@@ -427,20 +442,33 @@ class UniNodeEncoding {
     return NullUniNode.instance();
   }
 
+  /**
+   * Skip the given byte buffer past the next encoded child.
+   *
+   * @param buffer byte buffer
+   * @param hasChild whether the node encoded in the byte buffer has a next child to be skipped
+   * @param isChildEmbedded whether next child is embedded or a hash reference
+   */
   private void skipChild(
-          final ByteBuffer buffer,
-          final boolean hasChild,
-          final boolean isChildEmbedded) {
+      final ByteBuffer buffer, final boolean hasChild, final boolean isChildEmbedded) {
 
     if (hasChild && isChildEmbedded) {
       byte[] lengthBytes = new byte[UInt8.BYTES];
       buffer.get(lengthBytes);
       UInt8 childLength = UInt8.fromBytes(lengthBytes);
-      byte[] serializedNode = new byte[childLength.intValue()];
-      buffer.get(serializedNode);
+      incrementPosition(buffer, childLength.intValue());
     } else if (hasChild) {
-      byte[] childHashBytes = new byte[Bytes32.SIZE];
-      buffer.get(childHashBytes);
+      incrementPosition(buffer, Bytes32.SIZE);
     }
+  }
+
+  /**
+   * Convenience utility to perform a relative position increment in a byte buffer.
+   *
+   * @param buffer byte buffer
+   * @param increment relative position increment (new position = current position + increment)
+   */
+  private void incrementPosition(final ByteBuffer buffer, final int increment) {
+    buffer.position(buffer.position() + increment);
   }
 }

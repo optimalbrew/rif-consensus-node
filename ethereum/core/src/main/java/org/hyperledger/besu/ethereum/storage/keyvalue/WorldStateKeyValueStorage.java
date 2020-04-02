@@ -14,20 +14,18 @@
  */
 package org.hyperledger.besu.ethereum.storage.keyvalue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage.Updater;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorageTransaction;
 import org.hyperledger.besu.util.Subscribers;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 public class WorldStateKeyValueStorage implements WorldStateStorage {
 
@@ -142,9 +140,9 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
       }
       addedNodes.add(nodeHash);
       transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
-      if (addedNodes.size()>10000) {
+
+      if (addedNodes.size() > 10000) {
         // auto-commit
-        System.out.println("auto-commit");
         commit();
         addedNodes.clear();
         transaction = keyValueStorage.startTransaction();

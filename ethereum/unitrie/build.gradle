@@ -38,6 +38,8 @@ dependencies {
   implementation 'com.google.guava:guava'
   implementation 'org.bouncycastle:bcprov-jdk15on'
 
+  compileOnly 'org.openjdk.jmh:jmh-generator-annprocess'
+
   testImplementation project(path: ':ethereum:referencetests', configuration: 'testOutput')
   testImplementation project(':testutil')
 

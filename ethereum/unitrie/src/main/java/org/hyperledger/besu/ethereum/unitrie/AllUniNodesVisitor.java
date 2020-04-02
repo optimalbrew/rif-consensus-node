@@ -34,15 +34,11 @@ public class AllUniNodesVisitor implements UniNodeVisitor {
   public void visit(final NullUniNode node) {}
 
   @Override
-  public void visit(final LeafUniNode node) {
+  public void visit(final AbstractUniNode node) {
     handler.accept(node);
     acceptAndUnload(node.getLeftChild());
     acceptAndUnload(node.getRightChild());
   }
-/*  @Override
-  public void visit(final LeafUniNode node) {
-    handler.accept(node);
-  }*/
 
   private void acceptAndUnload(final UniNode node) {
     node.accept(this);

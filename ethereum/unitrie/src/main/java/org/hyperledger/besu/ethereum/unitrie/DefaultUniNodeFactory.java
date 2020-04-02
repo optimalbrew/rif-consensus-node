@@ -33,8 +33,8 @@ public class DefaultUniNodeFactory implements UniNodeFactory {
       final UniNode leftChild,
       final UniNode rightChild) {
 
-    if ((leftChild==NullUniNode.instance()) && (rightChild==NullUniNode.instance())) {
-      return  new LeafUniNode(path, valueWrapper);
+    if ((leftChild == NullUniNode.instance()) && (rightChild == NullUniNode.instance())) {
+      return new LeafUniNode(path, valueWrapper);
     }
     return new BranchUniNode(path, valueWrapper, leftChild, rightChild, -1);
   }

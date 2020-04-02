@@ -55,8 +55,8 @@ public class StoredUniNodeFactory implements UniNodeFactory {
       final UniNode rightChild,
       final int childrenSize) {
 
-    if ((leftChild==NullUniNode.instance()) && (rightChild==NullUniNode.instance())) {
-      return  handleNewNode(new LeafUniNode(path, valueWrapper));
+    if ((leftChild == NullUniNode.instance()) && (rightChild == NullUniNode.instance())) {
+      return handleNewNode(new LeafUniNode(path, valueWrapper));
     }
     return handleNewNode(
         new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize));

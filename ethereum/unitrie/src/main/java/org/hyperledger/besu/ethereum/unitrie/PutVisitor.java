@@ -38,10 +38,8 @@ public class PutVisitor implements UniPathVisitor {
     return nodeFactory.createLeaf(path.getArrayUnsafe(), ValueWrapper.fromValue(value));
   }
 
-
-
   @Override
-  public UniNode visit(final LeafUniNode node, final BytesValue path) {
+  public UniNode visit(final AbstractUniNode node, final BytesValue path) {
     BytesValue nodePath = BytesValue.of(node.getPath());
     BytesValue commonPath = path.commonPrefix(nodePath);
 

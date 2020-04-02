@@ -31,11 +31,9 @@ public interface UniNodeVisitor {
   void visit(NullUniNode node);
 
   /**
-   * Visit a {@link BranchUniNode}.
+   * Visit a {@link AbstractUniNode}.
    *
    * @param node node to visit
    */
-  //void visit(BranchUniNode node);
-
-  void visit(LeafUniNode node);
+  void visit(AbstractUniNode node);
 }
