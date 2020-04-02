@@ -39,7 +39,7 @@ public class ProofVisitor extends GetVisitor {
   }
 
   @Override
-  public UniNode visit(final BranchUniNode branchNode, final BytesValue path) {
+  public UniNode visit(final LeafUniNode branchNode, final BytesValue path) {
     maybeTrackNode(branchNode);
     return super.visit(branchNode, path);
   }

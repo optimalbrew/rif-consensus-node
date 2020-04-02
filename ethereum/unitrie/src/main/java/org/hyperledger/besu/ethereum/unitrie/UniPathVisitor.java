@@ -39,5 +39,7 @@ public interface UniPathVisitor {
    * @param path path leading to visited node
    * @return node resulting from visit
    */
-  UniNode visit(BranchUniNode node, BytesValue path);
+  //UniNode visit(BranchUniNode node, BytesValue path);
+
+  UniNode visit(LeafUniNode node, BytesValue path);
 }

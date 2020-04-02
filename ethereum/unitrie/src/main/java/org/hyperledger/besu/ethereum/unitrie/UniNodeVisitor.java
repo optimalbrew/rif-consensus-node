@@ -35,5 +35,7 @@ public interface UniNodeVisitor {
    *
    * @param node node to visit
    */
-  void visit(BranchUniNode node);
+  //void visit(BranchUniNode node);
+
+  void visit(LeafUniNode node);
 }

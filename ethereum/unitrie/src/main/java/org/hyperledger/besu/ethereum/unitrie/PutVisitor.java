@@ -38,8 +38,10 @@ public class PutVisitor implements UniPathVisitor {
     return nodeFactory.createLeaf(path.getArrayUnsafe(), ValueWrapper.fromValue(value));
   }
 
+
+
   @Override
-  public UniNode visit(final BranchUniNode node, final BytesValue path) {
+  public UniNode visit(final LeafUniNode node, final BytesValue path) {
     BytesValue nodePath = BytesValue.of(node.getPath());
     BytesValue commonPath = path.commonPrefix(nodePath);
 
@@ -58,11 +60,11 @@ public class PutVisitor implements UniPathVisitor {
       } else {
         BytesValue newLeafPath = path.slice(commonPath.size() + 1);
         return splitWithNewLeaf(
-            commonPath.getArrayUnsafe(),
-            value,
-            updatedNode,
-            updatedNodePos,
-            newLeafPath.getArrayUnsafe());
+                commonPath.getArrayUnsafe(),
+                value,
+                updatedNode,
+                updatedNodePos,
+                newLeafPath.getArrayUnsafe());
       }
     }
 
@@ -76,7 +78,6 @@ public class PutVisitor implements UniPathVisitor {
       return node.replaceChild(pos, node.getRightChild().accept(this, newPath), nodeFactory);
     }
   }
-
   /**
    * Produce a split without a new leaf. This will happen because the common path is equal to the
    * new leaf path, so the split root must hold the new value.

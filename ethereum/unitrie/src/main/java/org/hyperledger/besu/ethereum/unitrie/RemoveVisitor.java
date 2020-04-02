@@ -42,7 +42,7 @@ public class RemoveVisitor implements UniPathVisitor {
   }
 
   @Override
-  public UniNode visit(final BranchUniNode node, final BytesValue path) {
+  public UniNode visit(final LeafUniNode node, final BytesValue path) {
     BytesValue nodePath = BytesValue.wrap(node.getPath());
     BytesValue commonPath = path.commonPrefix(nodePath);
 

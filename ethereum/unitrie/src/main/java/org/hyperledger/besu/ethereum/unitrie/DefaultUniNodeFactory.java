@@ -23,7 +23,7 @@ public class DefaultUniNodeFactory implements UniNodeFactory {
 
   @Override
   public UniNode createLeaf(final byte[] path, final ValueWrapper valueWrapper) {
-    return new BranchUniNode(path, valueWrapper);
+    return new LeafUniNode(path, valueWrapper);
   }
 
   @Override
@@ -33,6 +33,9 @@ public class DefaultUniNodeFactory implements UniNodeFactory {
       final UniNode leftChild,
       final UniNode rightChild) {
 
+    if ((leftChild==NullUniNode.instance()) && (rightChild==NullUniNode.instance())) {
+      return  new LeafUniNode(path, valueWrapper);
+    }
     return new BranchUniNode(path, valueWrapper, leftChild, rightChild, -1);
   }
 
