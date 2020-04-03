@@ -35,7 +35,7 @@ class UniNodeEncoding {
    * @param node node to encode
    * @return encoded node, as mandated by RSKIP107
    */
-  BytesValue encode(final UniNodeEncodingData node) {
+  BytesValue encode(final UniNodeEncodingInput node) {
     byte flags = getFlags(node);
     int pathSize = node.getPath().length;
     BytesValue encodedPath = PathEncoding.encodePath(BytesValue.of(node.getPath()));
@@ -76,7 +76,7 @@ class UniNodeEncoding {
    * @param node node to extract flags from
    * @return node flags (check RSKIP107)
    */
-  private byte getFlags(final UniNodeEncodingData node) {
+  private byte getFlags(final UniNodeEncodingInput node) {
     byte flags = 0b01000000;
 
     if (node.getValueWrapper().isLong()) {

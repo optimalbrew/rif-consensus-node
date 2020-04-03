@@ -8,7 +8,7 @@ import java.util.Optional;
  *
  * @author ppedemon
  */
-class UniNodeEncodingData {
+class UniNodeEncodingInput {
 
     private byte[] path;
     private ValueWrapper valueWrapper;
@@ -17,11 +17,11 @@ class UniNodeEncodingData {
 
     private long childrenSize;
 
-    UniNodeEncodingData(final byte[] path, final ValueWrapper valueWrapper) {
+    UniNodeEncodingInput(final byte[] path, final ValueWrapper valueWrapper) {
         this(path, valueWrapper, NullUniNode.instance(), NullUniNode.instance(), 0);
     }
 
-    UniNodeEncodingData(
+    UniNodeEncodingInput(
             final byte[] path,
             final ValueWrapper valueWrapper,
             final UniNode leftChild,

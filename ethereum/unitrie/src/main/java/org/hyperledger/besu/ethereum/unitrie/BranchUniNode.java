@@ -94,8 +94,8 @@ public class BranchUniNode extends AbstractUniNode {
   }
 
   private byte[] encode(final byte[] path, final ValueWrapper valueWrapper) {
-    UniNodeEncodingData encData =
-        new UniNodeEncodingData(path, valueWrapper, leftChild, rightChild, childrenSize);
+    UniNodeEncodingInput encData =
+        new UniNodeEncodingInput(path, valueWrapper, leftChild, rightChild, childrenSize);
     return encodingHelper.encode(encData).getArrayUnsafe();
   }
 }

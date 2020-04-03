@@ -59,7 +59,7 @@ public class LeafUniNode extends AbstractUniNode {
   }
 
   private byte[] encode(final byte[] path, final ValueWrapper valueWrapper) {
-    UniNodeEncodingData encData = new UniNodeEncodingData(path, valueWrapper);
+    UniNodeEncodingInput encData = new UniNodeEncodingInput(path, valueWrapper);
     return encodingHelper.encode(encData).getArrayUnsafe();
   }
 }
