@@ -28,7 +28,6 @@ public class BranchUniNode extends AbstractUniNode {
   private final UniNode leftChild;
   private final UniNode rightChild;
   private final byte[] encoding;
-  private long childrenSize;
 
   BranchUniNode(
       final byte[] path,
@@ -44,8 +43,13 @@ public class BranchUniNode extends AbstractUniNode {
 
     this.leftChild = leftChild;
     this.rightChild = rightChild;
-    this.childrenSize = childrenSize;
-    this.encoding = encode(path, valueWrapper);
+
+    long realChildrenSize = childrenSize;
+    if (childrenSize == -1) {
+      realChildrenSize = leftChild.intrinsicSize() + rightChild.intrinsicSize();
+    }
+
+    this.encoding = encode(path, valueWrapper,realChildrenSize);
   }
 
   @Override
@@ -69,14 +73,6 @@ public class BranchUniNode extends AbstractUniNode {
   }
 
   @Override
-  public long getChildrenSize() {
-    if (childrenSize == -1) {
-      childrenSize = leftChild.intrinsicSize() + rightChild.intrinsicSize();
-    }
-    return childrenSize;
-  }
-
-  @Override
   public long intrinsicSize() {
     ValueWrapper valueWrapper = getValueWrapper();
     int valueSize = valueWrapper.isLong() ? valueWrapper.getLength().orElse(0) : 0;
@@ -93,7 +89,7 @@ public class BranchUniNode extends AbstractUniNode {
     return true;
   }
 
-  private byte[] encode(final byte[] path, final ValueWrapper valueWrapper) {
+  private byte[] encode(final byte[] path, final ValueWrapper valueWrapper, final long childrenSize) {
     UniNodeEncodingData encData =
         new UniNodeEncodingData(path, valueWrapper, leftChild, rightChild, childrenSize);
     return encodingHelper.encode(encData).getArrayUnsafe();

@@ -80,6 +80,11 @@ public abstract class AbstractUniNode implements UniNode {
   }
 
   @Override
+  public long getChildrenSize() {
+    return encodingHelper.decodeChildrenSizeFromFullEncoding(ByteBuffer.wrap(getEncoding()));
+  }
+
+  @Override
   public Optional<byte[]> getValue(final DataLoader loader) {
     return getValueWrapper().solveValue(loader);
   }

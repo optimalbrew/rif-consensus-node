@@ -209,6 +209,30 @@ class UniNodeEncoding {
     }
   }
 
+  long decodeChildrenSizeFromFullEncoding(final ByteBuffer buffer){
+
+      byte flags = buffer.get();
+
+      boolean hasPath = (flags & 0b00010000) == 0b00010000;
+      boolean hasLeftChild = (flags & 0b00001000) == 0b00001000;
+      boolean hasRightChild = (flags & 0b00000100) == 0b00000100;
+      boolean leftChildEmbedded = (flags & 0b00000010) == 0b00000010;
+      boolean rightChildEmbedded = (flags & 0b00000001) == 0b00000001;
+
+      if (hasPath) {
+          skipPath(buffer);
+      }
+
+      skipChild(buffer, hasLeftChild, leftChildEmbedded);
+      skipChild(buffer, hasRightChild, rightChildEmbedded);
+
+      long childrenSize = -1;
+      if (hasLeftChild || hasRightChild) {
+          childrenSize = readVarInt(buffer).getValue();
+      }
+      return childrenSize;
+
+  }
   /**
    * Decode a {@link UniNode} from the given bytes value.
    *
