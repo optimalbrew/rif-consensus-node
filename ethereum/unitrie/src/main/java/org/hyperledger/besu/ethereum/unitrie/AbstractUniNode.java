@@ -36,9 +36,8 @@ public abstract class AbstractUniNode implements UniNode {
   static final int MAX_INLINED_NODE_SIZE = 44;
   static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
 
-  private ValueWrapper longValueWrapper;
+  protected ValueWrapper longValueWrapper;
   private WeakReference<byte[]> pathWeakReference;
-  private boolean dirty = false;
 
   AbstractUniNode(final byte[] path, final ValueWrapper valueWrapper) {
     Preconditions.checkNotNull(path);
@@ -70,9 +69,12 @@ public abstract class AbstractUniNode implements UniNode {
     return path;
   }
 
+  public boolean hasLongValue() {
+    return (longValueWrapper != null);
+  }
   @Override
   public ValueWrapper getValueWrapper() {
-    if (longValueWrapper != null) {
+    if (hasLongValue() ) {
       return longValueWrapper;
     }
 
@@ -124,15 +126,6 @@ public abstract class AbstractUniNode implements UniNode {
     return Hash.keccak256(encoding).getArrayUnsafe();
   }
 
-  @Override
-  public boolean isDirty() {
-    return dirty;
-  }
-
-  @Override
-  public void markDirty() {
-    dirty = true;
-  }
 
   UniNode removeValue(final UniNodeFactory nodeFactory) {
     // By removing this node's value we might have a chance to coalesce

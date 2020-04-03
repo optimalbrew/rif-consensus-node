@@ -23,11 +23,11 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  *
  * @author ppedemon
  */
-public class BranchUniNode extends AbstractUniNode {
+public class BranchUniNode extends EncodedUniNode {
 
   private final UniNode leftChild;
   private final UniNode rightChild;
-  private final byte[] encoding;
+
 
   BranchUniNode(
       final byte[] path,
@@ -79,10 +79,6 @@ public class BranchUniNode extends AbstractUniNode {
     return valueSize + getChildrenSize() + getEncoding().length;
   }
 
-  @Override
-  public byte[] getEncoding() {
-    return encoding;
-  }
 
   @Override
   public boolean isReferencedByHash() {

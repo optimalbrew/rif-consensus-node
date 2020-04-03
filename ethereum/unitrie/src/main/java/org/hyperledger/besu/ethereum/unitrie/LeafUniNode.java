@@ -7,9 +7,7 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  *
  * @author ppedemon
  */
-public class LeafUniNode extends AbstractUniNode {
-
-  private final byte[] encoding;
+public class LeafUniNode extends EncodedUniNode {
 
   LeafUniNode(final byte[] path, final ValueWrapper valueWrapper) {
     super(path, valueWrapper);
@@ -48,10 +46,6 @@ public class LeafUniNode extends AbstractUniNode {
     return (long) valueSize + getEncoding().length;
   }
 
-  @Override
-  public byte[] getEncoding() {
-    return encoding;
-  }
 
   @Override
   public boolean isReferencedByHash() {

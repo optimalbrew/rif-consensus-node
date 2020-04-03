@@ -37,9 +37,9 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  *       key-value store and retrieve the actual value.
  * </ul>
  *
- * @author ppedemon
+ * @author ppedemo`n
  */
-public final class ValueWrapper {
+public class ValueWrapper {
 
   /** Sole instance of an empty value wrapper. */
   public static ValueWrapper EMPTY = empty();
@@ -51,7 +51,7 @@ public final class ValueWrapper {
   private byte[] hash;
   private Integer length;
 
-  private ValueWrapper(final byte[] value, final byte[] hash, final int length) {
+  protected ValueWrapper(final byte[] value, final byte[] hash, final int length) {
     this.value = value;
     this.hash = hash;
     this.length = length;
@@ -226,5 +226,16 @@ public final class ValueWrapper {
     } else {
       buffer.put(value);
     }
+  }
+
+  protected byte[] internalGetValue() {
+    return value;
+  }
+
+  protected byte[] internalGetHash() {
+    return hash;
+  }
+  protected Integer internalGetLength() {
+    return length;
   }
 }
