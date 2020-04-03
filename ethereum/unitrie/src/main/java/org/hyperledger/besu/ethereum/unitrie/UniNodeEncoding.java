@@ -217,23 +217,11 @@ class UniNodeEncoding {
    * @return decode node
    */
   UniNode decode(final BytesValue value, final StoredUniNodeFactory nodeFactory) {
-
     if (value.equals(UniTrie.NULL_UNINODE_ENCODING)) {
       return NullUniNode.instance();
     }
 
     ByteBuffer buffer = ByteBuffer.wrap(value.extractArray());
-    return decode(buffer, nodeFactory);
-  }
-
-  /**
-   * Decode a {@link UniNode} from the given bytee buffer.
-   *
-   * @param buffer byte buffer to decode from
-   * @param nodeFactory {@link StoredUniNodeFactory} used to lazily solve nodes referenced by hash
-   * @return decode node
-   */
-  private UniNode decode(final ByteBuffer buffer, final StoredUniNodeFactory nodeFactory) {
 
     byte flags = buffer.get();
 
@@ -263,10 +251,14 @@ class UniNodeEncoding {
       throw new IllegalArgumentException("The message had more data than expected");
     }
 
+    UniNodeEncodingOutput encodingOutput =
+        new UniNodeEncodingOutput(
+            path, valueWrapper, leftChild, rightChild, childrenSize, value.getArrayUnsafe());
+
     if (hasLeftChild || hasRightChild) {
-      return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
+      return new BranchUniNode(encodingOutput);
     } else {
-      return new LeafUniNode(path, valueWrapper);
+      return new LeafUniNode(encodingOutput);
     }
   }
 
@@ -432,7 +424,7 @@ class UniNodeEncoding {
       UInt8 childLength = UInt8.fromBytes(lengthBytes);
       byte[] serializedNode = new byte[childLength.intValue()];
       buffer.get(serializedNode);
-      return decode(ByteBuffer.wrap(serializedNode), nodeFactory);
+      return decode(BytesValue.wrap(serializedNode), nodeFactory);
     } else if (hasChild) {
       byte[] childHashBytes = new byte[Bytes32.SIZE];
       buffer.get(childHashBytes);

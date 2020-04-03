@@ -1,5 +1,6 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
+import com.google.common.base.Preconditions;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
@@ -14,6 +15,13 @@ public class LeafUniNode extends AbstractUniNode {
   LeafUniNode(final byte[] path, final ValueWrapper valueWrapper) {
     super(path, valueWrapper);
     encoding = encode(path, valueWrapper);
+  }
+
+  LeafUniNode(final UniNodeEncodingOutput encodingOutput) {
+    super(encodingOutput.getPath(), encodingOutput.getValueWrapper());
+
+    Preconditions.checkNotNull(encodingOutput.getEncoding());
+    encoding = encodingOutput.getEncoding();
   }
 
   @Override

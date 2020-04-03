@@ -48,6 +48,19 @@ public class BranchUniNode extends AbstractUniNode {
     this.encoding = encode(path, valueWrapper);
   }
 
+  BranchUniNode(final UniNodeEncodingOutput encodingOutput) {
+    super(encodingOutput.getPath(), encodingOutput.getValueWrapper());
+
+    Preconditions.checkNotNull(encodingOutput.getLeftChild());
+    Preconditions.checkNotNull(encodingOutput.getRightChild());
+    Preconditions.checkNotNull(encodingOutput.getEncoding());
+
+    leftChild = encodingOutput.getLeftChild();
+    rightChild = encodingOutput.getRightChild();
+    childrenSize = encodingOutput.getChildrenSize();
+    encoding = encodingOutput.getEncoding();
+  }
+
   @Override
   public UniNode accept(final UniPathVisitor visitor, final BytesValue path) {
     return visitor.visit(this, path);
