@@ -15,6 +15,7 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
+import java.nio.ByteBuffer;
 import org.hyperledger.besu.util.bytes.BytesValue;
 
 /**
@@ -28,14 +29,12 @@ public class BranchUniNode extends AbstractUniNode {
   private final UniNode leftChild;
   private final UniNode rightChild;
   private final byte[] encoding;
-  private long childrenSize;
 
   BranchUniNode(
       final byte[] path,
       final ValueWrapper valueWrapper,
       final UniNode leftChild,
-      final UniNode rightChild,
-      final long childrenSize) {
+      final UniNode rightChild) {
 
     super(path, valueWrapper);
 
@@ -44,7 +43,6 @@ public class BranchUniNode extends AbstractUniNode {
 
     this.leftChild = leftChild;
     this.rightChild = rightChild;
-    this.childrenSize = childrenSize;
     this.encoding = encode(path, valueWrapper);
   }
 
@@ -57,7 +55,6 @@ public class BranchUniNode extends AbstractUniNode {
 
     leftChild = encodingOutput.getLeftChild();
     rightChild = encodingOutput.getRightChild();
-    childrenSize = encodingOutput.getChildrenSize();
     encoding = encodingOutput.getEncoding();
   }
 
@@ -83,10 +80,7 @@ public class BranchUniNode extends AbstractUniNode {
 
   @Override
   public long getChildrenSize() {
-    if (childrenSize == -1) {
-      childrenSize = leftChild.intrinsicSize() + rightChild.intrinsicSize();
-    }
-    return childrenSize;
+    return encodingHelper.decodeChildrenSizeFromFullEncoding(ByteBuffer.wrap(encoding));
   }
 
   @Override
@@ -108,7 +102,7 @@ public class BranchUniNode extends AbstractUniNode {
 
   private byte[] encode(final byte[] path, final ValueWrapper valueWrapper) {
     UniNodeEncodingInput encData =
-        new UniNodeEncodingInput(path, valueWrapper, leftChild, rightChild, childrenSize);
+        new UniNodeEncodingInput(path, valueWrapper, leftChild, rightChild);
     return encodingHelper.encode(encData).getArrayUnsafe();
   }
 }

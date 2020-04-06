@@ -240,9 +240,10 @@ class UniNodeEncoding {
     UniNode leftChild = decodeChild(buffer, hasLeftChild, leftChildEmbedded, nodeFactory);
     UniNode rightChild = decodeChild(buffer, hasRightChild, rightChildEmbedded, nodeFactory);
 
-    long childrenSize = -1;
+    // If the node isn't a leaf, next there will be the children size as a VarInt.
+    // Skip it, since nodes read it from the encoding.
     if (hasLeftChild || hasRightChild) {
-      childrenSize = readVarInt(buffer).getValue();
+      skipVarInt(buffer);
     }
 
     ValueWrapper valueWrapper = ValueWrapper.decodeFrom(buffer, hasLongValue);
@@ -253,7 +254,7 @@ class UniNodeEncoding {
 
     UniNodeEncodingOutput encodingOutput =
         new UniNodeEncodingOutput(
-            path, valueWrapper, leftChild, rightChild, childrenSize, value.getArrayUnsafe());
+            path, valueWrapper, leftChild, rightChild, value.getArrayUnsafe());
 
     if (hasLeftChild || hasRightChild) {
       return new BranchUniNode(encodingOutput);
@@ -285,8 +286,8 @@ class UniNodeEncoding {
    * @return decoded {@link ValueWrapper} instance
    */
   ValueWrapper decodeValueWrapperFromFullEncoding(final ByteBuffer buffer) {
-
     byte flags = buffer.get();
+
     boolean hasLongValue = (flags & 0b00100000) == 0b00100000;
     boolean hasPath = (flags & 0b00010000) == 0b00010000;
     boolean hasLeftChild = (flags & 0b00001000) == 0b00001000;
@@ -306,6 +307,35 @@ class UniNodeEncoding {
     }
 
     return ValueWrapper.decodeFrom(buffer, hasLongValue);
+  }
+
+  /**
+   * Decode children size from the given byte buffer.
+   * @param buffer byte buffer
+   * @return decoded children size
+   */
+  long decodeChildrenSizeFromFullEncoding(final ByteBuffer buffer){
+    byte flags = buffer.get();
+
+    boolean hasPath = (flags & 0b00010000) == 0b00010000;
+    boolean hasLeftChild = (flags & 0b00001000) == 0b00001000;
+    boolean hasRightChild = (flags & 0b00000100) == 0b00000100;
+    boolean leftChildEmbedded = (flags & 0b00000010) == 0b00000010;
+    boolean rightChildEmbedded = (flags & 0b00000001) == 0b00000001;
+
+    if (hasPath) {
+      skipPath(buffer);
+    }
+
+    skipChild(buffer, hasLeftChild, leftChildEmbedded);
+    skipChild(buffer, hasRightChild, rightChildEmbedded);
+
+    long childrenSize = -1;
+    if (hasLeftChild || hasRightChild) {
+      childrenSize = readVarInt(buffer).getValue();
+    }
+
+    return childrenSize;
   }
 
   /**

@@ -44,22 +44,11 @@ public class StoredUniNodeFactory implements UniNodeFactory {
       final UniNode leftChild,
       final UniNode rightChild) {
 
-    return createBranch(path, valueWrapper, leftChild, rightChild, -1);
-  }
-
-  @Override
-  public UniNode createBranch(
-      final byte[] path,
-      final ValueWrapper valueWrapper,
-      final UniNode leftChild,
-      final UniNode rightChild,
-      final int childrenSize) {
-
     if ((leftChild == NullUniNode.instance()) && (rightChild == NullUniNode.instance())) {
       return handleNewNode(new LeafUniNode(path, valueWrapper));
     }
-    return handleNewNode(
-        new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize));
+
+    return handleNewNode(new BranchUniNode(path, valueWrapper, leftChild, rightChild));
   }
 
   private UniNode handleNewNode(final UniNode node) {

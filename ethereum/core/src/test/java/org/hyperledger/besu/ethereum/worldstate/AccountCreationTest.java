@@ -29,6 +29,7 @@ import org.hyperledger.besu.ethereum.core.MutableAccount;
 import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.unitrie.NullUniNode;
+import org.hyperledger.besu.ethereum.unitrie.UniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.junit.Assume;
@@ -50,6 +51,33 @@ public class AccountCreationTest {
   private double alpha;
   private int progress;
   private int nodes;
+
+  private static class PathStats {
+    int min;
+    int max;
+    int seen;
+    double avg;
+
+    void consume(final UniNode node) {
+      if (node.getLeftChild() == NullUniNode.instance()
+          && node.getRightChild() == NullUniNode.instance()) {
+        return;
+      }
+
+      int len = node.getPath().length;
+      min = Math.min(min, len);
+      max = Math.max(max, len);
+
+      ++seen;
+      avg = (avg * (seen - 1) + len) / seen;
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "Seen = %d, Min len = %d, Max len = %d, avg = %.3f", seen, min, max, avg);
+    }
+  }
 
   @Before
   public void setup() {
@@ -165,9 +193,12 @@ public class AccountCreationTest {
     long elapsed = java.lang.System.currentTimeMillis() - start;
     System.out.printf("Elapsed: %s - Commit done...\n", fmtMillis(elapsed));
 
-    worldState.getTrie().visitAll(__ -> ++nodes);
+    //worldState.getTrie().visitAll(__ -> ++nodes);
+    PathStats stats = new PathStats();
+    worldState.getTrie().visitAll(stats::consume);
     elapsed = java.lang.System.currentTimeMillis() - start;
     System.out.printf("Elapsed: %s -  Total nodes: %d\n", fmtMillis(elapsed), nodes);
+    System.out.printf("Stats: %s\n", stats);
 
     UniTrie<?, ?> trie = worldState.getTrie();
     int noAccounts = count(trie);

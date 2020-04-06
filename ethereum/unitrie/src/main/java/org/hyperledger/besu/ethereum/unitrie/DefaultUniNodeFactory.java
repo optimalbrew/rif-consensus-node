@@ -36,16 +36,7 @@ public class DefaultUniNodeFactory implements UniNodeFactory {
     if ((leftChild == NullUniNode.instance()) && (rightChild == NullUniNode.instance())) {
       return new LeafUniNode(path, valueWrapper);
     }
-    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, -1);
-  }
 
-  @Override
-  public UniNode createBranch(
-      final byte[] path,
-      final ValueWrapper valueWrapper,
-      final UniNode leftChild,
-      final UniNode rightChild,
-      final int childrenSize) {
-    return new BranchUniNode(path, valueWrapper, leftChild, rightChild, childrenSize);
+    return new BranchUniNode(path, valueWrapper, leftChild, rightChild);
   }
 }

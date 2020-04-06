@@ -27,22 +27,19 @@ class UniNodeEncodingOutput {
   private final ValueWrapper valueWrapper;
   private final UniNode leftChild;
   private final UniNode rightChild;
-  private final long childrenSize;
   private final byte[] encoding;
 
-  public UniNodeEncodingOutput(
+  UniNodeEncodingOutput(
       final byte[] path,
       final ValueWrapper valueWrapper,
       final UniNode leftChild,
       final UniNode rightChild,
-      final long childrenSize,
       final byte[] encoding) {
 
     this.path = path;
     this.valueWrapper = valueWrapper;
     this.leftChild = leftChild;
     this.rightChild = rightChild;
-    this.childrenSize = childrenSize;
     this.encoding = encoding;
   }
 
@@ -60,10 +57,6 @@ class UniNodeEncodingOutput {
 
   public UniNode getRightChild() {
     return rightChild;
-  }
-
-  public long getChildrenSize() {
-    return childrenSize;
   }
 
   public byte[] getEncoding() {
