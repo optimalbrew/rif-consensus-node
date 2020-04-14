@@ -16,10 +16,11 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.util.Strings;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -27,10 +28,10 @@ import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
 import org.hyperledger.besu.ethereum.core.MutableAccount;
 import org.hyperledger.besu.ethereum.core.Wei;
+import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.unitrie.NullUniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniNode;
-import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.junit.Assume;
 import org.junit.Before;
@@ -50,15 +51,20 @@ public class AccountCreationTest {
   private int size;
   private double alpha;
   private int progress;
-  private int nodes;
+  private boolean hits;
+
+  //private boolean aborted;
 
   private static class PathStats {
     int min;
     int max;
     int seen;
     double avg;
+    int nodes;
 
     void consume(final UniNode node) {
+      ++nodes;
+
       if (node.getLeftChild() == NullUniNode.instance()
           && node.getRightChild() == NullUniNode.instance()) {
         return;
@@ -75,7 +81,8 @@ public class AccountCreationTest {
     @Override
     public String toString() {
       return String.format(
-          "Seen = %d, Min len = %d, Max len = %d, avg = %.3f", seen, min, max, avg);
+          "Total nodes = %d, Branches = %d, Min len = %d, Max len = %d, Path Avg = %.3f",
+          nodes, seen, min, max, avg);
     }
   }
 
@@ -88,12 +95,34 @@ public class AccountCreationTest {
     alpha = Strings.isBlank(alphaProp)? 0 : Double.parseDouble(alphaProp);
 
     progress = 0;
-    nodes = 0;
+    hits = false;
+
+    //aborted = false;
   }
+
+  /*
+  private void abort(final int secs) {
+    System.out.printf("Test timeout after: %d secs\n", secs);
+    aborted = true;
+  }
+  */
 
   @Test
   public void test_account_creation() {
     Assume.assumeTrue("No # of accounts passed, skipping test", size > 0);
+
+    /*
+    // Abort test after 20 minutes
+    final int secs = 20*60;
+    new Thread(() -> {
+      try {
+          Thread.sleep(secs*1000);
+          abort(secs);
+      } catch (InterruptedException e) {
+        // Nothing
+      }
+    }, "timer").start();
+    */
 
     long start = java.lang.System.currentTimeMillis();
 
@@ -164,6 +193,9 @@ public class AccountCreationTest {
                 + "0190a3505050565b60008282018381101561070757600080fd5b93925050505600a165627a7a723058"
                 + "201ccccf3643bfb06a9c417e8e3da96cf446bae5a3d9fb0da7af9ad966249008e00029");
 
+    int maxAddresses = 1_000_000;
+    List<Address> addresses = new ArrayList<>(maxAddresses);
+
     int batchCount = 50;
     for (int batch = 0; batch < batchCount; batch++) {
       System.out.printf("Batch: %d\n", batch);
@@ -176,6 +208,11 @@ public class AccountCreationTest {
                 if (progress % 1000 == 0) {
                   System.out.printf("Progress: %d\n", progress);
                 }
+
+                if (hits && addresses.size() < maxAddresses) {
+                  addresses.add(address);
+                }
+
                 MutableAccount account = updater.createAccount(address).getMutable();
                 account.setBalance(Wei.of(100000));
 
@@ -190,6 +227,13 @@ public class AccountCreationTest {
       updater.revert();
     }
 
+    /*
+    if (aborted) {
+      System.out.println("**** Test ABORTED ****");
+      return;
+    }
+    */
+
     long elapsed = java.lang.System.currentTimeMillis() - start;
     System.out.printf("Elapsed: %s - Commit done...\n", fmtMillis(elapsed));
 
@@ -197,31 +241,61 @@ public class AccountCreationTest {
     PathStats stats = new PathStats();
     worldState.getTrie().visitAll(stats::consume);
     elapsed = java.lang.System.currentTimeMillis() - start;
-    System.out.printf("Elapsed: %s -  Total nodes: %d\n", fmtMillis(elapsed), nodes);
+    //System.out.printf("Elapsed: %s -  Total nodes: %d\n", fmtMillis(elapsed), nodes);
+    System.out.printf("Total elapsed: %s\n", fmtMillis(elapsed));
     System.out.printf("Stats: %s\n", stats);
 
+    if (addresses.isEmpty()) {
+      addresses.addAll(addresses().limit(maxAddresses).collect(Collectors.toList()));
+    }
+
+    performLookups(worldState, addresses);
+
+    /*
+    start = System.currentTimeMillis();
+    Bytes32 rootHash = worldState.rootHash();
+    elapsed = System.currentTimeMillis() - start;
+    System.out.printf("Root hash = %s\n", rootHash);
+    System.out.printf("Root hash computed in: %s secs\n", fmtMillis(elapsed));
+    */
+    /*
     UniTrie<?, ?> trie = worldState.getTrie();
-    int noAccounts = count(trie);
+    count(trie);
     elapsed = java.lang.System.currentTimeMillis() - start;
     System.out.printf("Elapsed: %s -  Accounts in Unitrie = %d\n", fmtMillis(elapsed), noAccounts);
     assertThat(noAccounts).isEqualTo(size);
+    */
+  }
+
+  private void performLookups(final WorldState worldState, final List<Address> addresses) {
+    AtomicInteger hits = new AtomicInteger(0);
+    long start = System.currentTimeMillis();
+    addresses.forEach(address -> {
+        if (worldState.get(address) != null) {
+          hits.incrementAndGet();
+        }
+    });
+    long elapsed = System.currentTimeMillis() - start;
+    System.out.printf(
+        "Looked up for %d accounts, found %d, elapsed = %s\n",
+        addresses.size(), hits.intValue(), fmtMillis(elapsed));
   }
 
   private String fmtMillis(final long milliSecs) {
     return String.format("%.3f", milliSecs / 1_000.0d);
   }
 
-  private int count(final UniTrie<?, ?> unitrie) {
-    final AtomicInteger n = new AtomicInteger(0);
+  /*
+  private void count(final UniTrie<?, ?> unitrie) {
     unitrie.visitAll(
         node -> {
           if (node.getLeftChild() == NullUniNode.instance()
               && node.getRightChild() == NullUniNode.instance()) {
-            n.incrementAndGet();
+            ++noAccounts;
           }
         });
-    return n.get();
   }
+  */
 
   private Stream<Address> addresses() {
     return Stream.generate(() -> Account.create().getAddress());
@@ -237,7 +311,7 @@ public class AccountCreationTest {
     }
 
     static Account create() {
-      byte[] b = new byte[32];
+      byte[] b = new byte[20];
       random.nextBytes(b);
       return new Account(b);
     }

@@ -16,9 +16,11 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.util.Strings;
 import org.hyperledger.besu.ethereum.core.Address;
@@ -26,6 +28,7 @@ import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
 import org.hyperledger.besu.ethereum.core.MutableAccount;
 import org.hyperledger.besu.ethereum.core.Wei;
+import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.util.bytes.Bytes32;
 import org.hyperledger.besu.util.bytes.BytesValue;
@@ -50,6 +53,7 @@ public class ClassicAccountCreationTest {
   private double alpha;
   private int progress;
   private int nodes;
+  private boolean hits;
 
   @Before
   public void setup() {
@@ -61,19 +65,20 @@ public class ClassicAccountCreationTest {
 
     progress = 0;
     nodes = 0;
+    hits = false;
   }
 
   @Test
   public void test_account_creation() {
     Assume.assumeTrue("No # of accounts passed, skipping test", size > 0);
 
-    long ini = java.lang.System.currentTimeMillis();
-    long elapsed;
+    long start = java.lang.System.currentTimeMillis();
 
     System.out.printf("Inserting %d accounts\n", size);
 
     final DefaultMutableWorldState worldState = createEmpty();
     final WorldUpdater updater = worldState.updater();
+
     final BytesValue code =
         BytesValue.fromHexString(
             "0x608060405234801561001057600080fd5b506040805180820190915260078082527f546f6b656e204100"
@@ -136,7 +141,10 @@ public class ClassicAccountCreationTest {
                 + "0190a3505050565b60008282018381101561070757600080fd5b93925050505600a165627a7a723058"
                 + "201ccccf3643bfb06a9c417e8e3da96cf446bae5a3d9fb0da7af9ad966249008e00029");
 
-    int batchCount = 10;
+    int maxAddresses = 1_000_000;
+    List<Address> addresses = new ArrayList<>(maxAddresses);
+
+    int batchCount = 50;
     for (int batch = 0; batch < batchCount; batch++) {
       System.out.printf("Batch: %d\n", batch);
 
@@ -145,9 +153,14 @@ public class ClassicAccountCreationTest {
           .forEach(
               address -> {
                 ++progress;
-                if (progress % 10000 == 0) {
+                if (progress % 1000 == 0) {
                   System.out.printf("Progress: %d\n", progress);
                 }
+
+                if (hits && addresses.size() < maxAddresses) {
+                  addresses.add(address);
+                }
+
                 MutableAccount account = updater.createAccount(address).getMutable();
                 account.setBalance(Wei.of(100000));
 
@@ -155,44 +168,70 @@ public class ClassicAccountCreationTest {
                   account.setCode(code);
                 }
               });
-      elapsed = java.lang.System.currentTimeMillis() - ini;
+
+      long elapsed = java.lang.System.currentTimeMillis() - start;
       System.out.printf("Elapsed: %s - Committing...\n", fmtMillis(elapsed));
       updater.commit();
       updater.revert();
+
+      Bytes32 rootHash = worldState.rootHash();
+      System.out.printf("Root hash = %s\n", rootHash);
     }
 
-    elapsed = java.lang.System.currentTimeMillis() - ini;
+    long elapsed = java.lang.System.currentTimeMillis() - start;
     System.out.printf("Elapsed: %s - Commit done...\n", fmtMillis(elapsed));
 
     worldState.getAccountStateTrie().visitAll(__ -> ++nodes);
-    elapsed = java.lang.System.currentTimeMillis() - ini;
-    System.out.printf("Elapsed: %s - Total nodes: %d\n", fmtMillis(elapsed), nodes);
+    elapsed = java.lang.System.currentTimeMillis() - start;
+    System.out.printf("Elapsed: %s -  Total nodes: %d\n", fmtMillis(elapsed), nodes);
 
+    if (addresses.isEmpty()) {
+      addresses.addAll(addresses().limit(maxAddresses).collect(Collectors.toList()));
+    }
+
+    performLookups(worldState, addresses);
+
+    /*
     long noAccounts = worldState.streamAccounts(Bytes32.ZERO, Integer.MAX_VALUE).count();
-    elapsed = java.lang.System.currentTimeMillis() - ini;
-    System.out.printf("Elapsed: %s - Accounts in trie = %d\n", fmtMillis(elapsed), noAccounts);
+    elapsed = java.lang.System.currentTimeMillis() - start;
+    System.out.printf("Elapsed: %s -  Accounts in Unitrie = %d\n", fmtMillis(elapsed), noAccounts);
     assertThat(noAccounts).isEqualTo(size);
+    */
   }
 
-  private Stream<Address> addresses() {
-    return Stream.generate(() -> ClassicAccountCreationTest.Account.create().getAddress());
+  private void performLookups(final WorldState worldState, final List<Address> addresses) {
+    AtomicInteger hits = new AtomicInteger(0);
+    long start = System.currentTimeMillis();
+    addresses.forEach(address -> {
+      if (worldState.get(address) != null) {
+        hits.incrementAndGet();
+      }
+    });
+    long elapsed = System.currentTimeMillis() - start;
+    System.out.printf(
+        "Looked up for %d accounts, found %d, elapsed = %s\n",
+        addresses.size(), hits.intValue(), fmtMillis(elapsed));
   }
 
   private String fmtMillis(final long milliSecs) {
     return String.format("%.3f", milliSecs / 1_000.0d);
   }
 
+  private Stream<Address> addresses() {
+    return Stream.generate(() -> Account.create().getAddress());
+  }
+
   private static class Account {
+    static Random random = new Random();
+
     byte[] address;
 
     Account(final byte[] address) {
       this.address = address;
     }
 
-    static Random random = new Random();
-
     static Account create() {
-      byte[] b = new byte[32];
+      byte[] b = new byte[20];
       random.nextBytes(b);
       return new Account(b);
     }

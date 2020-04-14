@@ -19,7 +19,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Optional;
@@ -37,7 +37,7 @@ public abstract class AbstractUniNode implements UniNode {
   static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
 
   private ValueWrapper longValueWrapper;
-  private WeakReference<byte[]> pathWeakReference;
+  private SoftReference<byte[]> pathWeakReference;
   private boolean dirty = false;
 
   AbstractUniNode(final byte[] path, final ValueWrapper valueWrapper) {
@@ -48,7 +48,7 @@ public abstract class AbstractUniNode implements UniNode {
       this.longValueWrapper = valueWrapper;
     }
 
-    this.pathWeakReference = new WeakReference<>(path);
+    this.pathWeakReference = new SoftReference<>(path);
   }
 
   @VisibleForTesting
@@ -65,7 +65,7 @@ public abstract class AbstractUniNode implements UniNode {
       }
     }
     byte[] path = encodingHelper.decodePathFromFullEncoding(ByteBuffer.wrap(getEncoding()));
-    pathWeakReference = new WeakReference<>(path);
+    pathWeakReference = new SoftReference<>(path);
 
     return path;
   }

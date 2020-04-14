@@ -65,6 +65,13 @@ public interface UniTrie<K, V> {
   Optional<Integer> getValueLength(final K key);
 
   /**
+   * Get the hash of the value at the given key.
+   * @param key The key for the value
+   * @return optional holding the hash of the value, empty if no value for the given key
+   */
+  Optional<Bytes32> getValueHash(final K key);
+
+  /**
    * Updates the value mapped to the specified key, creating the mapping if one does not already
    * exist.
    *

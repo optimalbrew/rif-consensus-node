@@ -105,6 +105,15 @@ public class SimpleUniTrie<K extends BytesValue, V> implements UniTrie<K, V> {
   }
 
   @Override
+  public Optional<Bytes32> getValueHash(final K key) {
+    checkNotNull(key);
+    return root.accept(getVisitor, bytesToPath(key))
+        .getValueWrapper()
+        .getHash()
+        .map(Bytes32::wrap);
+  }
+
+  @Override
   public void put(final K key, final V value) {
     checkNotNull(key);
     checkNotNull(value);

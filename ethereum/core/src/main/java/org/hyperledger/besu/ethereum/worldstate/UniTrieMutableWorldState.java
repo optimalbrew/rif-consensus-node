@@ -121,7 +121,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
   public Account get(final Address address) {
     final BytesValue mappedKey = keyMapper.getAccountKey(address);
     return trie.get(mappedKey)
-        .map(bytes -> deserializeAccount(address, Hash.hash(address), bytes))
+        .map(bytes -> deserializeAccount(address, bytes))
         .orElse(null);
   }
 
@@ -145,12 +145,12 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     return trie;
   }
 
-  private WorldStateAccount deserializeAccount(
-      final Address address, final Hash addressHash, final BytesValue encoded) throws RLPException {
+  private WorldStateAccount deserializeAccount(final Address address, final BytesValue encoded)
+      throws RLPException {
 
     final RLPInput in = RLP.input(encoded);
     final UniTrieAccountValue accountValue = UniTrieAccountValue.readFrom(in);
-    return new WorldStateAccount(address, addressHash, accountValue);
+    return new WorldStateAccount(address, accountValue);
   }
 
   private static BytesValue serializeAccount(
@@ -166,15 +166,12 @@ public class UniTrieMutableWorldState implements MutableWorldState {
   protected class WorldStateAccount implements Account {
 
     private final Address address;
-    private final Hash addressHash;
     private final UniTrieAccountValue accountValue;
     private SoftReference<Hash> codeHash;
 
-    private WorldStateAccount(
-        final Address address, final Hash addressHash, final UniTrieAccountValue accountValue) {
+    private WorldStateAccount(final Address address, final UniTrieAccountValue accountValue) {
 
       this.address = address;
-      this.addressHash = addressHash;
       this.accountValue = accountValue;
     }
 
@@ -185,7 +182,9 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     @Override
     public Hash getAddressHash() {
-      return addressHash;
+      // NB: this call is only used to support retesteth debug_AccountRange method,
+      // which the UniTrie doesn't support.
+      return null;
     }
 
     @Override
@@ -226,8 +225,9 @@ public class UniTrieMutableWorldState implements MutableWorldState {
           return h;
         }
       }
-      BytesValue code = getCode();
-      Hash h = code.isEmpty()? Hash.EMPTY : Hash.hash(code);
+
+      BytesValue mappedKey = keyMapper.getAccountCodeKey(address);
+      Hash h = trie.getValueHash(mappedKey).map(Hash::wrap).orElse(Hash.EMPTY);
       codeHash = new SoftReference<>(h);
       return h;
     }
@@ -302,7 +302,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
       return wrapped
           .trie
           .get(mappedKey)
-          .map(bytes -> wrapped.deserializeAccount(address, Hash.hash(address), bytes))
+          .map(bytes -> wrapped.deserializeAccount(address, bytes))
           .orElse(null);
     }
 
