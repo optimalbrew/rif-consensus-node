@@ -37,8 +37,10 @@ public abstract class AbstractUniNode implements UniNode {
   static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
 
   private ValueWrapper longValueWrapper;
-  private SoftReference<byte[]> pathWeakReference;
+  private SoftReferenceWrapper pathWeakReference;
   private boolean dirty = false;
+  private byte path0;
+  private byte path0Len;
 
   AbstractUniNode(final byte[] path, final ValueWrapper valueWrapper) {
     Preconditions.checkNotNull(path);
@@ -48,25 +50,45 @@ public abstract class AbstractUniNode implements UniNode {
       this.longValueWrapper = valueWrapper;
     }
 
-    this.pathWeakReference = new SoftReference<>(path);
+    if (path.length>8) {
+      this.pathWeakReference = new SoftReferenceWrapper(path);
+      path0Len = 127; // we just put some value not to leave it at zero, which is tested later.
+    } else {
+      // El path viene expandido
+      if (path.length>0) {
+        BytesValue encodedPath = PathEncoding.encodePath(BytesValue.wrap(path));
+        path0 = encodedPath.get(0);
+      }
+      path0Len = (byte) path.length;
+    }
   }
 
   @VisibleForTesting
   void clearWeakReferences() {
-    pathWeakReference.clear();
+    if (pathWeakReference!=null)
+      pathWeakReference.value.clear();
   }
 
   @Override
   public byte[] getPath() {
+
+    if (path0Len==0) {
+      return new byte[]{};
+    }
+
+    if (path0Len<=8) {
+      return encodingHelper.decodeSingleBytePath(path0,path0Len);
+    }
+
     if (pathWeakReference != null) {
-      byte[] v = pathWeakReference.get();
+      byte[] v = pathWeakReference.value.get();
       if (v != null) {
         return v;
       }
     }
-    byte[] path = encodingHelper.decodePathFromFullEncoding(ByteBuffer.wrap(getEncoding()));
-    pathWeakReference = new SoftReference<>(path);
 
+    byte[] path = encodingHelper.decodePathFromFullEncoding(ByteBuffer.wrap(getEncoding()));
+    pathWeakReference = new SoftReferenceWrapper(path);
     return path;
   }
 

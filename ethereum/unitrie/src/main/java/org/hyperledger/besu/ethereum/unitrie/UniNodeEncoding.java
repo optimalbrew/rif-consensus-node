@@ -362,6 +362,11 @@ class UniNodeEncoding {
     return PathEncoding.decodePath(BytesValue.wrap(encodedPath), pathLengthInBits).getArrayUnsafe();
   }
 
+  public byte[] decodeSingleBytePath(final byte value,final int pathLengthInBits) {
+    byte[] encodedPath = new byte[1];
+    encodedPath[0] = value;
+    return PathEncoding.decodePath(BytesValue.wrap(encodedPath), pathLengthInBits).getArrayUnsafe();
+  }
   /**
    * Move the buffer position pass the encoded path
    *

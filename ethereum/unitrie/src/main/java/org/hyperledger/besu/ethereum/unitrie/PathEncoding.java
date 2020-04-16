@@ -58,6 +58,7 @@ public final class PathEncoding {
     return decoded;
   }
 
+
   /**
    * Encode the given path, turning it into a sequence of bytes. For example, the path {1, 0, 1, 0,
    * 0, 0, 0, 1, 0, 1} becomes {0xA1, 0x40}.
