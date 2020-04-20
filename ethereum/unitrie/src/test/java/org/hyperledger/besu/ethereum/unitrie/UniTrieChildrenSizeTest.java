@@ -36,8 +36,8 @@ public class UniTrieChildrenSizeTest {
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(bytes(0), nodeFactory), BytesValue.of(0))
-            .accept(new PutVisitor(new byte[32], nodeFactory), BytesValue.of(1));
-    assertThat(trie.getChildrenSize()).isEqualTo(35);
+            .accept(new PutVisitor(new byte[64], nodeFactory), BytesValue.of(1));
+    assertThat(trie.getChildrenSize()).isEqualTo(67);
   }
 
   @Test
@@ -45,7 +45,7 @@ public class UniTrieChildrenSizeTest {
     UniNode trie =
         NullUniNode.instance()
             .accept(new PutVisitor(bytes(0), nodeFactory), BytesValue.of(0))
-            .accept(new PutVisitor(new byte[33], nodeFactory), BytesValue.of(1));
-    assertThat(trie.getChildrenSize()).isEqualTo(71);
+            .accept(new PutVisitor(new byte[65], nodeFactory), BytesValue.of(1));
+    assertThat(trie.getChildrenSize()).isEqualTo(103);
   }
 }

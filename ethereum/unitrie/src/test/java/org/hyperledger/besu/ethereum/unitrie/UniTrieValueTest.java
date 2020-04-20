@@ -56,9 +56,9 @@ public class UniTrieValueTest {
   }
 
   @Test
-  public void noLongValueInTrieWith32BytesValue() {
+  public void shortValueInTrieWith32BytesValue() {
     BytesValue key = BytesValue.of(0, 1);
-    byte[] value = makeValue(32);
+    byte[] value = makeValue(64);
 
     UniNode trie =
         NullUniNode.instance()
@@ -72,9 +72,9 @@ public class UniTrieValueTest {
   }
 
   @Test
-  public void longValueInTrieWith33BytesValue() {
+  public void longValueInTrie() {
     BytesValue key = BytesValue.of(0, 1);
-    byte[] value = makeValue(33);
+    byte[] value = makeValue(65);
 
     UniNode trie =
         NullUniNode.instance()

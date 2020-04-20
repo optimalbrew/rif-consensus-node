@@ -45,11 +45,11 @@ public final class ValueWrapper {
   public static ValueWrapper EMPTY = empty();
 
   /** Maximum length in bytes of short (inlined) value. */
-  private static int MAX_SHORT_LEN = 32;
+  private static int MAX_SHORT_LEN = 64;
 
   private byte[] value;
   private byte[] hash;
-  private Integer length;
+  private int length;
 
   private ValueWrapper(final byte[] value, final byte[] hash, final int length) {
     this.value = value;
