@@ -16,7 +16,6 @@
 package org.hyperledger.besu.ethereum.worldstate;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -167,10 +166,8 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     private final Address address;
     private final UniTrieAccountValue accountValue;
-    private SoftReference<Hash> codeHash;
 
     private WorldStateAccount(final Address address, final UniTrieAccountValue accountValue) {
-
       this.address = address;
       this.accountValue = accountValue;
     }
@@ -184,7 +181,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     public Hash getAddressHash() {
       // NB: this call is only used to support retesteth debug_AccountRange method,
       // which the UniTrie doesn't support.
-      return null;
+      throw new UnsupportedOperationException("Unitrie stored accounts can't return address hash");
     }
 
     @Override
@@ -219,24 +216,18 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     @Override
     public Hash getCodeHash() {
-      if (Objects.nonNull(codeHash)) {
-        Hash h = codeHash.get();
-        if (Objects.nonNull(h)) {
-          return h;
-        }
+      if (updatedAccountCode.containsKey(address)) {
+        return Hash.hash(updatedAccountCode.get(address));
       }
 
       BytesValue mappedKey = keyMapper.getAccountCodeKey(address);
-      Hash h = trie.getValueHash(mappedKey).map(Hash::wrap).orElse(Hash.EMPTY);
-      codeHash = new SoftReference<>(h);
-      return h;
+      return trie.getValueHash(mappedKey).map(Hash::wrap).orElse(Hash.EMPTY);
     }
 
     @Override
     public Bytes32 getCodeSize() {
-      final BytesValue updatedCode = updatedAccountCode.get(address);
-      if (updatedCode != null) {
-        return UInt256Bytes.of(updatedCode.size());
+      if (updatedAccountCode.containsKey(address)) {
+        return UInt256Bytes.of(updatedAccountCode.get(address).size());
       }
 
       BytesValue mappedKey = keyMapper.getAccountCodeKey(address);
