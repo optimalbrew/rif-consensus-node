@@ -12,7 +12,7 @@ public class LeafUniNode extends AbstractUniNode {
 
   private final byte[] encoding;
 
-  LeafUniNode(final byte[] path, final ValueWrapper valueWrapper) {
+  public LeafUniNode(final byte[] path, final ValueWrapper valueWrapper) {
     super(path, valueWrapper);
     encoding = encode(path, valueWrapper);
   }
