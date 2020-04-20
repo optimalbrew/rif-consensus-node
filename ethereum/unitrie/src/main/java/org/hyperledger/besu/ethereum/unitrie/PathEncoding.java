@@ -14,10 +14,9 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import com.google.common.base.Preconditions;
 import org.hyperledger.besu.util.bytes.BytesValue;
 import org.hyperledger.besu.util.bytes.MutableBytesValue;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Encode or decode shared paths.
@@ -59,6 +58,25 @@ public final class PathEncoding {
   }
 
   /**
+   * Decode an encoded path whose length is at most 8 bits.
+   *
+   * @param encodedPath path to decode
+   * @param decodedLengthInBits decoded length in bits, guaranteed to be less oor equal 8
+   * @return decoded path, given by a sequence of binary digits of length {@code decodedLengthBits}
+   */
+  static byte[] decodeSingleBytePath(final byte encodedPath, final int decodedLengthInBits) {
+    Preconditions.checkArgument(decodedLengthInBits <= 8, "Path is longer than 8 bits");
+
+    byte[] decoded = new byte[decodedLengthInBits];
+
+    for (int i = 0; i < decodedLengthInBits; i++) {
+      decoded[i] = (byte) (((encodedPath >>> (7 - i)) & 0x01) == 1 ? 1 : 0);
+    }
+
+    return decoded;
+  }
+
+  /**
    * Encode the given path, turning it into a sequence of bytes. For example, the path {1, 0, 1, 0,
    * 0, 0, 0, 1, 0, 1} becomes {0xA1, 0x40}.
    *
@@ -66,21 +84,32 @@ public final class PathEncoding {
    * @return encoded path
    */
   public static BytesValue encodePath(final BytesValue path) {
+    return BytesValue.wrap(fastEncodePath(path.getArrayUnsafe()));
+  }
+
+  /**
+   * Encode the given path, turning it into a sequence of bytes. For example, the path {1, 0, 1, 0,
+   * 0, 0, 0, 1, 0, 1} becomes {0xA1, 0x40}.
+   *
+   * @param path path as a sequence of binary digits
+   * @return encoded path
+   */
+  static byte[] fastEncodePath(final byte[] path) {
     Preconditions.checkNotNull(path, "Path to encode is null");
 
-    int length = encodedPathLength(path.size());
-    MutableBytesValue encoded = MutableBytesValue.create(length);
+    int length = encodedPathLength(path.length);
+    byte[] encoded = new byte[length];
 
     int index = 0;
-    for (int i = 0; i < path.size(); i++) {
+    for (int i = 0; i < path.length; i++) {
       int offset = i % 8;
       if (i > 0 && offset == 0) {
         ++index;
       }
-      if (path.get(i) == 0) {
+      if (path[i] == 0) {
         continue;
       }
-      encoded.set(index, (byte) (encoded.get(index) | (0x80 >> offset)));
+      encoded[index] = (byte) (encoded[index] | (0x80 >> offset));
     }
 
     return encoded;

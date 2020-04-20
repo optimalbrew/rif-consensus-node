@@ -33,40 +33,68 @@ import org.hyperledger.besu.util.bytes.BytesValue;
  */
 public abstract class AbstractUniNode implements UniNode {
 
+  private static final byte[] EMPTY_PATH = new byte[0];
+
   static final int MAX_INLINED_NODE_SIZE = 44;
   static final UniNodeEncoding encodingHelper = new UniNodeEncoding();
 
+  private byte len;
+  private byte shortPath;
+  private SoftReference<byte[]> longPath;
+
+
   private ValueWrapper longValueWrapper;
-  private SoftReference<byte[]> pathWeakReference;
   private boolean dirty = false;
 
   AbstractUniNode(final byte[] path, final ValueWrapper valueWrapper) {
     Preconditions.checkNotNull(path);
     Preconditions.checkNotNull(valueWrapper);
 
+    this.initPath(path);
+
     if (valueWrapper.isLong()) {
       this.longValueWrapper = valueWrapper;
     }
+  }
 
-    this.pathWeakReference = new SoftReference<>(path);
+  private void initPath(final byte[] path) {
+    if (path.length == 0) {
+      len = 0;
+      shortPath = 0;
+      longPath = null;
+    } else if (path.length <= 8) {
+      len = (byte) path.length;
+      shortPath = PathEncoding.fastEncodePath(path)[0];
+      longPath = null;
+    } else {
+      len = -1;
+      shortPath = 0;
+      longPath = new SoftReference<>(path);
+    }
   }
 
   @VisibleForTesting
   void clearWeakReferences() {
-    pathWeakReference.clear();
+    if (longPath != null) {
+      longPath.clear();
+    }
   }
 
   @Override
   public byte[] getPath() {
-    if (pathWeakReference != null) {
-      byte[] v = pathWeakReference.get();
-      if (v != null) {
-        return v;
-      }
+    if (len == 0) {
+      return EMPTY_PATH;
     }
-    byte[] path = encodingHelper.decodePathFromFullEncoding(ByteBuffer.wrap(getEncoding()));
-    pathWeakReference = new SoftReference<>(path);
 
+    if (len != -1) {
+      return PathEncoding.decodeSingleBytePath(shortPath, len);
+    }
+
+    byte[] path = longPath.get();
+    if (path == null) {
+      path = encodingHelper.decodePathFromFullEncoding(ByteBuffer.wrap(getEncoding()));
+      longPath = new SoftReference<>(path);
+    }
     return path;
   }
 
