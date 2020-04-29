@@ -171,6 +171,7 @@ public class PrivacyNode implements AutoCloseable {
               .setEnclaveUrl(orion.clientUrl())
               .setEnclavePublicKeyUsingFile(orion.getConfig().publicKeys().get(0).toFile())
               .setStorageProvider(createKeyValueStorageProvider(dataDir, dbDir))
+              .setMerkleAwareProvider(new ClassicMerkleAwareProvider())
               .setPrivateKeyPath(KeyPairUtil.getDefaultKeyFile(besu.homeDirectory()).toPath())
               .setEnclaveFactory(new EnclaveFactory(vertx))
               .setPrivacyAddress(privacyAddress)

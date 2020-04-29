@@ -21,6 +21,8 @@ import org.hyperledger.besu.crypto.SECP256K1;
 import org.hyperledger.besu.crypto.SecureRandomProvider;
 import org.hyperledger.besu.ethereum.mainnet.BodyValidation;
 import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 
 import java.math.BigInteger;
@@ -185,12 +187,23 @@ public class BlockDataGenerator {
   }
 
   public List<Block> blockSequence(final int count) {
-    final WorldStateArchive worldState = InMemoryStorageProvider.createInMemoryWorldStateArchive();
+    return blockSequence(count, new ClassicMerkleAwareProvider());
+  }
+
+  public List<Block> blockSequence(final int count, final MerkleAwareProvider merkleAwareProvider) {
+    final WorldStateArchive worldState =
+        InMemoryStorageProvider.createInMemoryWorldStateArchive(merkleAwareProvider);
     return blockSequence(count, worldState, Collections.emptyList(), Collections.emptyList());
   }
 
   public List<Block> blockSequence(final Block previousBlock, final int count) {
-    final WorldStateArchive worldState = InMemoryStorageProvider.createInMemoryWorldStateArchive();
+    return blockSequence(previousBlock, count, new ClassicMerkleAwareProvider());
+  }
+
+  public List<Block> blockSequence(
+      final Block previousBlock, final int count, final MerkleAwareProvider merkleAwareProvider) {
+    final WorldStateArchive worldState =
+        InMemoryStorageProvider.createInMemoryWorldStateArchive(merkleAwareProvider);
     Hash parentHash = previousBlock.getHeader().getHash();
     long blockNumber = previousBlock.getHeader().getNumber() + 1;
     return blockSequence(

@@ -11,6 +11,7 @@
  * specific language governing permissions and limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
  */
 
 apply plugin: 'java-library'
@@ -65,6 +66,8 @@ dependencies {
   implementation 'org.springframework.security:spring-security-crypto'
 
   runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl'
+  compileOnly 'org.openjdk.jmh:jmh-generator-annprocess'
+
 
   testImplementation project(path: ':ethereum:core', configuration: 'testSupportArtifacts')
   testImplementation project(':testutil')
@@ -78,6 +81,9 @@ dependencies {
   testImplementation 'org.assertj:assertj-core'
   testImplementation 'org.awaitility:awaitility'
   testImplementation 'org.mockito:mockito-core'
+
+  jmhImplementation project(':testutil')
+  jmhImplementation project(path: ':ethereum:core', configuration: 'testSupportArtifacts')
 }
 
 task testJar(type: Jar) {

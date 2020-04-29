@@ -84,6 +84,10 @@ import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.eth.sync.SyncMode;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.config.DiscoveryConfiguration;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.p2p.peers.StaticNodesParser;
@@ -819,6 +823,13 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
       arity = "1")
   private final Boolean autoLogBloomCachingEnabled = true;
 
+@Option(
+      names = {"--merkle-storage-mode"},
+      description =
+          "Specify the underlying Merkle storage mode between ${COMPLETION-CANDIDATES}. "
+              + "(default: ${DEFAULT-VALUE})")
+  private final MerkleStorageMode merkleStorageMode = DEFAULT_MERKLE_STORAGE_MODE;
+
   @Option(
       names = {"--override-genesis-config"},
       paramLabel = "NAME=VALUE",
@@ -861,6 +872,9 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
   private final Supplier<ObservableMetricsSystem> metricsSystem =
       Suppliers.memoize(() -> PrometheusMetricsSystem.init(metricsConfiguration()));
   private Vertx vertx;
+
+  private final Supplier<MerkleAwareProvider> merkleAwareProvider =
+      Suppliers.memoize(this::createMerkleAwareProvider);
 
   public BesuCommand(
       final Logger logger,
@@ -1252,6 +1266,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
           .isPruningEnabled(isPruningEnabled())
           .pruningConfiguration(
               new PrunerConfiguration(pruningBlockConfirmations, pruningBlocksRetained))
+          .merkleAwareProvider(merkleAwareProvider.get())
           .genesisConfigOverrides(genesisConfigOverrides)
           .targetGasLimit(targetGasLimit == null ? Optional.empty() : Optional.of(targetGasLimit))
           .requiredBlocks(requiredBlocks);
@@ -1638,6 +1653,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
       privacyParametersBuilder.setPrivateKeyPath(privacyMarkerTransactionSigningKeyPath);
       privacyParametersBuilder.setStorageProvider(
           privacyKeyStorageProvider(keyValueStorageName + "-privacy"));
+      privacyParametersBuilder.setMerkleAwareProvider(merkleAwareProvider.get());
       if (isPrivacyTlsEnabled) {
         privacyParametersBuilder.setPrivacyKeyStoreFile(privacyKeyStoreFile);
         privacyParametersBuilder.setPrivacyKeyStorePasswordFile(privacyKeyStorePasswordFile);
@@ -2066,5 +2082,15 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
   @VisibleForTesting
   Level getLogLevel() {
     return logLevel;
+  }
+
+  private MerkleAwareProvider createMerkleAwareProvider() {
+    switch (merkleStorageMode) {
+      case UNITRIE:
+        return new UniTrieMerkleAwareProvider();
+      case CLASSIC:
+      default:
+        return new ClassicMerkleAwareProvider();
+    }
   }
 }

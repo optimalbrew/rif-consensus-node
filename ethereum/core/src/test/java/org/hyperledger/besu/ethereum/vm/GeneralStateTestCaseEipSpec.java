@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.vm;
 
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Hash;
+import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.WorldState;
 
@@ -38,6 +39,8 @@ public class GeneralStateTestCaseEipSpec {
 
   private final WorldState initialWorldState;
 
+  private final MutableWorldState runtimeWorldState;
+
   private final Hash expectedRootHash;
 
   // The keccak256 hash of the RLP encoding of the log series
@@ -45,19 +48,29 @@ public class GeneralStateTestCaseEipSpec {
 
   private final BlockHeader blockHeader;
 
+  // The root hash in the test specs corresponds to "classic" Merkle storage.
+  // So they can't be used in unitrie based general state reference tests.
+  // This flag controls whether the root hash check should be made at the
+  // end of the test, must be false when usign UniTries.
+  private final boolean shouldCheckRootHash;
+
   GeneralStateTestCaseEipSpec(
       final String eip,
       final Supplier<Transaction> transactionSupplier,
       final WorldState initialWorldState,
+      final MutableWorldState runtimeWorldState,
       final Hash expectedRootHash,
       final Hash expectedLogsHash,
-      final BlockHeader blockHeader) {
+      final BlockHeader blockHeader,
+      final boolean shouldCheckRootHash) {
     this.eip = eip;
     this.transactionSupplier = transactionSupplier;
     this.initialWorldState = initialWorldState;
+    this.runtimeWorldState = runtimeWorldState;
     this.expectedRootHash = expectedRootHash;
     this.expectedLogsHash = expectedLogsHash;
     this.blockHeader = blockHeader;
+    this.shouldCheckRootHash = shouldCheckRootHash;
   }
 
   String eip() {
@@ -66,6 +79,10 @@ public class GeneralStateTestCaseEipSpec {
 
   WorldState initialWorldState() {
     return initialWorldState;
+  }
+
+  MutableWorldState getRuntimeWorldState() {
+    return runtimeWorldState;
   }
 
   Hash expectedRootHash() {
@@ -82,5 +99,9 @@ public class GeneralStateTestCaseEipSpec {
 
   BlockHeader blockHeader() {
     return blockHeader;
+  }
+
+  boolean shouldCheckRootHash() {
+    return shouldCheckRootHash;
   }
 }

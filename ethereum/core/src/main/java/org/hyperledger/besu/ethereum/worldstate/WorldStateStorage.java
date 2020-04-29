@@ -63,6 +63,8 @@ public interface WorldStateStorage {
 
     Updater putAccountStorageTrieNode(Bytes32 nodeHash, Bytes node);
 
+    Updater rawPut(Bytes32 nodeHash, Bytes node);
+
     void commit();
 
     void rollback();

@@ -94,6 +94,10 @@ public class DefaultMutableWorldState implements MutableWorldState {
         worldStateStorage::getAccountStorageTrieNode, rootHash, b -> b, b -> b);
   }
 
+  public MerklePatriciaTrie<Bytes32, Bytes> getAccountStateTrie() {
+    return accountStateTrie;
+  }
+
   @Override
   public Hash rootHash() {
     return Hash.wrap(accountStateTrie.getRootHash());
@@ -280,6 +284,23 @@ public class DefaultMutableWorldState implements MutableWorldState {
     @Override
     public Hash getCodeHash() {
       return accountValue.getCodeHash();
+    }
+
+    @Override
+    public Bytes32 getCodeSize() {
+      final Bytes updatedCode = updatedAccountCode.get(address);
+      if (updatedCode != null) {
+        return UInt256Bytes.of(updatedCode.size());
+      }
+      // No code is common, save the KV-store lookup.
+      final Hash codeHash = getCodeHash();
+      if (codeHash.equals(Hash.EMPTY)) {
+        return Bytes32.ZERO;
+      }
+      return worldStateStorage
+          .getCode(codeHash)
+          .map(code -> UInt256Bytes.of(code.size()))
+          .orElse(Bytes32.ZERO);
     }
 
     @Override

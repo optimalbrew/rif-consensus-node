@@ -53,6 +53,15 @@ public abstract class NodeDataRequest {
   public static Bytes serialize(final NodeDataRequest request) {
     return RLP.encode(request::writeTo);
   }
+  
+  public static UniNodeDataRequest createUniNodeDataRequest(final Hash hash) {
+    return new UniNodeDataRequest(hash);
+  }
+
+  public static UniNodeValueDataRequest createUniNodeValueDataRequest(final Hash hash) {
+    return new UniNodeValueDataRequest(hash);
+  }
+  
 
   public static NodeDataRequest deserialize(final Bytes encoded) {
     final RLPInput in = RLP.input(encoded);
@@ -71,6 +80,12 @@ public abstract class NodeDataRequest {
         break;
       case CODE:
         deserialized = createCodeRequest(hash);
+        break;
+      case UNINODE:
+        deserialized = createUniNodeDataRequest(hash);
+        break;
+      case UNINODE_VALUE:
+        deserialized = createUniNodeValueDataRequest(hash);
         break;
       default:
         throw new IllegalArgumentException(

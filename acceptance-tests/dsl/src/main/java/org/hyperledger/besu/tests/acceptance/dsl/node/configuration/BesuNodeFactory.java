@@ -26,6 +26,7 @@ import org.hyperledger.besu.ethereum.core.MiningParameters;
 import org.hyperledger.besu.ethereum.core.MiningParametersTestBuilder;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.core.Wei;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.tests.acceptance.dsl.node.BesuNode;
 import org.hyperledger.besu.tests.acceptance.dsl.node.Node;
 import org.hyperledger.besu.tests.acceptance.dsl.node.RunnableNode;
@@ -46,8 +47,15 @@ public class BesuNodeFactory {
   private final GenesisConfigurationFactory genesis = new GenesisConfigurationFactory();
   private final NodeConfigurationFactory node = new NodeConfigurationFactory();
 
+  private final MerkleStorageMode merkleStorageMode;
+
+  public BesuNodeFactory(final MerkleStorageMode merkleStorageMode) {
+    this.merkleStorageMode = merkleStorageMode;
+  }
+
   public BesuNode create(final BesuNodeConfiguration config) throws IOException {
     return new BesuNode(
+
         config.getName(),
         config.getDataPath(),
         config.getMiningParameters(),
@@ -66,7 +74,9 @@ public class BesuNodeFactory {
         config.getPlugins(),
         config.getExtraCLIOptions(),
         config.getStaticNodes(),
-        config.getPrivacyParameters());
+        config.getPrivacyParameters())
+        .withMerkleStorageMode(merkleStorageMode);
+
   }
 
   public BesuNode createMinerNode(final String name) throws IOException {

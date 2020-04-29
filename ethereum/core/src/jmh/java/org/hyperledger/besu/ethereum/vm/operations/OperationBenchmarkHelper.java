@@ -23,6 +23,7 @@ import org.hyperledger.besu.ethereum.core.BlockHeaderTestFixture;
 import org.hyperledger.besu.ethereum.core.Difficulty;
 import org.hyperledger.besu.ethereum.core.ExecutionContextTestFixture;
 import org.hyperledger.besu.ethereum.core.MessageFrameTestFixture;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.vm.MessageFrame;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
@@ -52,7 +53,9 @@ public class OperationBenchmarkHelper {
     this.messageFrame = messageFrame;
   }
 
-  public static OperationBenchmarkHelper create() throws IOException {
+  public static OperationBenchmarkHelper create(final MerkleAwareProvider merkleAwareProvider)
+      throws IOException {
+
     final Path storageDirectory = Files.createTempDirectory("benchmark");
     final KeyValueStorage keyValueStorage =
         new RocksDBKeyValueStorage(
@@ -61,7 +64,10 @@ public class OperationBenchmarkHelper {
             RocksDBMetricsFactory.PUBLIC_ROCKS_DB_METRICS);
 
     final ExecutionContextTestFixture executionContext =
-        ExecutionContextTestFixture.builder().keyValueStorage(keyValueStorage).build();
+        ExecutionContextTestFixture.builder()
+            .merkleAwareProvider(merkleAwareProvider)
+            .keyValueStorage(keyValueStorage)
+            .build();
     final MutableBlockchain blockchain = executionContext.getBlockchain();
 
     for (int i = 1; i < 256; i++) {

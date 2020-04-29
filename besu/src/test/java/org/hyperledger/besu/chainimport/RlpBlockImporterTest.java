@@ -27,6 +27,7 @@ import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.testutil.BlockTestUtil;
 import org.hyperledger.besu.testutil.TestClock;
@@ -58,6 +59,7 @@ public final class RlpBlockImporterTest {
     final BesuController<?> targetController =
         new BesuController.Builder()
             .fromGenesisConfig(GenesisConfigFile.mainnet())
+            .merkleAwareProvider(new ClassicMerkleAwareProvider())
             .synchronizerConfiguration(SynchronizerConfiguration.builder().build())
             .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
             .storageProvider(new InMemoryStorageProvider())
@@ -98,6 +100,7 @@ public final class RlpBlockImporterTest {
     final BesuController<?> controller =
         new BesuController.Builder()
             .fromGenesisConfig(GenesisConfigFile.fromConfig(config))
+            .merkleAwareProvider(new ClassicMerkleAwareProvider())
             .synchronizerConfiguration(SynchronizerConfiguration.builder().build())
             .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
             .storageProvider(new InMemoryStorageProvider())

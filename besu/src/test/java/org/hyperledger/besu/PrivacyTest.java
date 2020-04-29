@@ -24,6 +24,7 @@ import org.hyperledger.besu.enclave.EnclaveFactory;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
+import org.hyperledger.besu.ethereum.core.MerkleAwareTest;
 import org.hyperledger.besu.ethereum.core.MiningParametersTestBuilder;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
@@ -54,7 +55,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class PrivacyTest {
+public class PrivacyTest extends MerkleAwareTest {
 
   private static final int MAX_OPEN_FILES = 1024;
   private static final long CACHE_CAPACITY = 8388608;
@@ -106,9 +107,11 @@ public class PrivacyTest {
             .setStorageProvider(createKeyValueStorageProvider(dataDir, dbDir))
             .setEnclaveFactory(new EnclaveFactory(vertx))
             .setOnchainPrivacyGroupsEnabled(onChainEnabled)
+            .setMerkleAwareProvider(getMerkleAwareProvider())
             .build();
     return new BesuController.Builder()
         .fromGenesisConfig(GenesisConfigFile.mainnet())
+        .merkleAwareProvider(getMerkleAwareProvider())
         .synchronizerConfiguration(SynchronizerConfiguration.builder().build())
         .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
         .storageProvider(new InMemoryStorageProvider())

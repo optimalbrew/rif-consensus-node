@@ -136,6 +136,7 @@ public class StoredMerklePatriciaTrie<K extends Bytes, V> implements MerklePatri
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "[" + getRootHash() + "]";
+    //return getClass().getSimpleName() + "[" + getRootHash() + "]";
+    return root.print();
   }
 }

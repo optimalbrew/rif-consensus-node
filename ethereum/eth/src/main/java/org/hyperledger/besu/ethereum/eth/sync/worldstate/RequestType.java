@@ -17,7 +17,10 @@ package org.hyperledger.besu.ethereum.eth.sync.worldstate;
 public enum RequestType {
   ACCOUNT_TRIE_NODE((byte) 1),
   STORAGE_TRIE_NODE((byte) 2),
-  CODE((byte) 3);
+  CODE((byte) 3),
+
+  UNINODE((byte) 11),
+  UNINODE_VALUE((byte) 12);
 
   private final byte value;
 
@@ -31,12 +34,20 @@ public enum RequestType {
 
   public static RequestType fromValue(final byte value) {
     switch (value) {
+        // Classic Trie node requests
       case (byte) 1:
         return ACCOUNT_TRIE_NODE;
       case (byte) 2:
         return STORAGE_TRIE_NODE;
       case (byte) 3:
         return CODE;
+
+        // UniNode requests
+      case (byte) 11:
+        return UNINODE;
+      case (byte) 12:
+        return UNINODE_VALUE;
+
       default:
         throw new IllegalArgumentException("Invalid value supplied");
     }

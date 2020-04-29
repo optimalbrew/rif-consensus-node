@@ -677,4 +677,22 @@ public class DefaultMutableWorldStateTest {
     worldState.persist();
     assertThat(worldState.get(ADDRESS).storageEntriesFrom(Hash.ZERO, 10)).isEqualTo(finalEntries);
   }
+
+  @Test
+  public void codeLength() {
+    final Bytes code =
+        Bytes.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
+
+    final MutableWorldState worldState = createEmpty();
+    WorldUpdater updater = worldState.updater();
+
+    MutableAccount account = updater.createAccount(ADDRESS).getMutable();
+    account.setCode(code);
+    updater.commit();
+
+    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    worldState.persist();
+    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    System.out.println(UInt256Bytes.of(code.size()));
+  }
 }

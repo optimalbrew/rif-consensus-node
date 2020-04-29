@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.eth.sync.worldstate;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.eth.manager.EthContext;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.metrics.BesuMetricCategory;
 import org.hyperledger.besu.plugin.services.MetricsSystem;
@@ -35,6 +36,8 @@ import org.apache.logging.log4j.Logger;
 public class WorldStateDownloader implements WorldStateDownloadStatus {
   private static final Logger LOG = LogManager.getLogger();
 
+  private final MerkleAwareProvider merkleAwareProvider;
+
   private final long minMillisBeforeStalling;
   private final Clock clock;
   private final MetricsSystem metricsSystem;
@@ -51,6 +54,7 @@ public class WorldStateDownloader implements WorldStateDownloadStatus {
   private Optional<CompleteTaskStep> maybeCompleteTask = Optional.empty();
 
   public WorldStateDownloader(
+      final MerkleAwareProvider merkleAwareProvider,
       final EthContext ethContext,
       final WorldStateStorage worldStateStorage,
       final CachingTaskCollection<NodeDataRequest> taskCollection,
@@ -60,6 +64,7 @@ public class WorldStateDownloader implements WorldStateDownloadStatus {
       final long minMillisBeforeStalling,
       final Clock clock,
       final MetricsSystem metricsSystem) {
+    this.merkleAwareProvider = merkleAwareProvider;
     this.ethContext = ethContext;
     this.worldStateStorage = worldStateStorage;
     this.taskCollection = taskCollection;
@@ -118,12 +123,17 @@ public class WorldStateDownloader implements WorldStateDownloadStatus {
 
       final WorldDownloadState newDownloadState =
           new WorldDownloadState(
-              taskCollection, maxNodeRequestsWithoutProgress, minMillisBeforeStalling, clock);
+              merkleAwareProvider,
+              taskCollection,
+              maxNodeRequestsWithoutProgress,
+              minMillisBeforeStalling,
+              clock);
       this.downloadState.set(newDownloadState);
 
       if (!newDownloadState.downloadWasResumed()) {
         // Only queue the root node if we're starting a new download from scratch
-        newDownloadState.enqueueRequest(NodeDataRequest.createAccountDataRequest(stateRoot));
+        newDownloadState.enqueueRequest(
+            NodeDataRequestFactory.createNodeDataRequest(merkleAwareProvider, stateRoot));
       }
 
       maybeCompleteTask =

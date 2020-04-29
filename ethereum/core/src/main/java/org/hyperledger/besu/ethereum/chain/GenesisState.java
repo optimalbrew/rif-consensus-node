@@ -31,9 +31,10 @@ import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduleBasedBlockHeaderFunctions;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStatePreimageKeyValueStorage;
-import org.hyperledger.besu.ethereum.worldstate.DefaultMutableWorldState;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 
 import java.math.BigInteger;
@@ -71,26 +72,64 @@ public final class GenesisState {
    * @param <C> The consensus context type
    * @return A new {@link GenesisState}.
    */
+  // TODO (ppedemon) eventually remove this method
   public static <C> GenesisState fromJson(
       final String json, final ProtocolSchedule<C> protocolSchedule) {
-    return fromConfig(GenesisConfigFile.fromConfig(json), protocolSchedule);
+    return fromJson(json, protocolSchedule, new ClassicMerkleAwareProvider());
   }
 
   /**
-   * Construct a {@link GenesisState} from a JSON object.
+   * Construct a {@link GenesisState} from a JSON string.
+   *
+   * @param json A JSON string describing the genesis block
+   * @param protocolSchedule A protocol Schedule associated with
+   * @param merkleAwareProvider A {@link MerkleAwareProvider} defining the world state to create
+   * @param <C> The consensus context type
+   * @return A new {@link GenesisState}.
+   */
+  public static <C> GenesisState fromJson(
+      final String json,
+      final ProtocolSchedule<C> protocolSchedule,
+      final MerkleAwareProvider merkleAwareProvider) {
+    return fromConfig(GenesisConfigFile.fromConfig(json), protocolSchedule, merkleAwareProvider);
+  }
+
+  /**
+   * Construct a {@link GenesisState} from a config file.
    *
    * @param config A {@link GenesisConfigFile} describing the genesis block.
    * @param protocolSchedule A protocol Schedule associated with
    * @param <C> The consensus context type
    * @return A new {@link GenesisState}.
    */
+  // TODO (ppedemon) eventually remove this method
   public static <C> GenesisState fromConfig(
       final GenesisConfigFile config, final ProtocolSchedule<C> protocolSchedule) {
+    return fromConfig(config, protocolSchedule, new ClassicMerkleAwareProvider());
+  }
+
+  /**
+   * Construct a {@link GenesisState} from a config file.
+   *
+   * @param config A {@link GenesisConfigFile} describing the genesis block.
+   * @param protocolSchedule A protocol Schedule associated with
+   * @param merkleAwareProvider A {@link MerkleAwareProvider} defining the world state to create
+   * @param <C> The consensus context type
+   * @return A new {@link GenesisState}.
+   */
+  public static <C> GenesisState fromConfig(
+      final GenesisConfigFile config,
+      final ProtocolSchedule<C> protocolSchedule,
+      final MerkleAwareProvider merkleAwareProvider) {
+
     final List<GenesisAccount> genesisAccounts =
         parseAllocations(config).collect(Collectors.toList());
     final Block block =
         new Block(
-            buildHeader(config, calculateGenesisStateHash(genesisAccounts), protocolSchedule),
+            buildHeader(
+                config,
+                calculateGenesisStateHash(genesisAccounts, merkleAwareProvider),
+                protocolSchedule),
             BODY);
     return new GenesisState(block, genesisAccounts);
   }
@@ -124,13 +163,15 @@ public final class GenesisState {
     target.persist();
   }
 
-  private static Hash calculateGenesisStateHash(final List<GenesisAccount> genesisAccounts) {
+  private static Hash calculateGenesisStateHash(
+      final List<GenesisAccount> genesisAccounts, final MerkleAwareProvider merkleAwareProvider) {
+
     final WorldStateKeyValueStorage stateStorage =
         new WorldStateKeyValueStorage(new InMemoryKeyValueStorage());
     final WorldStatePreimageKeyValueStorage preimageStorage =
         new WorldStatePreimageKeyValueStorage(new InMemoryKeyValueStorage());
     final MutableWorldState worldState =
-        new DefaultMutableWorldState(stateStorage, preimageStorage);
+        merkleAwareProvider.createMutableWorldState(stateStorage, preimageStorage);
     writeAccountsTo(worldState, genesisAccounts);
     return worldState.rootHash();
   }
@@ -269,16 +310,14 @@ public final class GenesisState {
 
     private Map<UInt256, UInt256> parseStorage(final Map<String, String> storage) {
       final Map<UInt256, UInt256> parsedStorage = new HashMap<>();
-      storage
-          .entrySet()
-          .forEach(
-              (entry) -> {
-                final UInt256 key =
-                    withNiceErrorMessage("storage key", entry.getKey(), UInt256::fromHexString);
-                final UInt256 value =
-                    withNiceErrorMessage("storage value", entry.getValue(), UInt256::fromHexString);
-                parsedStorage.put(key, value);
-              });
+      storage.forEach(
+          (storageKey, storageValue) -> {
+            final UInt256 key =
+                withNiceErrorMessage("storage key", storageKey, UInt256::fromHexString);
+            final UInt256 value =
+                withNiceErrorMessage("storage value", storageValue, UInt256::fromHexString);
+            parsedStorage.put(key, value);
+          });
 
       return parsedStorage;
     }

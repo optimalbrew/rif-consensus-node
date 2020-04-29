@@ -27,6 +27,7 @@ import org.hyperledger.besu.ethereum.eth.sync.fullsync.FullSyncDownloader;
 import org.hyperledger.besu.ethereum.eth.sync.state.PendingBlocks;
 import org.hyperledger.besu.ethereum.eth.sync.state.SyncState;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.worldstate.Pruner;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.metrics.BesuMetricCategory;
@@ -55,6 +56,7 @@ public class DefaultSynchronizer<C> implements Synchronizer {
   private final FullSyncDownloader<C> fullSyncDownloader;
 
   public DefaultSynchronizer(
+      final MerkleAwareProvider merkleAwareProvider,
       final SynchronizerConfiguration syncConfig,
       final ProtocolSchedule<C> protocolSchedule,
       final ProtocolContext<C> protocolContext,
@@ -92,6 +94,7 @@ public class DefaultSynchronizer<C> implements Synchronizer {
             syncConfig, protocolSchedule, protocolContext, ethContext, syncState, metricsSystem);
     this.fastSyncDownloader =
         FastDownloaderFactory.create(
+            merkleAwareProvider,
             syncConfig,
             dataDirectory,
             protocolSchedule,

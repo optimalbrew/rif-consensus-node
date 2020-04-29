@@ -295,6 +295,16 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     }
 
     @Override
+    public Bytes32 getCodeSize() {
+      if (updatedCode == null) {
+        // Note that we set code for new account, so it's only null if account isn't.
+        return account.getCodeSize();
+      } else {
+        return UInt256Bytes.of(updatedCode.size());
+      }
+    }
+
+    @Override
     public boolean hasCode() {
       // Note that we set code for new account, so it's only null if account isn't.
       return updatedCode == null ? account.hasCode() : !updatedCode.isEmpty();
@@ -303,6 +313,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     @Override
     public void setCode(final Bytes code) {
       this.updatedCode = code;
+      this.updatedCodeHash = null;
     }
 
     @Override

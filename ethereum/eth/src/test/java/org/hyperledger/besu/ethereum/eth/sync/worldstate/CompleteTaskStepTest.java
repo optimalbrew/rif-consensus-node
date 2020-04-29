@@ -59,9 +59,38 @@ public class CompleteTaskStepTest {
   }
 
   @Test
+  public void unitrie_shouldMarkTaskAsFailedIfItDoesNotHaveData() {
+    final StubTask task = new StubTask(NodeDataRequest.createUniNodeDataRequest(ROOT_HASH));
+
+    completeTaskStep.markAsCompleteOrFailed(blockHeader, downloadState, task);
+
+    assertThat(task.isCompleted()).isFalse();
+    assertThat(task.isFailed()).isTrue();
+    verify(downloadState).notifyTaskAvailable();
+    verify(downloadState, never()).checkCompletion(worldStateStorage, blockHeader);
+  }
+
+  @Test
   public void shouldEnqueueChildrenAndMarkCompleteWhenTaskHasData() {
     // Use an arbitrary but actually valid trie node to get children from.
     final StubTask task = validTask();
+    completeTaskStep.markAsCompleteOrFailed(blockHeader, downloadState, task);
+
+    assertThat(task.isCompleted()).isTrue();
+    assertThat(task.isFailed()).isFalse();
+
+    verify(downloadState).enqueueRequests(streamCaptor.capture());
+    assertThat(streamCaptor.getValue())
+        .usingRecursiveFieldByFieldElementComparator()
+        .containsExactlyInAnyOrderElementsOf(() -> task.getData().getChildRequests().iterator());
+
+    verify(downloadState).checkCompletion(worldStateStorage, blockHeader);
+  }
+
+  @Test
+  public void unitrie_shouldEnqueueChildrenAndMarkCompleteWhenTaskHasData() {
+    // Use an arbitrary but actually valid trie node to get children from.
+    final StubTask task = validUniTask();
     completeTaskStep.markAsCompleteOrFailed(blockHeader, downloadState, task);
 
     assertThat(task.isCompleted()).isTrue();
@@ -89,6 +118,19 @@ public class CompleteTaskStepTest {
         Bytes.fromHexString(
             "0xf85180808080a05ac6993e3fbca0bfbd30173396dd5c2412657fae0bad92e401d17b2aa9a3698f80808080a012f96a0812be538c302416dc6e8df19ce18f1cc7b06a3c7a16831d766c87a9b580808080808080");
     final StubTask task = new StubTask(NodeDataRequest.createAccountDataRequest(hash));
+    task.getData().setData(data);
+    return task;
+  }
+
+  private StubTask validUniTask() {
+    final Hash hash =
+        Hash.fromHexString("0x05f6b870df41144da5eec8d1384189d11977cc543214268aa08eadeb34f6508d");
+    final BytesValue data =
+        BytesValue.fromHexString(
+            "0x787800b6979620706f8c652cfb1234567890123456789012345678901234567890d9f59f9bc38d4"
+                + "9848dd4b90bfd37aab80fa843602165db74f1afec0c87bb06ab8473f302fe9da10e548b03a0b09918"
+                + "0d82f12468b246e8131a55ab63960da4bb77000046");
+    final StubTask task = new StubTask(NodeDataRequest.createUniNodeDataRequest(hash));
     task.getData().setData(data);
     return task;
   }

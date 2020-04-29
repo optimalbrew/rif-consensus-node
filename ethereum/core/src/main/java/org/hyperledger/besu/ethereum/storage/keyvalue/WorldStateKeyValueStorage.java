@@ -14,6 +14,10 @@
  */
 package org.hyperledger.besu.ethereum.storage.keyvalue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
@@ -83,7 +87,7 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
 
   @Override
   public Updater updater() {
-    return new Updater(keyValueStorage.startTransaction(), nodeAddedListeners);
+    return new Updater(keyValueStorage, nodeAddedListeners);
   }
 
   @Override
@@ -103,14 +107,16 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
 
   public static class Updater implements WorldStateStorage.Updater {
 
-    private final KeyValueStorageTransaction transaction;
+    private KeyValueStorageTransaction transaction;
     private final Subscribers<NodesAddedListener> nodeAddedListeners;
     private final List<Bytes32> addedNodes = new ArrayList<>();
+    private final KeyValueStorage keyValueStorage;
 
     public Updater(
-        final KeyValueStorageTransaction transaction,
+        final KeyValueStorage keyValueStorage,
         final Subscribers<NodesAddedListener> nodeAddedListeners) {
-      this.transaction = transaction;
+      this.keyValueStorage = keyValueStorage;
+      this.transaction = keyValueStorage.startTransaction();
       this.nodeAddedListeners = nodeAddedListeners;
     }
 
@@ -139,7 +145,14 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
         return this;
       }
       addedNodes.add(nodeHash);
-      transaction.put(nodeHash.toArrayUnsafe(), node.toArrayUnsafe());
+      transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
+
+      if (addedNodes.size() > 10000) {//Commit account nodes in batches
+        // auto-commit
+        commit();
+        addedNodes.clear();
+        transaction = keyValueStorage.startTransaction();
+      }
       return this;
     }
 
@@ -151,6 +164,13 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
       }
       addedNodes.add(nodeHash);
       transaction.put(nodeHash.toArrayUnsafe(), node.toArrayUnsafe());
+      return this;
+    }
+
+    @Override
+    public WorldStateStorage.Updater rawPut(final Bytes32 nodeHash, final BytesValue node) {
+      addedNodes.add(nodeHash);
+      transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
       return this;
     }
 

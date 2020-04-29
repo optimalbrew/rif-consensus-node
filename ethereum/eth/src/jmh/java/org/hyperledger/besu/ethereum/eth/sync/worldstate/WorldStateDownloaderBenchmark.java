@@ -32,6 +32,10 @@ import org.hyperledger.besu.ethereum.eth.manager.EthScheduler;
 import org.hyperledger.besu.ethereum.eth.manager.RespondingEthPeer;
 import org.hyperledger.besu.ethereum.eth.manager.RespondingEthPeer.Responder;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueSegmentIdentifier;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueStorageProviderBuilder;
@@ -60,6 +64,7 @@ import com.google.common.io.RecursiveDeleteOption;
 import org.apache.tuweni.bytes.Bytes;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -79,6 +84,9 @@ public class WorldStateDownloaderBenchmark {
   private CachingTaskCollection<NodeDataRequest> pendingRequests;
   private StorageProvider storageProvider;
   private EthProtocolManager ethProtocolManager;
+
+  @Param({"CLASSIC", "UNITRIE"})
+  public MerkleStorageMode merkleStorageMode;
 
   @Setup(Level.Invocation)
   public void setUpUnchangedState() {
@@ -111,8 +119,12 @@ public class WorldStateDownloaderBenchmark {
                 NodeDataRequest::serialize,
                 NodeDataRequest::deserialize),
             0);
+
+    MerkleAwareProvider merkleAwareProvider = createMerkleAwareProvider(merkleStorageMode);
+
     worldStateDownloader =
         new WorldStateDownloader(
+            merkleAwareProvider,
             ethContext,
             worldStateStorage,
             pendingRequests,
@@ -126,7 +138,8 @@ public class WorldStateDownloaderBenchmark {
 
   private Hash createExistingWorldState() {
     // Setup existing state
-    final WorldStateArchive worldStateArchive = createInMemoryWorldStateArchive();
+    final WorldStateArchive worldStateArchive =
+        createInMemoryWorldStateArchive(createMerkleAwareProvider(merkleStorageMode));
     final MutableWorldState worldState = worldStateArchive.getMutable();
 
     dataGen.createRandomAccounts(worldState, 10000);
@@ -174,5 +187,15 @@ public class WorldStateDownloaderBenchmark {
         .withCommonConfiguration(new BesuConfigurationImpl(dataDir, dbDir))
         .withMetricsSystem(new NoOpMetricsSystem())
         .build();
+  }
+
+  private MerkleAwareProvider createMerkleAwareProvider(final MerkleStorageMode merkleStorageMode) {
+    switch (merkleStorageMode) {
+      case UNITRIE:
+        return new UniTrieMerkleAwareProvider();
+      case CLASSIC:
+      default:
+        return new ClassicMerkleAwareProvider();
+    }
   }
 }

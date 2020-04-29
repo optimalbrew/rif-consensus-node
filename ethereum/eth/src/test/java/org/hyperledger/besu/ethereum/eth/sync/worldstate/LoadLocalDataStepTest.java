@@ -26,12 +26,19 @@ import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.services.pipeline.Pipe;
 import org.hyperledger.besu.services.tasks.Task;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class LoadLocalDataStepTest {
 
   private static final Bytes DATA = Bytes.of(1, 2, 3);
@@ -39,32 +46,51 @@ public class LoadLocalDataStepTest {
   private final WorldStateStorage worldStateStorage = mock(WorldStateStorage.class);
   private final WorldStateStorage.Updater updater = mock(WorldStateStorage.Updater.class);
 
-  private final CodeNodeDataRequest request = NodeDataRequest.createCodeRequest(HASH);
-  private final Task<NodeDataRequest> task = new StubTask(request);
-
   private final Pipe<Task<NodeDataRequest>> completedTasks =
       new Pipe<>(10, NO_OP_COUNTER, NO_OP_COUNTER, NO_OP_COUNTER);
   private final LoadLocalDataStep loadLocalDataStep =
       new LoadLocalDataStep(worldStateStorage, new NoOpMetricsSystem());
 
+  private static final CodeNodeDataRequest request = NodeDataRequest.createCodeRequest(HASH);
+  private static final Task<NodeDataRequest> task = new StubTask(request);
+
+  private static final UniNodeValueDataRequest uniRequest =
+      NodeDataRequest.createUniNodeValueDataRequest(HASH);
+  private static final Task<NodeDataRequest> uniTask = new StubTask(uniRequest);
+
+  @Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(
+        new Object[][] {
+          {request, task},
+          {uniRequest, uniTask}
+        });
+  }
+
+  @Parameter public NodeDataRequest currentRequest;
+
+  @Parameter(value = 1)
+  public Task<NodeDataRequest> currentTask;
+
   @Test
   public void shouldReturnStreamWithUnchangedTaskWhenDataNotPresent() {
     final Stream<Task<NodeDataRequest>> output =
-        loadLocalDataStep.loadLocalData(task, completedTasks);
+        loadLocalDataStep.loadLocalData(currentTask, completedTasks);
 
     assertThat(completedTasks.poll()).isNull();
-    assertThat(output).containsExactly(task);
+    assertThat(output).containsExactly(currentTask);
   }
 
   @Test
   public void shouldReturnEmptyStreamAndSendTaskToCompletedPipeWhenDataIsPresent() {
     when(worldStateStorage.getCode(HASH)).thenReturn(Optional.of(DATA));
+    when(worldStateStorage.getAccountStateTrieNode(HASH)).thenReturn(Optional.of(DATA));
 
     final Stream<Task<NodeDataRequest>> output =
-        loadLocalDataStep.loadLocalData(task, completedTasks);
+        loadLocalDataStep.loadLocalData(currentTask, completedTasks);
 
-    assertThat(completedTasks.poll()).isSameAs(task);
-    assertThat(request.getData()).isEqualTo(DATA);
+    assertThat(completedTasks.poll()).isSameAs(currentTask);
+    assertThat(currentRequest.getData()).isEqualTo(DATA);
     assertThat(output).isEmpty();
 
     // Should not require persisting.

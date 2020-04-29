@@ -26,6 +26,7 @@ import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.MiningParameters;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.core.Util;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.ethereum.p2p.config.NetworkingConfiguration;
 import org.hyperledger.besu.ethereum.permissioning.PermissioningConfiguration;
 import org.hyperledger.besu.metrics.prometheus.MetricsConfiguration;
@@ -174,6 +175,11 @@ public class BesuNode implements NodeConfiguration, RunnableNode, AutoCloseable 
     } catch (final IOException e) {
       throw new RuntimeException("Unable to create temporary data directory", e);
     }
+  }
+  
+  public BesuNode withMerkleStorageMode(final MerkleStorageMode merkleStorageMode) {
+    extraCLIOptions.add(merkleStorageMode.toCLI());
+    return this;
   }
 
   @Override
