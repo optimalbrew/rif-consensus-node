@@ -171,6 +171,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
    */
   public static class UpdateTrackingAccount<A extends Account> implements MutableAccount {
     private final Address address;
+    private final Hash addressHash;
 
     @Nullable private final A account; // null if this is a new account.
 
@@ -190,6 +191,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     UpdateTrackingAccount(final Address address) {
       checkNotNull(address);
       this.address = address;
+      this.addressHash = Hash.hash(this.address);
       this.account = null;
 
       this.nonce = 0;
@@ -204,6 +206,10 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
       checkNotNull(account);
 
       this.address = account.getAddress();
+      this.addressHash =
+              (account instanceof UpdateTrackingAccount)
+                      ? ((UpdateTrackingAccount<?>) account).addressHash
+                      : Hash.hash(this.address);
       this.account = account;
 
       this.nonce = account.getNonce();
@@ -300,7 +306,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
         // Note that we set code for new account, so it's only null if account isn't.
         return account.getCodeSize();
       } else {
-        return UInt256Bytes.of(updatedCode.size());
+        return UInt256.valueOf(updatedCode.size()).toBytes();
       }
     }
 

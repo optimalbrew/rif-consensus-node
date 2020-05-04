@@ -26,8 +26,8 @@ import org.apache.tuweni.bytes.Bytes;
  */
 public interface UniNode {
 
-  byte[] NULL_UNINODE_ENCODING = RLP.NULL.extractArray();
-  byte[] NULL_UNINODE_HASH = keccak256(RLP.NULL).extractArray();
+  byte[] NULL_UNINODE_ENCODING = RLP.NULL.toArrayUnsafe();
+  byte[] NULL_UNINODE_HASH = keccak256(RLP.NULL).toArrayUnsafe();
 
   /**
    * Get path for this node.

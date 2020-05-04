@@ -34,7 +34,7 @@ public class PutVisitor implements UniPathVisitor {
 
   @Override
   public UniNode visit(final NullUniNode node, final Bytes path) {
-    return nodeFactory.createLeaf(path.getArrayUnsafe(), ValueWrapper.fromValue(value));
+    return nodeFactory.createLeaf(path.toArrayUnsafe(), ValueWrapper.fromValue(value));
   }
 
   @Override
@@ -49,19 +49,19 @@ public class PutVisitor implements UniPathVisitor {
     if (commonPath.size() < nodePath.size()) {
       Bytes updatedNodePath = nodePath.slice(commonPath.size() + 1);
 
-      UniNode updatedNode = node.replacePath(updatedNodePath.getArrayUnsafe(), nodeFactory);
+      UniNode updatedNode = node.replacePath(updatedNodePath.toArrayUnsafe(), nodeFactory);
       byte updatedNodePos = nodePath.get(commonPath.size());
 
       if (commonPath.size() == path.size()) {
-        return splitWithoutNewLeaf(commonPath.getArrayUnsafe(), value, updatedNode, updatedNodePos);
+        return splitWithoutNewLeaf(commonPath.toArrayUnsafe(), value, updatedNode, updatedNodePos);
       } else {
         Bytes newLeafPath = path.slice(commonPath.size() + 1);
         return splitWithNewLeaf(
-                commonPath.getArrayUnsafe(),
+                commonPath.toArrayUnsafe(),
                 value,
                 updatedNode,
                 updatedNodePos,
-                newLeafPath.getArrayUnsafe());
+                newLeafPath.toArrayUnsafe());
       }
     }
 

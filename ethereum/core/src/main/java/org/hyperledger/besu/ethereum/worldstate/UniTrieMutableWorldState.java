@@ -226,11 +226,11 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     @Override
     public Bytes32 getCodeSize() {
       if (updatedAccountCode.containsKey(address)) {
-        return UInt256.valueOf(updatedAccountCode.get(address).size());
+        return UInt256.valueOf(updatedAccountCode.get(address).size()).toBytes();
       }
 
       Bytes mappedKey = keyMapper.getAccountCodeKey(address);
-      return trie.getValueLength(mappedKey).map(UInt256::valueOf).orElse(Bytes32.ZERO);
+      return trie.getValueLength(mappedKey).map(n -> UInt256.valueOf(n).toBytes()).orElse(Bytes32.ZERO);
     }
 
     @Override
@@ -285,6 +285,17 @@ public class UniTrieMutableWorldState implements MutableWorldState {
       super(world);
     }
 
+
+    @Override
+    public Collection<Address> getDeletedAccountAddresses() {
+      return new ArrayList<>(deletedAccounts());
+    }
+
+    @Override
+    public Collection<UpdateTrackingAccount<? extends Account>> getTouchedAccounts() {
+      return new ArrayList<>(updatedAccounts());
+    }
+
     @Override
     protected UniTrieMutableWorldState.WorldStateAccount getForMutation(final Address address) {
       final UniTrieMutableWorldState wrapped = wrappedWorldView();
@@ -296,10 +307,6 @@ public class UniTrieMutableWorldState implements MutableWorldState {
           .orElse(null);
     }
 
-    @Override
-    public Collection<Account> getTouchedAccounts() {
-      return new ArrayList<>(updatedAccounts());
-    }
 
     @Override
     public void revert() {
@@ -340,7 +347,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
           wrapped.trie.removeRecursive(storageRootPrefixKey);
         }
 
-        final SortedMap<UInt256, UInt256> updatedStorage = updated.getUpdatedStorage();
+        final Map<UInt256, UInt256> updatedStorage = updated.getUpdatedStorage();
         if (!updatedStorage.isEmpty()) {
           wrapped.trie.put(storageRootPrefixKey, Bytes.of(0));
           for (final Map.Entry<UInt256, UInt256> entry : updatedStorage.entrySet()) {

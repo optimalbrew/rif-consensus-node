@@ -38,7 +38,7 @@ public abstract class AbstractMarkSweepPruner implements MarkSweepPruner {
 
   private static final int DEFAULT_OPS_PER_TRANSACTION = 1000;
   static final Logger LOG = LogManager.getLogger();
-  private static final byte[] IN_USE = Bytes.of(1).getArrayUnsafe();
+  private static final byte[] IN_USE = Bytes.of(1).toArrayUnsafe();
 
   private final int operationsPerTransaction;
   private final WorldStateStorage worldStateStorage;
@@ -155,7 +155,7 @@ public abstract class AbstractMarkSweepPruner implements MarkSweepPruner {
   }
 
   private boolean isMarked(final Bytes32 key) {
-    return pendingMarks.contains(key) || markStorage.containsKey(key.getArrayUnsafe());
+    return pendingMarks.contains(key) || markStorage.containsKey(key.toArrayUnsafe());
   }
 
   private boolean isMarked(final byte[] key) {
@@ -194,7 +194,7 @@ public abstract class AbstractMarkSweepPruner implements MarkSweepPruner {
     markLock.lock();
     try {
       final KeyValueStorageTransaction transaction = markStorage.startTransaction();
-      pendingMarks.forEach(node -> transaction.put(node.getArrayUnsafe(), IN_USE));
+      pendingMarks.forEach(node -> transaction.put(node.toArrayUnsafe(), IN_USE));
       transaction.commit();
       pendingMarks.clear();
     } finally {

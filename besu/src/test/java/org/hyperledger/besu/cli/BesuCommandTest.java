@@ -3557,6 +3557,8 @@ public class BesuCommandTest extends CommandTestAbstract {
     parseCommand("--Xeip1559-enabled=false");
     assertThat(commandErrorOutput.toString()).isEmpty();
     assertThat(ExperimentalEIPs.eip1559Enabled).isFalse();
+  }
+
   @Test
   public void defaultTrieStorageModeIsClassic() {
     parseCommand();

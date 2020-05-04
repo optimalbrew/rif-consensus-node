@@ -145,7 +145,7 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
         return this;
       }
       addedNodes.add(nodeHash);
-      transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
+      transaction.put(nodeHash.toArrayUnsafe(), node.toArrayUnsafe());
 
       if (addedNodes.size() > 10000) {//Commit account nodes in batches
         // auto-commit
@@ -168,9 +168,9 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
     }
 
     @Override
-    public WorldStateStorage.Updater rawPut(final Bytes32 nodeHash, final BytesValue node) {
+    public WorldStateStorage.Updater rawPut(final Bytes32 nodeHash, final Bytes node) {
       addedNodes.add(nodeHash);
-      transaction.put(nodeHash.getArrayUnsafe(), node.getArrayUnsafe());
+      transaction.put(nodeHash.toArrayUnsafe(), node.toArrayUnsafe());
       return this;
     }
 

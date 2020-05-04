@@ -24,8 +24,8 @@ import org.apache.tuweni.bytes.Bytes;
  */
 public class NullUniNode implements UniNode {
 
-  private static byte[] EMPTY_BYES = new byte[0];
-  private static NullUniNode INSTANCE = new NullUniNode();
+  private static final byte[] EMPTY_BYES = new byte[0];
+  private static final NullUniNode INSTANCE = new NullUniNode();
 
   private NullUniNode() {
     super();

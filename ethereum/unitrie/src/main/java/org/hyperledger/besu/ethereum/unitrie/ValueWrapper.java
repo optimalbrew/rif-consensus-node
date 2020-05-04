@@ -45,11 +45,11 @@ public final class ValueWrapper {
   public static ValueWrapper EMPTY = empty();
 
   /** Maximum length in bytes of short (inlined) value. */
-  private static int MAX_SHORT_LEN = 64;
+  private static final int MAX_SHORT_LEN = 64;
 
   private byte[] value;
-  private byte[] hash;
-  private int length;
+  private final byte[] hash;
+  private final int length;
 
   private ValueWrapper(final byte[] value, final byte[] hash, final int length) {
     this.value = value;
@@ -75,7 +75,7 @@ public final class ValueWrapper {
   public static ValueWrapper fromValue(final byte[] value) {
     Preconditions.checkNotNull(value, "Value can't be null");
     Bytes32 hash = Hash.keccak256(Bytes.of(value));
-    return new ValueWrapper(value, hash.extractArray(), value.length);
+    return new ValueWrapper(value, hash.toArrayUnsafe(), value.length);
   }
 
   /**
@@ -145,7 +145,7 @@ public final class ValueWrapper {
       throw new IllegalStateException("Solved value length differs from wrapped length");
     }
 
-    value = v.extractArray();
+    value = v.toArrayUnsafe();
     return Optional.of(value);
   }
 

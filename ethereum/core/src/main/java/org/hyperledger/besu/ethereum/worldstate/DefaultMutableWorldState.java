@@ -290,7 +290,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
     public Bytes32 getCodeSize() {
       final Bytes updatedCode = updatedAccountCode.get(address);
       if (updatedCode != null) {
-        return UInt256Bytes.of(updatedCode.size());
+        return UInt256.valueOf(updatedCode.size()).toBytes();
       }
       // No code is common, save the KV-store lookup.
       final Hash codeHash = getCodeHash();
@@ -299,7 +299,7 @@ public class DefaultMutableWorldState implements MutableWorldState {
       }
       return worldStateStorage
           .getCode(codeHash)
-          .map(code -> UInt256Bytes.of(code.size()))
+          .map(code -> UInt256.valueOf(code.size()).toBytes())
           .orElse(Bytes32.ZERO);
     }
 

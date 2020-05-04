@@ -75,7 +75,7 @@ public class ClassicWorldStateProofProvider implements WorldStateProofProvider {
         newAccountStorageTrie(account.getStorageRoot());
     final SortedMap<UInt256, Proof<Bytes>> storageProofs = new TreeMap<>();
     accountStorageKeys.forEach(
-        key -> storageProofs.put(key, storageTrie.getValueWithProof(Hash.hash(key.getBytes()))));
+        key -> storageProofs.put(key, storageTrie.getValueWithProof(Hash.hash(key.toBytes()))));
     return storageProofs;
   }
 

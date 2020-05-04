@@ -82,7 +82,7 @@ public class UniTrieAccountValue {
     in.enterList();
 
     final long nonce = in.readLongScalar();
-    final Wei balance = in.readUInt256Scalar(Wei::wrap);
+    final Wei balance = Wei.of(in.readUInt256Scalar());
     final int version;
     if (!in.isEndOfCurrentList()) {
       version = in.readIntScalar();

@@ -57,7 +57,7 @@ public class SimpleUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
       final Function<V, Bytes> valueSerializer,
       final Function<Bytes, V> valueDeserializer) {
 
-    this.valueSerializer = valueSerializer.andThen(Bytes::getArrayUnsafe);
+    this.valueSerializer = valueSerializer.andThen(Bytes::toArrayUnsafe);
     this.valueDeserializer = valueDeserializer.compose(Bytes::of);
     this.root = NullUniNode.instance();
   }

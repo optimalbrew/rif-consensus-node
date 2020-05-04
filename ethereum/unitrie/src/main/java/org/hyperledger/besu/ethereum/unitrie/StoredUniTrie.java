@@ -64,7 +64,7 @@ public class StoredUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
     this.loader = loader;
     this.nodeFactory = new StoredUniNodeFactory(loader);
 
-    this.valueSerializer = valueSerializer.andThen(Bytes::getArrayUnsafe);
+    this.valueSerializer = valueSerializer.andThen(Bytes::toArrayUnsafe);
     this.valueDeserializer = valueDeserializer.compose(Bytes::of);
 
     this.getVisitor = new GetVisitor();
@@ -74,7 +74,7 @@ public class StoredUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
     this.root =
         rootHash.equals(NULL_UNINODE_HASH)
             ? NullUniNode.instance()
-            : new StoredUniNode(rootHash.getArrayUnsafe(), nodeFactory);
+            : new StoredUniNode(rootHash.toArrayUnsafe(), nodeFactory);
   }
 
   @Override

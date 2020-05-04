@@ -85,7 +85,7 @@ public final class PathEncoding {
    * @return encoded path
    */
   public static Bytes encodePath(final Bytes path) {
-    return Bytes.wrap(fastEncodePath(path.getArrayUnsafe()));
+    return Bytes.wrap(fastEncodePath(path.toArrayUnsafe()));
   }
 
   /**

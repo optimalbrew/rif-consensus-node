@@ -40,32 +40,32 @@ public class UniTrieKeyMapper {
   private static final byte STORAGE_PREFIX = 0;
 
   // Cache hash digest prefixes to avoid repeated calls to Keccak256 hashing routine
-  private Map<Bytes, Bytes> digestPrefixCache = new WeakHashMap<>();
+  private final Map<Bytes, Bytes> digestPrefixCache = new WeakHashMap<>();
 
   public Bytes getAccountKey(final Address address) {
-    byte[] addressBytes = address.getByteArray();
+    byte[] addressBytes = address.toArrayUnsafe();
     ByteBuffer buffer = ByteBuffer.allocate(accountKeySize(addressBytes));
     encodeAccountKey(addressBytes, buffer);
     return Bytes.wrap(buffer.array());
   }
 
   public Bytes getAccountCodeKey(final Address address) {
-    byte[] addressBytes = address.getByteArray();
+    byte[] addressBytes = address.toArrayUnsafe();
     ByteBuffer buffer = ByteBuffer.allocate(accountCodeKeySize(addressBytes));
     encodeAccountCodeKey(addressBytes, buffer);
     return Bytes.wrap(buffer.array());
   }
 
   public Bytes getAccountStoragePrefixKey(final Address address) {
-    byte[] addressBytes = address.getByteArray();
+    byte[] addressBytes = address.toArrayUnsafe();
     ByteBuffer buffer = ByteBuffer.allocate(accountStoragePrefixKeySize(addressBytes));
     encodeAccountStoragePrefixKey(addressBytes, buffer);
     return Bytes.wrap(buffer.array());
   }
 
   public Bytes getAccountStorageKey(final Address address, final UInt256 subkey) {
-    byte[] addressBytes = address.getByteArray();
-    byte[] subkeyBytes = subkey.getByteArray();
+    byte[] addressBytes = address.toArrayUnsafe();
+    byte[] subkeyBytes = subkey.toMinimalBytes().toArrayUnsafe();
     byte[] strippedSubkeyBytes = stripLeadingZeros(subkeyBytes);
     ByteBuffer buffer =
         ByteBuffer.allocate(accountStorageKeySize(addressBytes, strippedSubkeyBytes));
@@ -93,7 +93,7 @@ public class UniTrieKeyMapper {
 
   private void encodeAccountKey(final byte[] addressBytes, final ByteBuffer buffer) {
     buffer.put(DOMAIN_PREFIX);
-    buffer.put(hashDigestPrefix(addressBytes).getArrayUnsafe());
+    buffer.put(hashDigestPrefix(addressBytes).toArrayUnsafe());
     buffer.put(addressBytes);
   }
 
@@ -114,7 +114,7 @@ public class UniTrieKeyMapper {
       final ByteBuffer buffer) {
 
     encodeAccountStoragePrefixKey(addressBytes, buffer);
-    buffer.put(hashDigestPrefix(subkeyBytes).getArrayUnsafe());
+    buffer.put(hashDigestPrefix(subkeyBytes).toArrayUnsafe());
     buffer.put(strippedSubkeyBytes);
   }
 

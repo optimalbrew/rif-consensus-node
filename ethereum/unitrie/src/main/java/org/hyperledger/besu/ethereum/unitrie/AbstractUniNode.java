@@ -143,7 +143,7 @@ public abstract class AbstractUniNode implements UniNode {
   @Override
   public byte[] getHash() {
     Bytes encoding = Bytes.of(getEncoding());
-    return Hash.keccak256(encoding).getArrayUnsafe();
+    return Hash.keccak256(encoding).toArrayUnsafe();
   }
 
   @Override

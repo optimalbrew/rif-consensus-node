@@ -172,7 +172,7 @@ class UniNodeEncoding {
       buffer.put(new VarInt(pathSizeInBits).encode());
     }
 
-    buffer.put(encodedPath.getArrayUnsafe());
+    buffer.put(encodedPath.toArrayUnsafe());
   }
 
   /**
@@ -221,7 +221,7 @@ class UniNodeEncoding {
       return NullUniNode.instance();
     }
 
-    ByteBuffer buffer = ByteBuffer.wrap(value.extractArray());
+    ByteBuffer buffer = ByteBuffer.wrap(value.toArrayUnsafe());
 
     byte flags = buffer.get();
 
@@ -254,7 +254,7 @@ class UniNodeEncoding {
 
     UniNodeEncodingOutput encodingOutput =
         new UniNodeEncodingOutput(
-            path, valueWrapper, leftChild, rightChild, value.getArrayUnsafe());
+            path, valueWrapper, leftChild, rightChild, value.toArrayUnsafe());
 
     if (hasLeftChild || hasRightChild) {
       return new BranchUniNode(encodingOutput);
@@ -359,7 +359,7 @@ class UniNodeEncoding {
     int encodedLength = PathEncoding.encodedPathLength(pathLengthInBits);
     byte[] encodedPath = new byte[encodedLength];
     buffer.get(encodedPath);
-    return PathEncoding.decodePath(Bytes.wrap(encodedPath), pathLengthInBits).getArrayUnsafe();
+    return PathEncoding.decodePath(Bytes.wrap(encodedPath), pathLengthInBits).toArrayUnsafe();
   }
 
   /**
