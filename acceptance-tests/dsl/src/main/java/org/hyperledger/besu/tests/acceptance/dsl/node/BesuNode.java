@@ -176,7 +176,7 @@ public class BesuNode implements NodeConfiguration, RunnableNode, AutoCloseable 
       throw new RuntimeException("Unable to create temporary data directory", e);
     }
   }
-  
+
   public BesuNode withMerkleStorageMode(final MerkleStorageMode merkleStorageMode) {
     extraCLIOptions.add(merkleStorageMode.toCLI());
     return this;

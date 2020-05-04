@@ -16,16 +16,6 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.util.Strings;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
@@ -37,6 +27,18 @@ import org.hyperledger.besu.ethereum.unitrie.LeafUniNode;
 import org.hyperledger.besu.ethereum.unitrie.NullUniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniNode;
 import org.hyperledger.besu.ethereum.unitrie.ValueWrapper;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.logging.log4j.util.Strings;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.junit.Assume;
@@ -101,8 +103,8 @@ public class AccountCreationTest {
     String accountsProp = System.getProperty("stress.accounts");
     String alphaProp = System.getProperty("stress.alpha");
 
-    size = Strings.isBlank(accountsProp)? 0 : Integer.parseInt(accountsProp.replace("_", ""));
-    alpha = Strings.isBlank(alphaProp)? 0 : Double.parseDouble(alphaProp);
+    size = Strings.isBlank(accountsProp) ? 0 : Integer.parseInt(accountsProp.replace("_", ""));
+    alpha = Strings.isBlank(alphaProp) ? 0 : Double.parseDouble(alphaProp);
 
     progress = 0;
     hits = true;
@@ -135,7 +137,7 @@ public class AccountCreationTest {
     }
 
     {
-      LeafUniNode leaf = new LeafUniNode(new byte[]{0}, ValueWrapper.fromValue(code));
+      LeafUniNode leaf = new LeafUniNode(new byte[] {0}, ValueWrapper.fromValue(code));
       String s = ClassLayout.parseInstance(leaf).toPrintable();
       String t = GraphLayout.parseInstance(leaf).toFootprint();
       System.out.println(s);
@@ -143,7 +145,7 @@ public class AccountCreationTest {
     }
   }
 
-  //@Ignore
+  // @Ignore
   @Test
   public void test_account_creation() {
     Assume.assumeTrue("No # of accounts passed, skipping test", size > 0);
@@ -210,11 +212,11 @@ public class AccountCreationTest {
     long elapsed = java.lang.System.currentTimeMillis() - start;
     System.out.printf("Elapsed: %s - Commit done...\n", fmtMillis(elapsed));
 
-    //worldState.getTrie().visitAll(__ -> ++nodes);
+    // worldState.getTrie().visitAll(__ -> ++nodes);
     PathStats stats = new PathStats();
     worldState.getTrie().visitAll(stats::consume);
     elapsed = java.lang.System.currentTimeMillis() - start;
-    //System.out.printf("Elapsed: %s -  Total nodes: %d\n", fmtMillis(elapsed), nodes);
+    // System.out.printf("Elapsed: %s -  Total nodes: %d\n", fmtMillis(elapsed), nodes);
     System.out.printf("Total elapsed: %s\n", fmtMillis(elapsed));
     System.out.printf("Stats: %s\n", stats);
 
@@ -243,11 +245,12 @@ public class AccountCreationTest {
   private void performLookups(final WorldState worldState, final List<Address> addresses) {
     AtomicInteger hits = new AtomicInteger(0);
     long start = System.currentTimeMillis();
-    addresses.forEach(address -> {
-        if (worldState.get(address) != null) {
-          hits.incrementAndGet();
-        }
-    });
+    addresses.forEach(
+        address -> {
+          if (worldState.get(address) != null) {
+            hits.incrementAndGet();
+          }
+        });
     long elapsed = System.currentTimeMillis() - start;
     System.out.printf(
         "Looked up for %d accounts, found %d, elapsed = %s\n",

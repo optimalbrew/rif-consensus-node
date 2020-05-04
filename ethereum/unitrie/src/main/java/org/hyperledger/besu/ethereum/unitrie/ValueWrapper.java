@@ -14,14 +14,16 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.base.Preconditions;
+import org.hyperledger.besu.crypto.Hash;
+import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import org.hyperledger.besu.crypto.Hash;
-import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
+
+import com.google.common.base.Preconditions;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
@@ -135,8 +137,7 @@ public final class ValueWrapper {
     }
 
     Bytes32 h = Bytes32.wrap(hash);
-    Bytes v =
-        loader.load(h).orElseThrow(() -> new NoSuchElementException("Unsolvable hash: " + h));
+    Bytes v = loader.load(h).orElseThrow(() -> new NoSuchElementException("Unsolvable hash: " + h));
 
     if (!Hash.keccak256(v).equals(h)) {
       throw new IllegalStateException("Solved value hash differs from wrapped hash");
@@ -164,7 +165,7 @@ public final class ValueWrapper {
    * @return optional with value length in bytes if wrapper isn't empty, empty optional otherwise
    */
   Optional<Integer> getLength() {
-    return length == -1? Optional.empty() : Optional.of(length);
+    return length == -1 ? Optional.empty() : Optional.of(length);
   }
 
   /**
@@ -206,8 +207,7 @@ public final class ValueWrapper {
       return "[empty]";
     }
 
-    return String.format(
-        "(%s, hash=%s, len=%d)", Bytes.wrap(value), Bytes32.wrap(hash), length);
+    return String.format("(%s, hash=%s, len=%d)", Bytes.wrap(value), Bytes32.wrap(hash), length);
   }
 
   /**

@@ -78,7 +78,7 @@ public class InMemoryStorageProvider implements StorageProvider {
   public static PrivateStateStorage createInMemoryPrivateStateStorage() {
     return new PrivateStateKeyValueStorage(new InMemoryKeyValueStorage());
   }
-  
+
   public static MutableWorldState createInMemoryUniTrieWorldState() {
     final InMemoryStorageProvider provider = new InMemoryStorageProvider();
     return new UniTrieMutableWorldState(provider.createWorldStateStorage());

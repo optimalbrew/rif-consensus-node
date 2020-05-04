@@ -17,16 +17,17 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.hyperledger.besu.ethereum.trie.NodeUpdater;
+import org.hyperledger.besu.ethereum.trie.Proof;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.hyperledger.besu.ethereum.trie.NodeUpdater;
-import org.hyperledger.besu.ethereum.trie.Proof;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
-
 
 /**
  * Simple in-memory Unitrie.
@@ -54,8 +55,7 @@ public class SimpleUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
   private UniNode root;
 
   public SimpleUniTrie(
-      final Function<V, Bytes> valueSerializer,
-      final Function<Bytes, V> valueDeserializer) {
+      final Function<V, Bytes> valueSerializer, final Function<Bytes, V> valueDeserializer) {
 
     this.valueSerializer = valueSerializer.andThen(Bytes::toArrayUnsafe);
     this.valueDeserializer = valueDeserializer.compose(Bytes::of);
@@ -89,9 +89,7 @@ public class SimpleUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
     checkNotNull(key);
     final ProofVisitor proofVisitor = new ProofVisitor(root);
     final Optional<V> value =
-        root.accept(proofVisitor, bytesToPath(key))
-            .getValue(loader)
-            .map(valueDeserializer);
+        root.accept(proofVisitor, bytesToPath(key)).getValue(loader).map(valueDeserializer);
     final List<byte[]> proof =
         proofVisitor.getProof().stream().map(UniNode::getEncoding).collect(Collectors.toList());
     return new Proof<>(value, proof.stream().map(Bytes::of).collect(Collectors.toList()));
@@ -100,18 +98,13 @@ public class SimpleUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
   @Override
   public Optional<Integer> getValueLength(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key))
-        .getValueWrapper()
-        .getLength();
+    return root.accept(getVisitor, bytesToPath(key)).getValueWrapper().getLength();
   }
 
   @Override
   public Optional<Bytes32> getValueHash(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key))
-        .getValueWrapper()
-        .getHash()
-        .map(Bytes32::wrap);
+    return root.accept(getVisitor, bytesToPath(key)).getValueWrapper().getHash().map(Bytes32::wrap);
   }
 
   @Override

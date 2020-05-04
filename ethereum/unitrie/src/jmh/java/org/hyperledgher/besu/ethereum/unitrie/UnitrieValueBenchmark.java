@@ -16,8 +16,6 @@
 
 package org.hyperledgher.besu.ethereum.unitrie;
 
-import java.util.Random;
-import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.ethereum.unitrie.AllUniNodesVisitor;
@@ -28,6 +26,10 @@ import org.hyperledger.besu.ethereum.unitrie.PutVisitor;
 import org.hyperledger.besu.ethereum.unitrie.UniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniNodeFactory;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+
+import java.util.Random;
+import java.util.stream.Stream;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
@@ -56,7 +58,8 @@ public class UnitrieValueBenchmark {
     loader = storage::get;
 
     root =
-        keys().limit(1000)
+        keys()
+            .limit(1000)
             .<UniNode>reduce(
                 NullUniNode.instance(),
                 (n, k) -> n.accept(new PutVisitor(randomBytes(valueLength), nodeFactory), k),

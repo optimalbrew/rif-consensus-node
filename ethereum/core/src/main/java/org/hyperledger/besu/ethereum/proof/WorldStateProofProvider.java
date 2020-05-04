@@ -16,10 +16,11 @@ package org.hyperledger.besu.ethereum.proof;
 
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
-import org.apache.tuweni.units.bigints.UInt256;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.apache.tuweni.units.bigints.UInt256;
 
 /**
  * Specification for classes that can provide world state Merkle proofs.

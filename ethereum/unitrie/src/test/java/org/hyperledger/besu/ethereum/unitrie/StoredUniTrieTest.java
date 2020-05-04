@@ -22,13 +22,13 @@ import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
 import org.junit.Test;
 
 public class StoredUniTrieTest extends AbstractUniTrieTest {
@@ -167,8 +167,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
   }
 
   private Bytes toKey(final int i) {
-    Bytes32 hash =
-        Hash.keccak256(Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
+    Bytes32 hash = Hash.keccak256(Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
     return Bytes.wrap(hash.getArrayUnsafe());
   }
 
@@ -176,8 +175,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
     if ((i & 1) == 0) {
       return String.valueOf(i);
     } else {
-      Bytes32 hash =
-          Hash.keccak256(Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
+      Bytes32 hash = Hash.keccak256(Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
       return hash.toUnprefixedString();
     }
   }

@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * A leaf UniNode.
  *

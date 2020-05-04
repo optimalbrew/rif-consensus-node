@@ -16,9 +16,12 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.hyperledger.besu.crypto.Hash.keccak256;
 
-import java.util.Optional;
 import org.hyperledger.besu.ethereum.rlp.RLP;
+
+import java.util.Optional;
+
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Interface for nodes in a Unitrie. A node has a path and an optional value.
  *

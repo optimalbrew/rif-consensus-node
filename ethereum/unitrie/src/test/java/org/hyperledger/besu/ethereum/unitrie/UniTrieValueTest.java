@@ -21,6 +21,7 @@ import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
 
@@ -81,7 +82,7 @@ public class UniTrieValueTest {
             .accept(new PutVisitor(value, nodeFactory), key)
             .accept(new GetVisitor(), key);
 
-    ((AbstractUniNode)trie).clearWeakReferences();
+    ((AbstractUniNode) trie).clearWeakReferences();
 
     assertThat(trie.getValueWrapper().isLong()).isTrue();
     assertThat(trie.getValueHash()).hasValue(Hash.keccak256(Bytes.of(value)).extractArray());

@@ -14,10 +14,6 @@
  */
 package org.hyperledger.besu.ethereum.storage.keyvalue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.trie.MerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
@@ -147,7 +143,7 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
       addedNodes.add(nodeHash);
       transaction.put(nodeHash.toArrayUnsafe(), node.toArrayUnsafe());
 
-      if (addedNodes.size() > 10000) {//Commit account nodes in batches
+      if (addedNodes.size() > 10000) { // Commit account nodes in batches
         // auto-commit
         commit();
         addedNodes.clear();

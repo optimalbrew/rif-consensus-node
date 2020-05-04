@@ -14,9 +14,10 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.base.Strings;
 import java.util.Objects;
 import java.util.Optional;
+
+import com.google.common.base.Strings;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
@@ -142,7 +143,9 @@ public class StoredUniNode implements UniNode {
           nodeFactory
               .retrieve(Bytes32.wrap(hash))
               .orElseThrow(
-                  () -> new IllegalStateException("Unable to load UniNode for hash: " + Bytes32.wrap(hash)));
+                  () ->
+                      new IllegalStateException(
+                          "Unable to load UniNode for hash: " + Bytes32.wrap(hash)));
     }
     return loadedNode;
   }

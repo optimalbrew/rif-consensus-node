@@ -17,11 +17,13 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.hyperledger.besu.crypto.Hash.keccak256;
 
-import java.util.Optional;
-import java.util.function.Consumer;
 import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.ethereum.trie.NodeUpdater;
 import org.hyperledger.besu.ethereum.trie.Proof;
+
+import java.util.Optional;
+import java.util.function.Consumer;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
@@ -66,6 +68,7 @@ public interface UniTrie<K, V> {
 
   /**
    * Get the hash of the value at the given key.
+   *
    * @param key The key for the value
    * @return optional holding the hash of the value, empty if no value for the given key
    */

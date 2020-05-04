@@ -29,13 +29,14 @@ import org.hyperledger.besu.ethereum.worldstate.StateTrieAccountValue;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.bigints.UInt256;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.units.bigints.UInt256;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -125,8 +126,7 @@ public class UniTrieWorldStateProofProviderTest {
     assertThat(accountProof).isEmpty();
   }
 
-  private Hash prepareForStorage(
-      final UniTrie<Bytes, Bytes> trie, final Address address) {
+  private Hash prepareForStorage(final UniTrie<Bytes, Bytes> trie, final Address address) {
     Bytes storagePrefixKey = keyMapper.getAccountStoragePrefixKey(address);
     trie.put(storagePrefixKey, Bytes.of(0));
     return Hash.wrap(trie.getHash(storagePrefixKey));

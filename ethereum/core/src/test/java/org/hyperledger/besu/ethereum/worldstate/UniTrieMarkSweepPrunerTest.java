@@ -21,16 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.spy;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import org.assertj.core.api.Assertions;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
@@ -48,8 +38,20 @@ import org.hyperledger.besu.ethereum.unitrie.StoredUniTrie;
 import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -233,8 +235,7 @@ public class UniTrieMarkSweepPrunerTest {
     return collector;
   }
 
-  private void collectUniTrieNodes(
-      final UniTrie<Bytes, Bytes> trie, final Set<Bytes> collector) {
+  private void collectUniTrieNodes(final UniTrie<Bytes, Bytes> trie, final Set<Bytes> collector) {
 
     final Bytes32 rootHash = trie.getRootHash();
     trie.visitAll(

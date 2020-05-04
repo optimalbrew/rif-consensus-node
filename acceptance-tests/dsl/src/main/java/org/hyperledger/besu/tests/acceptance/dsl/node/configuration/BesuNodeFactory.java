@@ -55,28 +55,26 @@ public class BesuNodeFactory {
 
   public BesuNode create(final BesuNodeConfiguration config) throws IOException {
     return new BesuNode(
-
-        config.getName(),
-        config.getDataPath(),
-        config.getMiningParameters(),
-        config.getJsonRpcConfiguration(),
-        config.getWebSocketConfiguration(),
-        config.getMetricsConfiguration(),
-        config.getPermissioningConfiguration(),
-        config.getKeyFilePath(),
-        config.isDevMode(),
-        config.getGenesisConfigProvider(),
-        config.isP2pEnabled(),
-        config.getNetworkingConfiguration(),
-        config.isDiscoveryEnabled(),
-        config.isBootnodeEligible(),
-        config.isRevertReasonEnabled(),
-        config.getPlugins(),
-        config.getExtraCLIOptions(),
-        config.getStaticNodes(),
-        config.getPrivacyParameters())
+            config.getName(),
+            config.getDataPath(),
+            config.getMiningParameters(),
+            config.getJsonRpcConfiguration(),
+            config.getWebSocketConfiguration(),
+            config.getMetricsConfiguration(),
+            config.getPermissioningConfiguration(),
+            config.getKeyFilePath(),
+            config.isDevMode(),
+            config.getGenesisConfigProvider(),
+            config.isP2pEnabled(),
+            config.getNetworkingConfiguration(),
+            config.isDiscoveryEnabled(),
+            config.isBootnodeEligible(),
+            config.isRevertReasonEnabled(),
+            config.getPlugins(),
+            config.getExtraCLIOptions(),
+            config.getStaticNodes(),
+            config.getPrivacyParameters())
         .withMerkleStorageMode(merkleStorageMode);
-
   }
 
   public BesuNode createMinerNode(final String name) throws IOException {

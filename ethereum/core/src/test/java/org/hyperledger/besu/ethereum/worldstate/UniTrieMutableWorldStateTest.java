@@ -33,14 +33,13 @@ import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.ethereum.unitrie.UniTrieKeyMapper;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
-import org.apache.tuweni.units.bigints.UInt256;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Strings;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.units.bigints.UInt256;
 import org.junit.Test;
 
 public class UniTrieMutableWorldStateTest {
@@ -605,8 +604,7 @@ public class UniTrieMutableWorldStateTest {
 
   @Test
   public void codeLength() {
-    final Bytes code =
-        Bytes.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
+    final Bytes code = Bytes.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
 
     final MutableWorldState worldState = createEmpty();
     WorldUpdater updater = worldState.updater();

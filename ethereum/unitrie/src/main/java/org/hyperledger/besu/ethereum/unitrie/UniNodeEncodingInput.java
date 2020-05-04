@@ -16,8 +16,9 @@
 
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.base.Preconditions;
 import java.util.Optional;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Class encompassing {@link UniNode} data to be encoded.

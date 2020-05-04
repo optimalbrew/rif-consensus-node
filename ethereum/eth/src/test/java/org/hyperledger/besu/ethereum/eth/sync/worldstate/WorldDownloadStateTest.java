@@ -49,6 +49,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class WorldDownloadStateTest {
 
   private static final Bytes ROOT_NODE_DATA = Bytes.of(1, 2, 3, 4);
+
   @Parameters(name = "use unitrie={0}")
   public static Object[] data() {
     // Use or not UniNodeDataRequests as opposed to classic NodeDataRequests

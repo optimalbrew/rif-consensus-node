@@ -15,6 +15,7 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Visitor implementing get operation in a Unitrie.
  *

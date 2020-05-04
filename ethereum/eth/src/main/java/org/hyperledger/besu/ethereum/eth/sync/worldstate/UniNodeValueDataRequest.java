@@ -18,9 +18,11 @@ package org.hyperledger.besu.ethereum.eth.sync.worldstate;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage.Updater;
-import org.apache.tuweni.bytes.Bytes;
+
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.apache.tuweni.bytes.Bytes;
 
 /**
  * Request UniNode long value.

@@ -823,7 +823,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
       arity = "1")
   private final Boolean autoLogBloomCachingEnabled = true;
 
-@Option(
+  @Option(
       names = {"--merkle-storage-mode"},
       description =
           "Specify the underlying Merkle storage mode between ${COMPLETION-CANDIDATES}. "

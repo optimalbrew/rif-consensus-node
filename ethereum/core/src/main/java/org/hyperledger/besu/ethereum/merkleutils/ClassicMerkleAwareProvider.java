@@ -26,7 +26,9 @@ import org.hyperledger.besu.ethereum.worldstate.WorldStatePreimageStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.metrics.ObservableMetricsSystem;
 import org.hyperledger.besu.plugin.services.storage.KeyValueStorage;
+
 import org.apache.tuweni.bytes.Bytes32;
+
 /**
  * Provider based on on "classic" (as defined in the Yellow paper) merkle storage.
  *

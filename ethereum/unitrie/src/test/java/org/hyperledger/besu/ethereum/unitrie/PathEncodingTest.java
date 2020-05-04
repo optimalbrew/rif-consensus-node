@@ -17,11 +17,10 @@ package org.hyperledger.besu.ethereum.unitrie;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
-import org.apache.tuweni.bytes.Bytes;
-
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;

@@ -19,7 +19,9 @@ import org.hyperledger.besu.ethereum.core.BlockHeaderMock;
 import org.hyperledger.besu.ethereum.core.Gas;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.WorldState;
+
 import org.apache.tuweni.bytes.Bytes;
+
 public abstract class AbstractVMReferenceTestCaseSpec {
 
   /** The environment information to execute. */

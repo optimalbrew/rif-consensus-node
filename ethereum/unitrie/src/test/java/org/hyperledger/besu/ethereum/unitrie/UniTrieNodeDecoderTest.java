@@ -16,12 +16,11 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
 
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,9 +30,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
 import org.junit.Test;
-
-import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
 
 public class UniTrieNodeDecoderTest {
 

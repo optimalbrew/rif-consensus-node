@@ -17,7 +17,6 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.collect.Streams;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -27,6 +26,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import com.google.common.collect.Streams;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 

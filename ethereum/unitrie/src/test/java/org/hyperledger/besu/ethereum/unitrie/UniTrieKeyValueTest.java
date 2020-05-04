@@ -17,10 +17,12 @@ package org.hyperledger.besu.ethereum.unitrie;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
 
-import java.nio.charset.StandardCharsets;
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+
+import java.nio.charset.StandardCharsets;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
 
@@ -45,21 +47,17 @@ public class UniTrieKeyValueTest {
     UniNode trie = NullUniNode.instance();
     trie = trie.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 0));
 
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader))
-        .hasValue(bytes(1));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader)).hasValue(bytes(1));
   }
 
   @Test
   public void putSingleValueTwice() {
     UniNode trie = NullUniNode.instance();
     UniNode trie0 = trie.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 0));
-    UniNode trie1 =
-        trie0.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 0));
+    UniNode trie1 = trie0.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 0));
 
-    assertThat(trie0.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader))
-        .hasValue(bytes(1));
-    assertThat(trie1.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader))
-        .hasValue(bytes(1));
+    assertThat(trie0.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader)).hasValue(bytes(1));
+    assertThat(trie1.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader)).hasValue(bytes(1));
     assertThat(trie0).isSameAs(trie1);
   }
 
@@ -70,8 +68,7 @@ public class UniTrieKeyValueTest {
         trie.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 0))
             .accept(new PutVisitor(bytes(2), nodeFactory), Bytes.of(0, 0));
 
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader))
-        .hasValue(bytes(2));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader)).hasValue(bytes(2));
   }
 
   @Test
@@ -81,10 +78,8 @@ public class UniTrieKeyValueTest {
         trie.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 0))
             .accept(new PutVisitor(bytes(2), nodeFactory), Bytes.of(0));
 
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader))
-        .hasValue(bytes(1));
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0)).getValue(loader))
-        .hasValue(bytes(2));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader)).hasValue(bytes(1));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0)).getValue(loader)).hasValue(bytes(2));
   }
 
   @Test
@@ -94,10 +89,8 @@ public class UniTrieKeyValueTest {
         trie.accept(new PutVisitor(bytes(1), nodeFactory), Bytes.of(0, 1))
             .accept(new PutVisitor(bytes(2), nodeFactory), Bytes.of(0));
 
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 1)).getValue(loader))
-        .hasValue(bytes(1));
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0)).getValue(loader))
-        .hasValue(bytes(2));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 1)).getValue(loader)).hasValue(bytes(1));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0)).getValue(loader)).hasValue(bytes(2));
   }
 
   @Test
@@ -173,8 +166,7 @@ public class UniTrieKeyValueTest {
         .hasValue(bytes(2));
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0, 0, 1, 0)).getValue(loader))
         .hasValue(bytes(3));
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0)).getValue(loader))
-        .hasValue(bytes(4));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0)).getValue(loader)).hasValue(bytes(4));
   }
 
   @Test
@@ -188,8 +180,7 @@ public class UniTrieKeyValueTest {
 
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0, 0, 1, 0)).getValue(loader))
         .hasValue(bytes(3));
-    assertThat(trie.accept(new GetVisitor(), Bytes.EMPTY).getValue(loader))
-        .hasValue(bytes(4));
+    assertThat(trie.accept(new GetVisitor(), Bytes.EMPTY).getValue(loader)).hasValue(bytes(4));
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 1, 1)).getValue(loader))
         .hasValue(bytes(1));
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0, 0)).getValue(loader))
@@ -207,8 +198,7 @@ public class UniTrieKeyValueTest {
 
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 1))).isEqualTo(NO_RESULT);
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 1, 0))).isEqualTo(NO_RESULT);
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0, 0, 1, 0, 1, 1)))
-        .isEqualTo(NO_RESULT);
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0, 0, 1, 0, 1, 1))).isEqualTo(NO_RESULT);
   }
 
   @Test
@@ -247,8 +237,7 @@ public class UniTrieKeyValueTest {
             .accept(new PutVisitor(bytes(2), nodeFactory), Bytes.of(0))
             .accept(new RemoveVisitor(nodeFactory), Bytes.of(0));
 
-    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader))
-        .hasValue(bytes(1));
+    assertThat(trie.accept(new GetVisitor(), Bytes.of(0, 0)).getValue(loader)).hasValue(bytes(1));
     assertThat(trie.accept(new GetVisitor(), Bytes.of(0))).isEqualTo(NO_RESULT);
   }
 
@@ -321,8 +310,7 @@ public class UniTrieKeyValueTest {
             .accept(new PutVisitor(bytes(2), nodeFactory), Bytes.of(0, 0, 0))
             .accept(new PutVisitor(bytes(3), nodeFactory), Bytes.of(0, 0, 0, 1, 0))
             .accept(new PutVisitor(bytes(4), nodeFactory), Bytes.EMPTY);
-    assertThat(trie.accept(new RemoveVisitor(true, nodeFactory), Bytes.of(1, 1, 1)))
-        .isSameAs(trie);
+    assertThat(trie.accept(new RemoveVisitor(true, nodeFactory), Bytes.of(1, 1, 1))).isSameAs(trie);
   }
 
   @Test
@@ -350,10 +338,8 @@ public class UniTrieKeyValueTest {
 
     assertThat(stripped.accept(new GetVisitor(), Bytes.of(0, 1, 1)).getValue(loader))
         .contains(bytes(1));
-    assertThat(stripped.accept(new GetVisitor(), Bytes.EMPTY).getValue(loader))
-        .contains(bytes(4));
-    assertThat(stripped.accept(new GetVisitor(), Bytes.of(0, 0, 0)).getValue(loader))
-        .isEmpty();
+    assertThat(stripped.accept(new GetVisitor(), Bytes.EMPTY).getValue(loader)).contains(bytes(4));
+    assertThat(stripped.accept(new GetVisitor(), Bytes.of(0, 0, 0)).getValue(loader)).isEmpty();
     assertThat(stripped.accept(new GetVisitor(), Bytes.of(0, 0, 0, 1, 0)).getValue(loader))
         .isEmpty();
   }

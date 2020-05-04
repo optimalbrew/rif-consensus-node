@@ -14,11 +14,13 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import java.nio.ByteBuffer;
-import java.util.Objects;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt24;
 import org.hyperledger.besu.ethereum.unitrie.ints.UInt8;
 import org.hyperledger.besu.ethereum.unitrie.ints.VarInt;
+
+import java.nio.ByteBuffer;
+import java.util.Objects;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
@@ -253,8 +255,7 @@ class UniNodeEncoding {
     }
 
     UniNodeEncodingOutput encodingOutput =
-        new UniNodeEncodingOutput(
-            path, valueWrapper, leftChild, rightChild, value.toArrayUnsafe());
+        new UniNodeEncodingOutput(path, valueWrapper, leftChild, rightChild, value.toArrayUnsafe());
 
     if (hasLeftChild || hasRightChild) {
       return new BranchUniNode(encodingOutput);
@@ -311,10 +312,11 @@ class UniNodeEncoding {
 
   /**
    * Decode children size from the given byte buffer.
+   *
    * @param buffer byte buffer
    * @return decoded children size
    */
-  long decodeChildrenSizeFromFullEncoding(final ByteBuffer buffer){
+  long decodeChildrenSizeFromFullEncoding(final ByteBuffer buffer) {
     byte flags = buffer.get();
 
     boolean hasPath = (flags & 0b00010000) == 0b00010000;

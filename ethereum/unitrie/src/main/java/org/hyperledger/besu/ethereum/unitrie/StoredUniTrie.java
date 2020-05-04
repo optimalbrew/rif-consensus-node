@@ -17,13 +17,15 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.hyperledger.besu.ethereum.trie.NodeUpdater;
+import org.hyperledger.besu.ethereum.trie.Proof;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.hyperledger.besu.ethereum.trie.NodeUpdater;
-import org.hyperledger.besu.ethereum.trie.Proof;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 
@@ -106,18 +108,13 @@ public class StoredUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
   @Override
   public Optional<Integer> getValueLength(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key))
-        .getValueWrapper()
-        .getLength();
+    return root.accept(getVisitor, bytesToPath(key)).getValueWrapper().getLength();
   }
 
   @Override
   public Optional<Bytes32> getValueHash(final K key) {
     checkNotNull(key);
-    return root.accept(getVisitor, bytesToPath(key))
-        .getValueWrapper()
-        .getHash()
-        .map(Bytes32::wrap);
+    return root.accept(getVisitor, bytesToPath(key)).getValueWrapper().getHash().map(Bytes32::wrap);
   }
 
   @Override
@@ -182,7 +179,7 @@ public class StoredUniTrie<K extends Bytes, V> implements UniTrie<K, V> {
 
   @Override
   public String toString() {
-    //return getClass().getSimpleName() + "[" + getRootHash() + "]";
+    // return getClass().getSimpleName() + "[" + getRootHash() + "]";
     return root.toString();
   }
 

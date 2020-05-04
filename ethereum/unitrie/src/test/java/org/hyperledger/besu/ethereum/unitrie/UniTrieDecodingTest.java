@@ -16,14 +16,14 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
 
 import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
-
-import static org.hyperledger.besu.ethereum.unitrie.ByteTestUtils.bytes;
 
 public class UniTrieDecodingTest {
   private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
@@ -31,7 +31,7 @@ public class UniTrieDecodingTest {
 
   @Test
   public void emptyPath_loadsCorrectly() {
-    UniNode trie = nodeFactory.createLeaf(bytes(), ValueWrapper.fromValue(bytes(1, 2,3 )));
+    UniNode trie = nodeFactory.createLeaf(bytes(), ValueWrapper.fromValue(bytes(1, 2, 3)));
     byte[] enc = trie.getEncoding();
     UniNode decoded = nodeFactory.decode(enc);
     assertThat(trie.getHash()).isEqualTo(decoded.getHash());

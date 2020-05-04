@@ -14,9 +14,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.base.Preconditions;
 import java.nio.ByteBuffer;
+
+import com.google.common.base.Preconditions;
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * An inner unitrie node, possibly with children. A leaf is comprised by an instance of this class
  * having two {@link NullUniNode} as children.

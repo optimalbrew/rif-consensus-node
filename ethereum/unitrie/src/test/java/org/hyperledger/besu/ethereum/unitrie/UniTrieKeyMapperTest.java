@@ -20,9 +20,9 @@ import static org.mockito.Mockito.when;
 
 import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.plugin.data.Address;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.bigints.UInt256;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

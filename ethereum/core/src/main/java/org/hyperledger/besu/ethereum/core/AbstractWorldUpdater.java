@@ -207,9 +207,9 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
 
       this.address = account.getAddress();
       this.addressHash =
-              (account instanceof UpdateTrackingAccount)
-                      ? ((UpdateTrackingAccount<?>) account).addressHash
-                      : Hash.hash(this.address);
+          (account instanceof UpdateTrackingAccount)
+              ? ((UpdateTrackingAccount<?>) account).addressHash
+              : Hash.hash(this.address);
       this.account = account;
 
       this.nonce = account.getNonce();

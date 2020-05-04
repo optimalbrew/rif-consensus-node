@@ -15,15 +15,6 @@
  */
 package org.hyperledger.besu.ethereum.worldstate;
 
-import com.google.common.annotations.VisibleForTesting;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.SortedMap;
-import java.util.stream.Stream;
 import org.hyperledger.besu.ethereum.core.AbstractWorldUpdater;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.AccountStorageEntry;
@@ -39,6 +30,16 @@ import org.hyperledger.besu.ethereum.rlp.RLPInput;
 import org.hyperledger.besu.ethereum.unitrie.StoredUniTrie;
 import org.hyperledger.besu.ethereum.unitrie.UniTrie;
 import org.hyperledger.besu.ethereum.unitrie.UniTrieKeyMapper;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;
@@ -118,9 +119,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
   @Override
   public Account get(final Address address) {
     final Bytes mappedKey = keyMapper.getAccountKey(address);
-    return trie.get(mappedKey)
-        .map(bytes -> deserializeAccount(address, bytes))
-        .orElse(null);
+    return trie.get(mappedKey).map(bytes -> deserializeAccount(address, bytes)).orElse(null);
   }
 
   @Override
@@ -151,8 +150,7 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     return new WorldStateAccount(address, accountValue);
   }
 
-  private static Bytes serializeAccount(
-      final long nonce, final Wei balance, final int version) {
+  private static Bytes serializeAccount(final long nonce, final Wei balance, final int version) {
     final UniTrieAccountValue accountValue = new UniTrieAccountValue(nonce, balance, version);
     return RLP.encode(accountValue::writeTo);
   }
@@ -230,7 +228,9 @@ public class UniTrieMutableWorldState implements MutableWorldState {
       }
 
       Bytes mappedKey = keyMapper.getAccountCodeKey(address);
-      return trie.getValueLength(mappedKey).map(n -> UInt256.valueOf(n).toBytes()).orElse(Bytes32.ZERO);
+      return trie.getValueLength(mappedKey)
+          .map(n -> UInt256.valueOf(n).toBytes())
+          .orElse(Bytes32.ZERO);
     }
 
     @Override
@@ -267,11 +267,19 @@ public class UniTrieMutableWorldState implements MutableWorldState {
 
     @Override
     public String toString() {
-      return "AccountState" + "{"
-          + "address=" + getAddress() + ", "
-          + "nonce=" + getNonce() + ", "
-          + "balance=" + getBalance() + ", "
-          + "version=" + getVersion()
+      return "AccountState"
+          + "{"
+          + "address="
+          + getAddress()
+          + ", "
+          + "nonce="
+          + getNonce()
+          + ", "
+          + "balance="
+          + getBalance()
+          + ", "
+          + "version="
+          + getVersion()
           + "}";
     }
   }
@@ -284,7 +292,6 @@ public class UniTrieMutableWorldState implements MutableWorldState {
     protected Updater(final UniTrieMutableWorldState world) {
       super(world);
     }
-
 
     @Override
     public Collection<Address> getDeletedAccountAddresses() {
@@ -306,7 +313,6 @@ public class UniTrieMutableWorldState implements MutableWorldState {
           .map(bytes -> wrapped.deserializeAccount(address, bytes))
           .orElse(null);
     }
-
 
     @Override
     public void revert() {

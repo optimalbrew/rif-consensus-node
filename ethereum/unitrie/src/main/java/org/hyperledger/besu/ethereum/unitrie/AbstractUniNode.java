@@ -16,15 +16,18 @@
 
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import org.hyperledger.besu.crypto.Hash;
+
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Optional;
-import org.hyperledger.besu.crypto.Hash;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Abstract UniNode, factoring out common node functionality.
  *
@@ -40,7 +43,6 @@ public abstract class AbstractUniNode implements UniNode {
   private byte len;
   private byte shortPath;
   private SoftReference<byte[]> longPath;
-
 
   private ValueWrapper longValueWrapper;
   private boolean dirty = false;

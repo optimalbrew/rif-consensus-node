@@ -680,8 +680,7 @@ public class DefaultMutableWorldStateTest {
 
   @Test
   public void codeLength() {
-    final Bytes code =
-        Bytes.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
+    final Bytes code = Bytes.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
 
     final MutableWorldState worldState = createEmpty();
     WorldUpdater updater = worldState.updater();

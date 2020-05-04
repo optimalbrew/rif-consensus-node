@@ -24,7 +24,6 @@ public class CommitVisitor implements UniNodeVisitor {
   private final DataUpdater nodeUpdater;
   private final DataUpdater valueUpdater;
 
-
   CommitVisitor(
       final DataLoader loader, final DataUpdater nodeUpdater, final DataUpdater valueUpdater) {
     this.loader = loader;

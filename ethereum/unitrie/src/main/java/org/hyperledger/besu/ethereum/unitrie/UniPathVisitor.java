@@ -15,6 +15,7 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Interface for path-aware Unitrie visitors.
  *

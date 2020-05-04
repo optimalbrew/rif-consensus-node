@@ -14,9 +14,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import com.google.common.base.Strings;
 import java.util.Optional;
+
+import com.google.common.base.Strings;
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Empty Unitrie node.
  *

@@ -24,7 +24,6 @@ import org.hyperledger.besu.ethereum.trie.StoredMerklePatriciaTrie;
 import org.hyperledger.besu.ethereum.worldstate.StateTrieAccountValue;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;

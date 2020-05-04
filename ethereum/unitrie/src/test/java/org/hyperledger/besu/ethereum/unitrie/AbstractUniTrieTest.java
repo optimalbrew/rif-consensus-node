@@ -22,14 +22,14 @@ import org.hyperledger.besu.ethereum.trie.KeyValueMerkleStorage;
 import org.hyperledger.besu.ethereum.trie.MerkleStorage;
 import org.hyperledger.besu.ethereum.trie.Proof;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
 import com.google.common.base.Strings;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
 import org.junit.Before;
 import org.junit.Test;
 

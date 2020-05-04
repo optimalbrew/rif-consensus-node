@@ -15,9 +15,10 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import org.apache.tuweni.bytes.Bytes;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.tuweni.bytes.Bytes;
 
 /**
  * Class implementing a {@link GetVisitor} that in addition records the not embedded nodes visited

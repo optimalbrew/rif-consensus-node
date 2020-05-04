@@ -15,6 +15,7 @@
 package org.hyperledger.besu.ethereum.unitrie;
 
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Visitor implementing Remove operation in a unitrie. Removal can be recursive, in that case the
  * operation will remove the node and both subtrees.

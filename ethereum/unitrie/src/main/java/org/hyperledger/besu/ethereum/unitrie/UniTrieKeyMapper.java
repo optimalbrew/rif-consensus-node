@@ -17,14 +17,15 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import org.hyperledger.besu.crypto.Hash;
 import org.hyperledger.besu.plugin.data.Address;
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
-import org.apache.tuweni.units.bigints.UInt256;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
+import org.apache.tuweni.units.bigints.UInt256;
 
 /**
  * Produce Unitrie keys for accounts, code, and storage.
@@ -120,10 +121,12 @@ public class UniTrieKeyMapper {
 
   private Bytes hashDigestPrefix(final byte[] value) {
     Bytes v = Bytes.wrap(value);
-    return digestPrefixCache.computeIfAbsent(v, __ -> {
-      Bytes32 hash = Hash.keccak256(v);
-      return hash.slice(0, HASH_DIGEST_PREFIX_SIZE);
-    });
+    return digestPrefixCache.computeIfAbsent(
+        v,
+        __ -> {
+          Bytes32 hash = Hash.keccak256(v);
+          return hash.slice(0, HASH_DIGEST_PREFIX_SIZE);
+        });
   }
 
   private byte[] stripLeadingZeros(final byte[] bytes) {

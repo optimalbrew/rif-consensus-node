@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.hyperledger.besu.ethereum.core.BlockDataGenerator;
 import org.hyperledger.besu.ethereum.core.Hash;
-import org.apache.tuweni.bytes.Bytes;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
 
 public class NodeDataRequestTest {

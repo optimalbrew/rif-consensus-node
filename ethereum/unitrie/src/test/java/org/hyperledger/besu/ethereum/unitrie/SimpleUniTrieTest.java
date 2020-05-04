@@ -15,10 +15,11 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
-import java.util.Optional;
-import org.apache.tuweni.bytes.Bytes;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
+
+import org.apache.tuweni.bytes.Bytes;
 
 public class SimpleUniTrieTest extends AbstractUniTrieTest {
 

@@ -14,10 +14,10 @@
  */
 package org.hyperledger.besu.ethereum.unitrie;
 
+import java.util.Optional;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
-
-import java.util.Optional;
 
 /**
  * Functional interface modeling the capability to load data from key value storage.

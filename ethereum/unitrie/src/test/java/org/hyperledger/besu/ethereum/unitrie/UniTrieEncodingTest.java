@@ -36,8 +36,7 @@ public class UniTrieEncodingTest {
   public void emptyPath_encodesCorrectly() {
     byte[] value = bytes(1, 2, 3);
     UniNode trie = nodeFactory.createLeaf(bytes(), ValueWrapper.fromValue(value));
-    assertThat(Bytes.of(trie.getEncoding()))
-        .isEqualTo(Bytes.of(0x40).concat(Bytes.of(value)));
+    assertThat(Bytes.of(trie.getEncoding())).isEqualTo(Bytes.of(0x40).concat(Bytes.of(value)));
   }
 
   @Test

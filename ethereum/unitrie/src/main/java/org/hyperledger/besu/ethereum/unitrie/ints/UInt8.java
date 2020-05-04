@@ -15,6 +15,7 @@
 package org.hyperledger.besu.ethereum.unitrie.ints;
 
 import org.apache.tuweni.bytes.Bytes;
+
 /** Type representing an 8 bits (single byte) unsigned value. */
 public final class UInt8 implements Comparable<UInt8> {
 

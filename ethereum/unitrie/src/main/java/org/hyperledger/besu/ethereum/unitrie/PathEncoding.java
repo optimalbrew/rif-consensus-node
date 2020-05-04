@@ -18,7 +18,6 @@ import com.google.common.base.Preconditions;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.MutableBytes;
 
-
 /**
  * Encode or decode shared paths.
  *

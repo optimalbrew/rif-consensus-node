@@ -57,9 +57,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -122,7 +119,7 @@ public class ThreadBesuNodeRunner implements BesuNodeRunner {
     ThreadContext.put("node", node.getName());
 
     final MerkleAwareProvider merkleAwareProvider =
-    merkleAwareProvider(node.getConfiguration().getExtraCLIOptions());
+        merkleAwareProvider(node.getConfiguration().getExtraCLIOptions());
     final StorageServiceImpl storageService = new StorageServiceImpl();
     final Path dataDir = node.homeDirectory();
     final BesuConfiguration commonPluginConfiguration =

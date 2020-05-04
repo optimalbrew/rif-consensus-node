@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.unitrie;
 
 import com.google.common.base.Preconditions;
 import org.apache.tuweni.bytes.Bytes;
+
 /**
  * Visitor implementing put operation on a Unitrie.
  *
@@ -57,11 +58,11 @@ public class PutVisitor implements UniPathVisitor {
       } else {
         Bytes newLeafPath = path.slice(commonPath.size() + 1);
         return splitWithNewLeaf(
-                commonPath.toArrayUnsafe(),
-                value,
-                updatedNode,
-                updatedNodePos,
-                newLeafPath.toArrayUnsafe());
+            commonPath.toArrayUnsafe(),
+            value,
+            updatedNode,
+            updatedNodePos,
+            newLeafPath.toArrayUnsafe());
       }
     }
 
