@@ -16,12 +16,12 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import org.hyperledger.besu.util.bytes.BytesValue;
+import org.apache.tuweni.bytes.Bytes;
 
 public interface AccountCode {
 
-  BytesValue LONG_CODE =
-      BytesValue.fromHexString(
+  Bytes LONG_CODE =
+      Bytes.fromHexString(
           "0x608060405234801561001057600080fd5b506040805180820190915260078082527f546f6b656e204100"
               + "0000000000000000000000000000000000000000000000006020909201918252610055916003916101"
               + "8a565b506040805180820190915260038082527f544b41000000000000000000000000000000000000"
@@ -82,5 +82,5 @@ public interface AccountCode {
               + "0190a3505050565b60008282018381101561070757600080fd5b93925050505600a165627a7a723058"
               + "201ccccf3643bfb06a9c417e8e3da96cf446bae5a3d9fb0da7af9ad966249008e00029");
 
-  BytesValue SHORT_CODE = LONG_CODE.slice(0, 64).copy();
+  Bytes SHORT_CODE = LONG_CODE.slice(0, 64).copy();
 }

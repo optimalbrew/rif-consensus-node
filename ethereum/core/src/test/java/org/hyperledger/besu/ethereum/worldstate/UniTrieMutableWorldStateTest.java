@@ -271,9 +271,9 @@ public class UniTrieMutableWorldStateTest {
     final WorldUpdater updater = worldState.updater();
     final MutableAccount account = updater.createAccount(ADDRESS).getMutable();
     account.setBalance(Wei.of(100000));
-    account.setStorageValue(UInt256.ONE, UInt256.of(2));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(2));
     updater.commit();
-    assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ONE)).isEqualTo(UInt256.of(2));
+    assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ONE)).isEqualTo(UInt256.valueOf(2));
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
@@ -287,10 +287,10 @@ public class UniTrieMutableWorldStateTest {
     final WorldUpdater updater = worldState.updater();
     final MutableAccount account = updater.createAccount(ADDRESS).getMutable();
     account.setBalance(Wei.of(100000));
-    account.setStorageValue(UInt256.ONE, UInt256.of(2));
-    account.setStorageValue(UInt256.ONE, UInt256.of(3));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(2));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(3));
     updater.commit();
-    assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ONE)).isEqualTo(UInt256.of(3));
+    assertThat(worldState.get(ADDRESS).getStorageValue(UInt256.ONE)).isEqualTo(UInt256.valueOf(3));
     assertThat(worldState.rootHash())
         .isEqualTo(
             Hash.fromHexString(
@@ -304,7 +304,7 @@ public class UniTrieMutableWorldStateTest {
     final WorldUpdater updater = worldState.updater();
     final MutableAccount account = updater.createAccount(ADDRESS).getMutable();
     account.setBalance(Wei.of(100000));
-    account.setStorageValue(UInt256.ONE, UInt256.of(2));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(2));
     account.setStorageValue(UInt256.ONE, UInt256.ZERO);
     updater.commit();
     assertThat(worldState.rootHash())
@@ -319,15 +319,15 @@ public class UniTrieMutableWorldStateTest {
     final UniTrieMutableWorldState worldState = createEmpty();
     final WorldUpdater setupUpdater = worldState.updater();
     final MutableAccount setupAccount = setupUpdater.createAccount(ADDRESS).getMutable();
-    setupAccount.setStorageValue(UInt256.ONE, UInt256.of(2));
+    setupAccount.setStorageValue(UInt256.ONE, UInt256.valueOf(2));
     setupUpdater.commit();
 
     final WorldUpdater updater = worldState.updater();
     final MutableAccount account = updater.getOrCreate(ADDRESS).getMutable();
-    assertThat(account.getOriginalStorageValue(UInt256.ONE)).isEqualTo(UInt256.of(2));
+    assertThat(account.getOriginalStorageValue(UInt256.ONE)).isEqualTo(UInt256.valueOf(2));
 
-    account.setStorageValue(UInt256.ONE, UInt256.of(3));
-    assertThat(account.getOriginalStorageValue(UInt256.ONE)).isEqualTo(UInt256.of(2));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(3));
+    assertThat(account.getOriginalStorageValue(UInt256.ONE)).isEqualTo(UInt256.valueOf(2));
     verifyStoragePrefixRootIsPresent(worldState, ADDRESS);
   }
 
@@ -336,7 +336,7 @@ public class UniTrieMutableWorldStateTest {
     final UniTrieMutableWorldState worldState = createEmpty();
     final WorldUpdater setupUpdater = worldState.updater();
     final MutableAccount setupAccount = setupUpdater.createAccount(ADDRESS).getMutable();
-    setupAccount.setStorageValue(UInt256.ONE, UInt256.of(2));
+    setupAccount.setStorageValue(UInt256.ONE, UInt256.valueOf(2));
     setupUpdater.commit();
 
     final WorldUpdater updater = worldState.updater();
@@ -349,8 +349,8 @@ public class UniTrieMutableWorldStateTest {
 
   @Test
   public void clearStorage() {
-    final UInt256 storageKey = UInt256.of(1L);
-    final UInt256 storageValue = UInt256.of(2L);
+    final UInt256 storageKey = UInt256.valueOf(1L);
+    final UInt256 storageValue = UInt256.valueOf(2L);
 
     // Create a world state with one account
     final UniTrieMutableWorldState worldState = createEmpty();
@@ -385,8 +385,8 @@ public class UniTrieMutableWorldStateTest {
 
   @Test
   public void clearStorage_AfterPersisting() {
-    final UInt256 storageKey = UInt256.of(1L);
-    final UInt256 storageValue = UInt256.of(2L);
+    final UInt256 storageKey = UInt256.valueOf(1L);
+    final UInt256 storageValue = UInt256.valueOf(2L);
 
     // Create a world state with one account
     final UniTrieMutableWorldState worldState = createEmpty();
@@ -425,9 +425,9 @@ public class UniTrieMutableWorldStateTest {
 
   @Test
   public void clearStorageThenEdit() {
-    final UInt256 storageKey = UInt256.of(1L);
-    final UInt256 originalStorageValue = UInt256.of(2L);
-    final UInt256 newStorageValue = UInt256.of(3L);
+    final UInt256 storageKey = UInt256.valueOf(1L);
+    final UInt256 originalStorageValue = UInt256.valueOf(2L);
+    final UInt256 newStorageValue = UInt256.valueOf(3L);
 
     // Create a world state with one account
     final UniTrieMutableWorldState worldState = createEmpty();
@@ -463,9 +463,9 @@ public class UniTrieMutableWorldStateTest {
 
   @Test
   public void clearStorageThenEditAfterPersisting() {
-    final UInt256 storageKey = UInt256.of(1L);
-    final UInt256 originalStorageValue = UInt256.of(2L);
-    final UInt256 newStorageValue = UInt256.of(3L);
+    final UInt256 storageKey = UInt256.valueOf(1L);
+    final UInt256 originalStorageValue = UInt256.valueOf(2L);
+    final UInt256 newStorageValue = UInt256.valueOf(3L);
 
     // Create a world state with one account
     final UniTrieMutableWorldState worldState = createEmpty();
@@ -569,23 +569,23 @@ public class UniTrieMutableWorldStateTest {
     WorldUpdater updater = worldState.updater();
     MutableAccount account = updater.createAccount(ADDRESS).getMutable();
     account.setBalance(Wei.of(100000));
-    account.setStorageValue(UInt256.ONE, UInt256.of(2));
-    account.setStorageValue(UInt256.of(2), UInt256.of(5));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(2));
+    account.setStorageValue(UInt256.valueOf(2), UInt256.valueOf(5));
     updater.commit();
 
     final List<AccountStorageEntry> initialEntries = new ArrayList<>();
-    initialEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.ONE, UInt256.of(2)));
-    initialEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.of(2), UInt256.of(5)));
+    initialEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.ONE, UInt256.valueOf(2)));
+    initialEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.valueOf(2), UInt256.valueOf(5)));
 
     updater = worldState.updater();
     account = updater.getAccount(ADDRESS).getMutable();
-    account.setStorageValue(UInt256.ONE, UInt256.of(3));
-    account.setStorageValue(UInt256.of(3), UInt256.of(6));
+    account.setStorageValue(UInt256.ONE, UInt256.valueOf(3));
+    account.setStorageValue(UInt256.valueOf(3), UInt256.valueOf(6));
 
     final List<AccountStorageEntry> finalEntries = new ArrayList<>();
-    finalEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.ONE, UInt256.of(3)));
-    finalEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.of(2), UInt256.of(5)));
-    finalEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.of(3), UInt256.of(6)));
+    finalEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.ONE, UInt256.valueOf(3)));
+    finalEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.valueOf(2), UInt256.valueOf(5)));
+    finalEntries.add(AccountStorageEntry.forKeyAndValue(UInt256.valueOf(3), UInt256.valueOf(6)));
 
     verifyStorage(account, finalEntries);
     verifyStorage(updater.get(ADDRESS), finalEntries);
@@ -613,9 +613,11 @@ public class UniTrieMutableWorldStateTest {
     account.setCode(code);
     updater.commit();
 
-    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256.valueOf(code.size()));
+    assertThat(worldState.get(ADDRESS).getCodeSize())
+        .isEqualTo(UInt256.valueOf(code.size()).toBytes());
     worldState.persist();
-    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256.valueOf(code.size()));
+    assertThat(worldState.get(ADDRESS).getCodeSize())
+        .isEqualTo(UInt256.valueOf(code.size()).toBytes());
   }
 
   private void verifyStoragePrefixRootIsPresent(

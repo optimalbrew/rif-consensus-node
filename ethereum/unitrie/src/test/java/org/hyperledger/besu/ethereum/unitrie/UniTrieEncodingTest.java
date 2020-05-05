@@ -29,14 +29,15 @@ public class UniTrieEncodingTest {
   @Test
   public void emptyTree_givesNullEncoding() {
     assertThat(NullUniNode.instance().getEncoding())
-        .isEqualTo(UniTrie.NULL_UNINODE_ENCODING.extractArray());
+        .isEqualTo(UniTrie.NULL_UNINODE_ENCODING.toArrayUnsafe());
   }
 
   @Test
   public void emptyPath_encodesCorrectly() {
     byte[] value = bytes(1, 2, 3);
     UniNode trie = nodeFactory.createLeaf(bytes(), ValueWrapper.fromValue(value));
-    assertThat(Bytes.of(trie.getEncoding())).isEqualTo(Bytes.of(0x40).concat(Bytes.of(value)));
+    assertThat(Bytes.of(trie.getEncoding()))
+        .isEqualTo(Bytes.concatenate(Bytes.of(0x40).mutableCopy(), Bytes.of(value)));
   }
 
   @Test
@@ -45,7 +46,7 @@ public class UniTrieEncodingTest {
     byte[] value = bytes(1, 2, 3);
     UniNode trie = nodeFactory.createLeaf(path, ValueWrapper.fromValue(value));
     assertThat(Bytes.of(trie.getEncoding()))
-        .isEqualTo(Bytes.of(0x50, 0x0a, 0xaf, 0x40).concat(Bytes.of(value)));
+        .isEqualTo(Bytes.concatenate(Bytes.of(0x50, 0x0a, 0xaf, 0x40), Bytes.of(value)));
   }
 
   @Test

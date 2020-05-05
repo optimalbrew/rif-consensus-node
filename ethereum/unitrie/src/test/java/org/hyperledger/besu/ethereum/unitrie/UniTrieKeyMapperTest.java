@@ -46,35 +46,35 @@ public class UniTrieKeyMapperTest {
 
   @Test
   public void testAccountKey() {
-    when(address.getByteArray()).thenReturn(mockAddress.getArrayUnsafe());
+    when(address.toArrayUnsafe()).thenReturn(mockAddress.toArrayUnsafe());
     Bytes key = mapper.getAccountKey(address);
 
     assertThat(key.get(0)).isEqualTo((byte) 0);
-    assertThat(key.slice(1, 10).getHexString())
-        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).getHexString());
+    assertThat(key.slice(1, 10).toHexString())
+        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).toHexString());
     assertThat(key.slice(11)).isEqualTo(mockAddress);
   }
 
   @Test
   public void testAccountCodeKey() {
-    when(address.getByteArray()).thenReturn(mockAddress.getArrayUnsafe());
+    when(address.toArrayUnsafe()).thenReturn(mockAddress.toArrayUnsafe());
     Bytes key = mapper.getAccountCodeKey(address);
 
     assertThat(key.get(0)).isEqualTo((byte) 0);
-    assertThat(key.slice(1, 10).getHexString())
-        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).getHexString());
+    assertThat(key.slice(1, 10).toHexString())
+        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).toHexString());
     assertThat(key.slice(11, 20)).isEqualTo(mockAddress);
     assertThat(key.get(31)).isEqualTo((byte) 0x80);
   }
 
   @Test
   public void testAccountStoragePrefixKey() {
-    when(address.getByteArray()).thenReturn(mockAddress.getArrayUnsafe());
+    when(address.toArrayUnsafe()).thenReturn(mockAddress.toArrayUnsafe());
     Bytes key = mapper.getAccountStoragePrefixKey(address);
 
     assertThat(key.get(0)).isEqualTo((byte) 0);
-    assertThat(key.slice(1, 10).getHexString())
-        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).getHexString());
+    assertThat(key.slice(1, 10).toHexString())
+        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).toHexString());
     assertThat(key.slice(11, 20)).isEqualTo(mockAddress);
     assertThat(key.get(31)).isEqualTo((byte) 0);
   }
@@ -82,54 +82,54 @@ public class UniTrieKeyMapperTest {
   @Test
   public void testAccountStorageKey_allZeros() {
     UInt256 subkey = UInt256.ZERO;
-    when(address.getByteArray()).thenReturn(mockAddress.getArrayUnsafe());
+    when(address.toArrayUnsafe()).thenReturn(mockAddress.toArrayUnsafe());
 
     Bytes key = mapper.getAccountStorageKey(address, subkey);
 
     assertThat(key.size()).isEqualTo(43);
     assertThat(key.get(0)).isEqualTo((byte) 0);
-    assertThat(key.slice(1, 10).getHexString())
-        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).getHexString());
+    assertThat(key.slice(1, 10).toHexString())
+        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).toHexString());
     assertThat(key.slice(11, 20)).isEqualTo(mockAddress);
     assertThat(key.get(31)).isEqualTo((byte) 0);
-    assertThat(key.slice(32, 10).getHexString())
-        .isEqualTo(Hash.keccak256(subkey.getBytes()).slice(0, 10).getHexString());
+    assertThat(key.slice(32, 10).toHexString())
+        .isEqualTo(Hash.keccak256(subkey.toBytes()).slice(0, 10).toHexString());
     assertThat(key.get(42)).isEqualTo((byte) 0);
   }
 
   @Test
   public void testAccountStorageKey_leadingZeros() {
-    UInt256 subkey = UInt256.of(1234);
-    when(address.getByteArray()).thenReturn(mockAddress.getArrayUnsafe());
+    UInt256 subkey = UInt256.valueOf(1234);
+    when(address.toArrayUnsafe()).thenReturn(mockAddress.toArrayUnsafe());
 
     Bytes key = mapper.getAccountStorageKey(address, subkey);
 
     assertThat(key.size()).isEqualTo(44);
     assertThat(key.get(0)).isEqualTo((byte) 0);
-    assertThat(key.slice(1, 10).getHexString())
-        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).getHexString());
+    assertThat(key.slice(1, 10).toHexString())
+        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).toHexString());
     assertThat(key.slice(11, 20)).isEqualTo(mockAddress);
     assertThat(key.get(31)).isEqualTo((byte) 0);
-    assertThat(key.slice(32, 10).getHexString())
-        .isEqualTo(Hash.keccak256(subkey.getBytes()).slice(0, 10).getHexString());
-    assertThat(key.slice(42)).isEqualTo(subkey.getBytes().slice(30));
+    assertThat(key.slice(32, 10).toHexString())
+        .isEqualTo(Hash.keccak256(subkey.toBytes()).slice(0, 10).toHexString());
+    assertThat(key.slice(42)).isEqualTo(subkey.toBytes().slice(30));
   }
 
   @Test
   public void testAccountStorageKey_noZeros() {
     UInt256 subkey = UInt256.MAX_VALUE;
-    when(address.getByteArray()).thenReturn(mockAddress.getArrayUnsafe());
+    when(address.toArrayUnsafe()).thenReturn(mockAddress.toArrayUnsafe());
 
     Bytes key = mapper.getAccountStorageKey(address, subkey);
 
     assertThat(key.size()).isEqualTo(74);
     assertThat(key.get(0)).isEqualTo((byte) 0);
-    assertThat(key.slice(1, 10).getHexString())
-        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).getHexString());
+    assertThat(key.slice(1, 10).toHexString())
+        .isEqualTo(Hash.keccak256(mockAddress).slice(0, 10).toHexString());
     assertThat(key.slice(11, 20)).isEqualTo(mockAddress);
     assertThat(key.get(31)).isEqualTo((byte) 0);
-    assertThat(key.slice(32, 10).getHexString())
-        .isEqualTo(Hash.keccak256(subkey.getBytes()).slice(0, 10).getHexString());
-    assertThat(key.slice(42)).isEqualTo(subkey.getBytes());
+    assertThat(key.slice(32, 10).toHexString())
+        .isEqualTo(Hash.keccak256(subkey.toBytes()).slice(0, 10).toHexString());
+    assertThat(key.slice(42)).isEqualTo(subkey.toBytes());
   }
 }

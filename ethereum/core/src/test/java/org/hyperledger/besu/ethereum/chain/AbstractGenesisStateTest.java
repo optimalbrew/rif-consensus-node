@@ -146,9 +146,9 @@ public class AbstractGenesisStateTest {
             merkleAwareProvider);
     final BytesValueRLPOutput tmp = new BytesValueRLPOutput();
     genesisState.getBlock().writeTo(tmp);
-    assertThat(Hex.toHexString(genesisState.getBlock().getHeader().getHash().extractArray()))
+    assertThat(Hex.toHexString(genesisState.getBlock().getHeader().getHash().toArrayUnsafe()))
         .isEqualTo(expectedHash);
-    assertThat(Hex.toHexString(tmp.encoded().extractArray())).isEqualTo(expectedRlp);
+    assertThat(Hex.toHexString(tmp.encoded().toArrayUnsafe())).isEqualTo(expectedRlp);
   }
 
   private void assertStorageValue(final Account contract, final String key, final String value) {

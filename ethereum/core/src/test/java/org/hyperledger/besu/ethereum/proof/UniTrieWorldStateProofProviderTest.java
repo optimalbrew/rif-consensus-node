@@ -46,10 +46,10 @@ public class UniTrieWorldStateProofProviderTest {
   private static final Address address =
       Address.fromHexString("0x1234567890123456789012345678901234567890");
 
-  private KeyValueStorage kvStorage = new InMemoryKeyValueStorage();
-  private WorldStateStorage worldStateStorage = new WorldStateKeyValueStorage(kvStorage);
+  private final KeyValueStorage kvStorage = new InMemoryKeyValueStorage();
+  private final WorldStateStorage worldStateStorage = new WorldStateKeyValueStorage(kvStorage);
 
-  private UniTrieKeyMapper keyMapper = new UniTrieKeyMapper();
+  private final UniTrieKeyMapper keyMapper = new UniTrieKeyMapper();
 
   private WorldStateProofProvider worldStateProofProvider;
 
@@ -72,9 +72,9 @@ public class UniTrieWorldStateProofProviderTest {
     Hash storageRoot = prepareForStorage(trie, address);
 
     // Add some storage values
-    writeStorageValue(trie, address, UInt256.of(1L), UInt256.of(2L));
-    writeStorageValue(trie, address, UInt256.of(2L), UInt256.of(4L));
-    writeStorageValue(trie, address, UInt256.of(3L), UInt256.of(6L));
+    writeStorageValue(trie, address, UInt256.valueOf(1L), UInt256.valueOf(2L));
+    writeStorageValue(trie, address, UInt256.valueOf(2L), UInt256.valueOf(4L));
+    writeStorageValue(trie, address, UInt256.valueOf(3L), UInt256.valueOf(6L));
 
     WorldStateStorage.Updater updater = worldStateStorage.updater();
     trie.commit(updater::putAccountStateTrieNode, updater::rawPut);
@@ -90,7 +90,8 @@ public class UniTrieWorldStateProofProviderTest {
     trie.commit(updater::putAccountStateTrieNode, updater::rawPut);
     updater.commit();
 
-    final List<UInt256> storageKeys = Arrays.asList(UInt256.of(1L), UInt256.of(3L), UInt256.of(6L));
+    final List<UInt256> storageKeys =
+        Arrays.asList(UInt256.valueOf(1L), UInt256.valueOf(3L), UInt256.valueOf(6L));
     final Optional<WorldStateProof> accountProof =
         worldStateProofProvider.getAccountProof(
             Hash.wrap(trie.getRootHash()), address, storageKeys);
@@ -102,16 +103,16 @@ public class UniTrieWorldStateProofProviderTest {
     // Check storage fields
     assertThat(accountProof.get().getStorageKeys()).isEqualTo(storageKeys);
     // Check key 1
-    UInt256 storageKey = UInt256.of(1L);
-    assertThat(accountProof.get().getStorageValue(storageKey)).isEqualTo(UInt256.of(2L));
+    UInt256 storageKey = UInt256.valueOf(1L);
+    assertThat(accountProof.get().getStorageValue(storageKey)).isEqualTo(UInt256.valueOf(2L));
     assertThat(accountProof.get().getStorageProof(storageKey).size()).isGreaterThanOrEqualTo(1);
     // Check key 3
-    storageKey = UInt256.of(3L);
-    assertThat(accountProof.get().getStorageValue(storageKey)).isEqualTo(UInt256.of(6L));
+    storageKey = UInt256.valueOf(3L);
+    assertThat(accountProof.get().getStorageValue(storageKey)).isEqualTo(UInt256.valueOf(6L));
     assertThat(accountProof.get().getStorageProof(storageKey).size()).isGreaterThanOrEqualTo(1);
     // Check key 6
-    storageKey = UInt256.of(6L);
-    assertThat(accountProof.get().getStorageValue(storageKey)).isEqualTo(UInt256.of(0L));
+    storageKey = UInt256.valueOf(6L);
+    assertThat(accountProof.get().getStorageValue(storageKey)).isEqualTo(UInt256.valueOf(0L));
     assertThat(accountProof.get().getStorageProof(storageKey).size()).isGreaterThanOrEqualTo(1);
   }
 

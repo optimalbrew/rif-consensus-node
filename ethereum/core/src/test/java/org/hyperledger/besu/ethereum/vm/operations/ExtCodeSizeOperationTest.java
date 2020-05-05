@@ -115,7 +115,8 @@ public class ExtCodeSizeOperationTest {
     final MutableAccount account = worldStateUpdater.getOrCreate(REQUESTED_ADDRESS).getMutable();
     account.setCode(code);
     account.setVersion(Account.DEFAULT_VERSION);
-    assertThat(executeOperation(REQUESTED_ADDRESS)).isEqualTo(UInt256.valueOf(code.size()));
+    assertThat(executeOperation(REQUESTED_ADDRESS))
+        .isEqualTo(UInt256.valueOf(code.size()).toBytes());
   }
 
   @Test
@@ -126,13 +127,12 @@ public class ExtCodeSizeOperationTest {
     account.setCode(code);
     account.setVersion(Account.DEFAULT_VERSION);
     final Bytes32 value =
-        Words.fromAddress(REQUESTED_ADDRESS)
-            .asUInt256()
-            .plus(UInt256.of(2).pow(UInt256.of(160)))
-            .getBytes();
+        (UInt256.fromBytes(Words.fromAddress(REQUESTED_ADDRESS))
+                .plus(UInt256.valueOf(2).pow(UInt256.valueOf(160))))
+            .toBytes();
     final MessageFrame frame = createMessageFrame(value);
     operation.execute(frame);
-    assertThat(frame.getStackItem(0)).isEqualTo(UInt256.valueOf(code.size()));
+    assertThat(frame.getStackItem(0)).isEqualTo(UInt256.valueOf(code.size()).toBytes());
   }
 
   private Bytes32 executeOperation(final Address requestedAddress) {

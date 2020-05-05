@@ -122,7 +122,7 @@ public class UniTrieMarkSweepPrunerTest {
     assertThat(hashValueStore.size()).isEqualTo(expectedNodes.size());
     assertThat(hashValueStore.values())
         .containsExactlyInAnyOrderElementsOf(
-            expectedNodes.stream().map(Bytes::getArrayUnsafe).collect(Collectors.toSet()));
+            expectedNodes.stream().map(Bytes::toArrayUnsafe).collect(Collectors.toSet()));
   }
 
   @Test
@@ -190,7 +190,7 @@ public class UniTrieMarkSweepPrunerTest {
     }
     inOrder.verify(stateStorage).removeAllKeysUnless(any());
 
-    assertThat(stateStorage.containsKey(markedRoot.getArrayUnsafe())).isTrue();
+    assertThat(stateStorage.containsKey(markedRoot.toArrayUnsafe())).isTrue();
   }
 
   private List<Account> generateBlockchainData(final int numBlocks, final int numAccounts) {

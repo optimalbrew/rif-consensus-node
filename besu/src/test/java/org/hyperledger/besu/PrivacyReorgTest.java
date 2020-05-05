@@ -41,6 +41,8 @@ import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
 import org.hyperledger.besu.ethereum.mainnet.HeaderValidationMode;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.privacy.PrivateStateRootResolver;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransaction;
 import org.hyperledger.besu.ethereum.privacy.Restriction;
@@ -143,10 +145,12 @@ public class PrivacyReorgTest {
     final Path dataDir = folder.newFolder().toPath();
     final Path dbDir = dataDir.resolve("database");
 
+    final MerkleAwareProvider merkleAwareProvider = new ClassicMerkleAwareProvider();
     // Configure Privacy
     privacyParameters =
         new PrivacyParameters.Builder()
             .setEnabled(true)
+            .setMerkleAwareProvider(merkleAwareProvider)
             .setStorageProvider(createKeyValueStorageProvider(dataDir, dbDir))
             .setEnclaveUrl(enclave.clientUrl())
             .setEnclaveFactory(new EnclaveFactory(Vertx.vertx()))
@@ -171,6 +175,7 @@ public class PrivacyReorgTest {
             .privacyParameters(privacyParameters)
             .transactionPoolConfiguration(TransactionPoolConfiguration.builder().build())
             .targetGasLimit(GasLimitCalculator.DEFAULT)
+            .merkleAwareProvider(merkleAwareProvider)
             .build();
   }
 

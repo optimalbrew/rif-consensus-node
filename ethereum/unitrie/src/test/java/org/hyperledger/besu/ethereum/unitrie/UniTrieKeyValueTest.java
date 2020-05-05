@@ -28,7 +28,7 @@ import org.junit.Test;
 
 public class UniTrieKeyValueTest {
 
-  private static UniNode NO_RESULT = NullUniNode.instance();
+  private static final UniNode NO_RESULT = NullUniNode.instance();
 
   private final MerkleStorage storage = new KeyValueMerkleStorage(new InMemoryKeyValueStorage());
   private final UniNodeFactory nodeFactory = new DefaultUniNodeFactory();
@@ -207,14 +207,14 @@ public class UniTrieKeyValueTest {
     for (int i = 0; i < 100; i++) {
       Bytes value = Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8));
       Bytes path = PathEncoding.decodePath(value, value.size() * 8);
-      trie = trie.accept(new PutVisitor(value.extractArray(), nodeFactory), path);
+      trie = trie.accept(new PutVisitor(value.toArrayUnsafe(), nodeFactory), path);
     }
 
     for (int i = 0; i < 100; i++) {
       Bytes value = Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8));
       Bytes path = PathEncoding.decodePath(value, value.size() * 8);
       assertThat(trie.accept(new GetVisitor(), path).getValue(loader))
-          .hasValue(value.extractArray());
+          .hasValue(value.toArrayUnsafe());
     }
   }
 
@@ -279,7 +279,7 @@ public class UniTrieKeyValueTest {
     for (int i = 0; i < 100; i++) {
       Bytes value = Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8));
       Bytes path = PathEncoding.decodePath(value, value.size() * 8);
-      trie = trie.accept(new PutVisitor(value.extractArray(), nodeFactory), path);
+      trie = trie.accept(new PutVisitor(value.toArrayUnsafe(), nodeFactory), path);
     }
 
     for (int i = 0; i < 100; i++) {
@@ -295,7 +295,7 @@ public class UniTrieKeyValueTest {
       Bytes path = PathEncoding.decodePath(value, value.size() * 8);
       if (i % 2 == 0) {
         assertThat(trie.accept(new GetVisitor(), path).getValue(loader))
-            .hasValue(value.extractArray());
+            .hasValue(value.toArrayUnsafe());
       } else {
         assertThat(trie.accept(new GetVisitor(), path)).isSameAs(NO_RESULT);
       }

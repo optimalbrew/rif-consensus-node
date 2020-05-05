@@ -40,6 +40,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.Strings;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;
@@ -680,6 +681,7 @@ public class DefaultMutableWorldStateTest {
 
   @Test
   public void codeLength() {
+
     final Bytes code = Bytes.fromHexString("0x" + Strings.repeat("123456789abcdef", 1000));
 
     final MutableWorldState worldState = createEmpty();
@@ -689,9 +691,11 @@ public class DefaultMutableWorldStateTest {
     account.setCode(code);
     updater.commit();
 
-    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
+    assertThat(worldState.get(ADDRESS).getCodeSize())
+        .isEqualTo(UInt256.valueOf(code.size()).toBytes());
     worldState.persist();
-    assertThat(worldState.get(ADDRESS).getCodeSize()).isEqualTo(UInt256Bytes.of(code.size()));
-    System.out.println(UInt256Bytes.of(code.size()));
+    assertThat(worldState.get(ADDRESS).getCodeSize())
+        .isEqualTo(UInt256.valueOf(code.size()).toBytes());
+    System.out.println(UInt256.valueOf(code.size()).toBytes());
   }
 }

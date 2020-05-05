@@ -37,6 +37,8 @@ import org.hyperledger.besu.ethereum.vm.MessageFrame;
 import org.hyperledger.besu.ethereum.vm.Words;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 
+import java.util.Arrays;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;

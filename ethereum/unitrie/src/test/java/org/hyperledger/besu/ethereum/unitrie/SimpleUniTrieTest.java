@@ -32,6 +32,6 @@ public class SimpleUniTrieTest extends AbstractUniTrieTest {
   UniTrie<Bytes, String> createTrie() {
     return new SimpleUniTrie<>(
         s -> Objects.isNull(s) ? null : Bytes.wrap(s.getBytes(StandardCharsets.UTF_8)),
-        v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8));
+        v -> new String(v.toArrayUnsafe(), StandardCharsets.UTF_8));
   }
 }

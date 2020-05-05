@@ -66,7 +66,7 @@ public class UniTrieKeyMapper {
 
   public Bytes getAccountStorageKey(final Address address, final UInt256 subkey) {
     byte[] addressBytes = address.toArrayUnsafe();
-    byte[] subkeyBytes = subkey.toMinimalBytes().toArrayUnsafe();
+    byte[] subkeyBytes = subkey.toBytes().toArrayUnsafe(); // toMinimalBytes().toArrayUnsafe();
     byte[] strippedSubkeyBytes = stripLeadingZeros(subkeyBytes);
     ByteBuffer buffer =
         ByteBuffer.allocate(accountStorageKeySize(addressBytes, strippedSubkeyBytes));

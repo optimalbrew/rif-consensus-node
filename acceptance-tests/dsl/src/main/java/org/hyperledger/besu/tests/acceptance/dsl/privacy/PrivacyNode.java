@@ -24,6 +24,7 @@ import org.hyperledger.besu.enclave.EnclaveIOException;
 import org.hyperledger.besu.enclave.EnclaveServerException;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivacyStorageProvider;
 import org.hyperledger.besu.ethereum.privacy.storage.keyvalue.PrivacyKeyValueStorageProviderBuilder;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueSegmentIdentifier;

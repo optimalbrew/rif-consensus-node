@@ -24,19 +24,19 @@ import org.junit.Test;
 
 public class NodeDataRequestTest {
 
-  private static Hash VALID_UNINODE_HASH =
+  private static final Hash VALID_UNINODE_HASH =
       Hash.fromHexString("0x05f6b870df41144da5eec8d1384189d11977cc543214268aa08eadeb34f6508d");
 
-  private static Bytes VALID_UNINODE_ENCODING =
+  private static final Bytes VALID_UNINODE_ENCODING =
       Bytes.fromHexString(
           "0x787800b6979620706f8c652cfb1234567890123456789012345678901234567890d9f59f9bc38d49848"
               + "dd4b90bfd37aab80fa843602165db74f1afec0c87bb06ab8473f302fe9da10e548b03a0b099180d82f124"
               + "68b246e8131a55ab63960da4bb77000046");
 
-  private static Hash VALID_UNINODE_VALUE_HASH =
+  private static final Hash VALID_UNINODE_VALUE_HASH =
       Hash.fromHexString("0x73f302fe9da10e548b03a0b099180d82f12468b246e8131a55ab63960da4bb77");
 
-  private static Hash VALID_UNINODE_CHILD_HASH =
+  private static final Hash VALID_UNINODE_CHILD_HASH =
       Hash.fromHexString("0xd9f59f9bc38d49848dd4b90bfd37aab80fa843602165db74f1afec0c87bb06ab");
 
   @Test

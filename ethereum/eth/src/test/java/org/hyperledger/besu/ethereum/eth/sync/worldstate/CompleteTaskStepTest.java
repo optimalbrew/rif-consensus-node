@@ -125,8 +125,8 @@ public class CompleteTaskStepTest {
   private StubTask validUniTask() {
     final Hash hash =
         Hash.fromHexString("0x05f6b870df41144da5eec8d1384189d11977cc543214268aa08eadeb34f6508d");
-    final BytesValue data =
-        BytesValue.fromHexString(
+    final Bytes data =
+        Bytes.fromHexString(
             "0x787800b6979620706f8c652cfb1234567890123456789012345678901234567890d9f59f9bc38d4"
                 + "9848dd4b90bfd37aab80fa843602165db74f1afec0c87bb06ab8473f302fe9da10e548b03a0b09918"
                 + "0d82f12468b246e8131a55ab63960da4bb77000046");

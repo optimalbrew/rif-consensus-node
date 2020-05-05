@@ -49,7 +49,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
     merkleStorage = new KeyValueMerkleStorage(keyValueStore);
     valueSerializer =
         s -> Objects.isNull(s) ? null : Bytes.wrap(s.getBytes(StandardCharsets.UTF_8));
-    valueDeserializer = v -> new String(v.getArrayUnsafe(), StandardCharsets.UTF_8);
+    valueDeserializer = v -> new String(v.toArrayUnsafe(), StandardCharsets.UTF_8);
     return new StoredUniTrie<>(loader(), valueSerializer, valueDeserializer);
   }
 
@@ -168,7 +168,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
 
   private Bytes toKey(final int i) {
     Bytes32 hash = Hash.keccak256(Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
-    return Bytes.wrap(hash.getArrayUnsafe());
+    return Bytes.wrap(hash.toArrayUnsafe());
   }
 
   private String toValue(final int i) {
@@ -176,7 +176,7 @@ public class StoredUniTrieTest extends AbstractUniTrieTest {
       return String.valueOf(i);
     } else {
       Bytes32 hash = Hash.keccak256(Bytes.wrap(String.valueOf(i).getBytes(StandardCharsets.UTF_8)));
-      return hash.toUnprefixedString();
+      return hash.toUnprefixedHexString();
     }
   }
 }

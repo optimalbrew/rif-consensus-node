@@ -51,7 +51,7 @@ public class UniTrieValueTest {
 
     assertThat(trie.getValueWrapper().isLong()).isFalse();
     assertThat(trie.getValueWrapper().getHash())
-        .hasValue(Hash.keccak256(Bytes.of(value)).extractArray());
+        .hasValue(Hash.keccak256(Bytes.of(value)).toArrayUnsafe());
     assertThat(trie.getValueLength()).hasValue(value.length);
     assertThat(trie.getValue(loader)).hasValue(value);
   }
@@ -67,7 +67,7 @@ public class UniTrieValueTest {
             .accept(new GetVisitor(), key);
 
     assertThat(trie.getValueWrapper().isLong()).isFalse();
-    assertThat(trie.getValueHash()).hasValue(Hash.keccak256(Bytes.of(value)).extractArray());
+    assertThat(trie.getValueHash()).hasValue(Hash.keccak256(Bytes.of(value)).toArrayUnsafe());
     assertThat(trie.getValueLength()).hasValue(value.length);
     assertThat(trie.getValue(loader)).hasValue(value);
   }
@@ -85,7 +85,7 @@ public class UniTrieValueTest {
     ((AbstractUniNode) trie).clearWeakReferences();
 
     assertThat(trie.getValueWrapper().isLong()).isTrue();
-    assertThat(trie.getValueHash()).hasValue(Hash.keccak256(Bytes.of(value)).extractArray());
+    assertThat(trie.getValueHash()).hasValue(Hash.keccak256(Bytes.of(value)).toArrayUnsafe());
     assertThat(trie.getValueLength()).hasValue(value.length);
     assertThat(trie.getValue(loader)).hasValue(value);
   }

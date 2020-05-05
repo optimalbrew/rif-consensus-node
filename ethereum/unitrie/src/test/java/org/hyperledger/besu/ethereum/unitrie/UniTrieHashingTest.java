@@ -28,7 +28,7 @@ public class UniTrieHashingTest {
 
   @Test
   public void equalityImpliesEqualHash() {
-    byte[] value = Bytes.fromHexString("0x" + Strings.repeat("bad", 100)).extractArray();
+    byte[] value = Bytes.fromHexString("0x" + Strings.repeat("bad", 100)).toArrayUnsafe();
 
     UniNode trie0 =
         NullUniNode.instance()
@@ -45,7 +45,7 @@ public class UniTrieHashingTest {
 
   @Test
   public void outOfOrder_equalityImpliesEqualHash() {
-    byte[] value = Bytes.fromHexString("0x" + Strings.repeat("bad", 100)).extractArray();
+    byte[] value = Bytes.fromHexString("0x" + Strings.repeat("bad", 100)).toArrayUnsafe();
 
     UniNode trie0 =
         NullUniNode.instance()
@@ -62,7 +62,7 @@ public class UniTrieHashingTest {
 
   @Test
   public void inequalityImpliesDifferentHash() {
-    byte[] value = Bytes.fromHexString("0x" + Strings.repeat("bad", 100)).extractArray();
+    byte[] value = Bytes.fromHexString("0x" + Strings.repeat("bad", 100)).toArrayUnsafe();
 
     UniNode trie0 =
         NullUniNode.instance()
