@@ -18,6 +18,18 @@ package org.hyperledger.besu.ethereum.worldstate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryBlockchain;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.Bytes32;
+import org.assertj.core.api.Assertions;
 import org.hyperledger.besu.ethereum.chain.MutableBlockchain;
 import org.hyperledger.besu.ethereum.core.Account;
 import org.hyperledger.besu.ethereum.core.Block;
@@ -33,23 +45,10 @@ import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStatePreimageKeyValueStorage;
 import org.hyperledger.besu.ethereum.unitrie.StoredUniTrie;
 import org.hyperledger.besu.ethereum.unitrie.UniTrie;
+import org.hyperledger.besu.ethereum.worldstate.Pruner.PruningPhase;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.services.kvstore.InMemoryKeyValueStorage;
 import org.hyperledger.besu.testutil.MockExecutorService;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 public class UniTriePrunerIntegrationTest {
@@ -108,10 +107,9 @@ public class UniTriePrunerIntegrationTest {
   private void testPruner(
       final int numCycles,
       final int accountsPerBlock,
-      final long blockConfirmations,
+      final int blockConfirmations,
       final int numBlocksToKeep,
-      final int opsPerTransaction)
-      throws InterruptedException {
+      final int opsPerTransaction) {
 
     final var markSweepPruner =
         new UniTrieMarkSweepPruner(
@@ -120,8 +118,8 @@ public class UniTriePrunerIntegrationTest {
         new Pruner(
             markSweepPruner,
             blockchain,
-            new MockExecutorService(),
-            new PruningConfiguration(blockConfirmations, numBlocksToKeep));
+            new PrunerConfiguration(blockConfirmations, numBlocksToKeep),
+            MockExecutorService::new);
 
     pruner.start();
 
@@ -134,10 +132,10 @@ public class UniTriePrunerIntegrationTest {
       var fullyMarkedBlockNum = cycle * numBlockInCycle + 1;
 
       // This should cause a full mark and sweep cycle
-      assertThat(pruner.getState()).isEqualByComparingTo(Pruner.State.IDLE);
+      assertThat(pruner.getPruningPhase()).isEqualByComparingTo(PruningPhase.IDLE);
       List<Account> generatedAccounts = generateBlockchainData(numBlockInCycle, accountsPerBlock);
       allGeneratedAccounts.addAll(generatedAccounts);
-      assertThat(pruner.getState()).isEqualByComparingTo(Pruner.State.IDLE);
+      assertThat(pruner.getPruningPhase()).isEqualByComparingTo(PruningPhase.IDLE);
 
       // Restarting the Pruner shouldn't matter since we're idle
       pruner.stop();
@@ -174,7 +172,7 @@ public class UniTriePrunerIntegrationTest {
       assertThat(hashValueStore.size()).isEqualTo(expectedNodes.size());
       assertThat(hashValueStore.values())
           .containsExactlyInAnyOrderElementsOf(
-              expectedNodes.stream().map(Bytes::getArrayUnsafe).collect(Collectors.toSet()));
+              expectedNodes.stream().map(Bytes::toArrayUnsafe).collect(Collectors.toSet()));
     }
 
     pruner.stop();

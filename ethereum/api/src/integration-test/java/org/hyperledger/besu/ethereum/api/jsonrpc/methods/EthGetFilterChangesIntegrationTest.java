@@ -68,10 +68,12 @@ import org.apache.tuweni.bytes.Bytes;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 public class EthGetFilterChangesIntegrationTest extends MerkleAwareTest {
 
-  @Mock private TransactionBatchAddedListener batchAddedListener;
+  @Mock
+  private TransactionBatchAddedListener batchAddedListener;
   @Mock private TransactionBatchAddedListener pendingBatchAddedListener;
   private MutableBlockchain blockchain;
   private final String ETH_METHOD = "eth_getFilterChanges";
