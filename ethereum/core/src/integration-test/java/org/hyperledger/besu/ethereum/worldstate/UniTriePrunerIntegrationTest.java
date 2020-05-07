@@ -137,10 +137,6 @@ public class UniTriePrunerIntegrationTest {
       allGeneratedAccounts.addAll(generatedAccounts);
       assertThat(pruner.getPruningPhase()).isEqualByComparingTo(PruningPhase.IDLE);
 
-      // Restarting the Pruner shouldn't matter since we're idle
-      pruner.stop();
-      pruner.start();
-
       // Collect the nodes we expect to keep
       final Set<Bytes> expectedNodes = new HashSet<>();
       for (int i = fullyMarkedBlockNum; i <= blockchain.getChainHeadBlockNumber(); i++) {

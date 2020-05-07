@@ -17,14 +17,7 @@ package org.hyperledger.besu.ethereum.core;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toSet;
 
-import org.hyperledger.besu.crypto.SECP256K1;
-import org.hyperledger.besu.crypto.SecureRandomProvider;
-import org.hyperledger.besu.ethereum.mainnet.BodyValidation;
-import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions;
-import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
-import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
-import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
-
+import com.google.common.base.Supplier;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
@@ -45,14 +38,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import com.google.common.base.Supplier;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.hyperledger.besu.crypto.SECP256K1;
+import org.hyperledger.besu.crypto.SecureRandomProvider;
+import org.hyperledger.besu.ethereum.mainnet.BodyValidation;
+import org.hyperledger.besu.ethereum.mainnet.MainnetBlockHeaderFunctions;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 
 public class BlockDataGenerator {
 
@@ -144,6 +142,11 @@ public class BlockDataGenerator {
     }
 
     return seq;
+  }
+
+  public List<Account> createRandomVanillaAccounts(
+      final MutableWorldState worldState, final int count) {
+    return createRandomAccounts(worldState, count, 0, 0);
   }
 
   public List<Account> createRandomAccounts(final MutableWorldState worldState, final int count) {

@@ -54,6 +54,10 @@ public class BesuNodeFactory {
     this.merkleStorageMode = merkleStorageMode;
   }
 
+  public MerkleStorageMode getMerkleStorageMode() {
+    return merkleStorageMode;
+  }
+
   public BesuNode create(final BesuNodeConfiguration config) throws IOException {
     return new BesuNode(
             config.getName(),
