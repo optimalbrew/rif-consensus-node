@@ -32,7 +32,12 @@ import java.util.Optional;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class PersistDataStepTest {
 
   private final WorldStateStorage worldStateStorage =
@@ -44,6 +49,14 @@ public class PersistDataStepTest {
       new BlockHeaderTestFixture().stateRoot(Hash.hash(rootNodeData)).buildHeader();
 
   private final PersistDataStep persistDataStep = new PersistDataStep(worldStateStorage);
+
+  @Parameters(name = "use unitrie={0}")
+  public static Object[] data() {
+    // Use or not UniNodeDataRequests as opposed to classic NodeDataRequests
+    return new Object[] {false, true};
+  }
+
+  @Parameter public boolean useClassicalRequest;
 
   @Test
   public void shouldPersistDataWhenPresent() {
@@ -103,7 +116,10 @@ public class PersistDataStepTest {
 
   private StubTask createTaskWithoutData(final Bytes data) {
     final Hash hash = Hash.hash(data);
-    final AccountTrieNodeDataRequest request = NodeDataRequest.createAccountDataRequest(hash);
+    final NodeDataRequest request =
+        useClassicalRequest
+            ? NodeDataRequest.createAccountDataRequest(hash)
+            : NodeDataRequest.createUniNodeDataRequest(hash);
     return new StubTask(request);
   }
 

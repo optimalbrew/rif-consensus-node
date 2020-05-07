@@ -44,6 +44,8 @@ import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfigurati
 import org.hyperledger.besu.ethereum.mainnet.HeaderValidationMode;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSpec;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
 import org.hyperledger.besu.ethereum.storage.keyvalue.KeyValueSegmentIdentifier;
@@ -143,6 +145,9 @@ public final class RunnerTest {
       throws Exception {
     final Path dataDirAhead = temp.newFolder().toPath();
     final Path dbAhead = dataDirAhead.resolve("database");
+
+    final MerkleAwareProvider merkleAwareProvider = new ClassicMerkleAwareProvider();
+
     final int blockCount = 500;
     final KeyPair aheadDbNodeKeys = KeyPairUtil.loadKeyPair(dbAhead);
     final SynchronizerConfiguration syncConfigAhead =
@@ -153,6 +158,7 @@ public final class RunnerTest {
     // Setup state with block data
     try (final BesuController<Void> controller =
         new MainnetBesuControllerBuilder()
+            .merkleAwareProvider(merkleAwareProvider)
             .genesisConfigFile(genesisConfig)
             .synchronizerConfiguration(syncConfigAhead)
             .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
@@ -173,6 +179,7 @@ public final class RunnerTest {
     // Setup Runner with blocks
     final BesuController<Void> controllerAhead =
         new MainnetBesuControllerBuilder()
+            .merkleAwareProvider(merkleAwareProvider)
             .genesisConfigFile(genesisConfig)
             .synchronizerConfiguration(syncConfigAhead)
             .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
@@ -233,6 +240,7 @@ public final class RunnerTest {
       // Setup runner with no block data
       final BesuController<Void> controllerBehind =
           new MainnetBesuControllerBuilder()
+              .merkleAwareProvider(merkleAwareProvider)
               .genesisConfigFile(genesisConfig)
               .synchronizerConfiguration(syncConfigBehind)
               .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())

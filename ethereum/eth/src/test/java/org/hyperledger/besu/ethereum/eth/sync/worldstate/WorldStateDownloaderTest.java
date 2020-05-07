@@ -47,6 +47,7 @@ import org.hyperledger.besu.ethereum.eth.messages.GetNodeDataMessage;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.mainnet.MainnetProtocolSchedule;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.rlpx.wire.MessageData;
 import org.hyperledger.besu.ethereum.rlp.RLP;
 import org.hyperledger.besu.ethereum.storage.keyvalue.WorldStateKeyValueStorage;
@@ -968,6 +969,7 @@ public class WorldStateDownloaderTest {
       final WorldStateStorage storage,
       final CachingTaskCollection<NodeDataRequest> taskCollection) {
     return new WorldStateDownloader(
+        new ClassicMerkleAwareProvider(),
         context,
         storage,
         taskCollection,

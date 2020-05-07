@@ -34,6 +34,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
@@ -56,6 +57,8 @@ import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.eth.sync.SyncMode;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURL;
 import org.hyperledger.besu.ethereum.permissioning.LocalPermissioningConfiguration;
 import org.hyperledger.besu.ethereum.permissioning.PermissioningConfiguration;
@@ -189,6 +192,7 @@ public class BesuCommandTest extends CommandTestAbstract {
     verify(mockControllerBuilder).nodePrivateKeyFile(isNotNull());
     verify(mockControllerBuilder).storageProvider(storageProviderArgumentCaptor.capture());
     verify(mockControllerBuilder).targetGasLimit(eq(Optional.empty()));
+    verify(mockControllerBuilder).merkleAwareProvider(isA(ClassicMerkleAwareProvider.class));
     verify(mockControllerBuilder).build();
 
     assertThat(storageProviderArgumentCaptor.getValue()).isNotNull();
@@ -350,6 +354,7 @@ public class BesuCommandTest extends CommandTestAbstract {
     verify(mockControllerBuilder).dataDirectory(eq(Paths.get("/opt/besu").toAbsolutePath()));
     verify(mockControllerBuilderFactory).fromEthNetworkConfig(eq(networkConfig), any());
     verify(mockControllerBuilder).synchronizerConfiguration(syncConfigurationCaptor.capture());
+    verify(mockControllerBuilder).merkleAwareProvider(isA(UniTrieMerkleAwareProvider.class));
 
     assertThat(syncConfigurationCaptor.getValue().getSyncMode()).isEqualTo(SyncMode.FAST);
     assertThat(syncConfigurationCaptor.getValue().getFastSyncMinimumPeerCount()).isEqualTo(13);
@@ -748,6 +753,7 @@ public class BesuCommandTest extends CommandTestAbstract {
     verify(mockRunnerBuilder).build();
     verify(mockControllerBuilder).build();
     verify(mockControllerBuilder).synchronizerConfiguration(syncConfigurationCaptor.capture());
+    verify(mockControllerBuilder).merkleAwareProvider(isA(ClassicMerkleAwareProvider.class));
 
     final SynchronizerConfiguration syncConfig = syncConfigurationCaptor.getValue();
     assertThat(syncConfig.getSyncMode()).isEqualTo(SyncMode.FULL);
@@ -3551,5 +3557,23 @@ public class BesuCommandTest extends CommandTestAbstract {
     parseCommand("--Xeip1559-enabled=false");
     assertThat(commandErrorOutput.toString()).isEmpty();
     assertThat(ExperimentalEIPs.eip1559Enabled).isFalse();
+  }
+
+  @Test
+  public void defaultTrieStorageModeIsClassic() {
+    parseCommand();
+    verify(mockControllerBuilder).merkleAwareProvider(isA(ClassicMerkleAwareProvider.class));
+  }
+
+  @Test
+  public void trieStorageModeSetAsClassic() {
+    parseCommand("--merkle-storage-mode=classic");
+    verify(mockControllerBuilder).merkleAwareProvider(isA(ClassicMerkleAwareProvider.class));
+  }
+
+  @Test
+  public void trieStorageModeSetAsUnitrie() {
+    parseCommand("--merkle-storage-mode=unitrie");
+    verify(mockControllerBuilder).merkleAwareProvider(isA(UniTrieMerkleAwareProvider.class));
   }
 }

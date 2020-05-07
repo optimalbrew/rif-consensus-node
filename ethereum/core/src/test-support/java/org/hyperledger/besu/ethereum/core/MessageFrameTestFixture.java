@@ -158,6 +158,24 @@ public class MessageFrameTestFixture {
   }
 
   public MessageFrame build() {
+    // Sanity check #1: if ExecutionContextTestFeature is set and it defines a world state,
+    // it better be the same as the one set in this builder.
+    if (executionContextTestFixture != null
+        && worldState.isPresent()
+        && worldState.get() != createDefaultWorldState()) {
+      throw new IllegalStateException(
+          "MessageFrameTestFixture and ExecutionContextTestFixture define different world states");
+    }
+
+    // Sanity check #2: if ExecutionContextTestFeature is set and it defines a blockchain,
+    // it better be the same as the one set in this builder.
+    if (executionContextTestFixture != null
+        && blockchain.isPresent()
+        && blockchain.get() != createDefaultBlockchain()) {
+      throw new IllegalStateException(
+          "MessageFrameTestFixture and ExecutionContextTestFixture define different blockchains");
+    }
+
     final Blockchain blockchain = this.blockchain.orElseGet(this::createDefaultBlockchain);
     final BlockHeader blockHeader =
         this.blockHeader.orElseGet(() -> blockchain.getBlockHeader(0).get());

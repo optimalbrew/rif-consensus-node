@@ -39,7 +39,12 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.tuweni.bytes.Bytes;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class RequestDataStepTest {
 
   private static final long BLOCK_NUMBER = 492L;
@@ -62,6 +67,14 @@ public class RequestDataStepTest {
 
   private final RequestDataStep requestDataStep = new RequestDataStep(getNodeDataTaskFactory);
 
+  @Parameters(name = "use unitrie={0}")
+  public static Object[] data() {
+    // Use or not UniNodeDataRequests as opposed to classic NodeDataRequests
+    return new Object[] {false, true};
+  }
+
+  @Parameter public boolean useClassicalRequest;
+
   @Before
   public void setUp() {
     when(ethTask.run()).thenReturn(getDataFuture);
@@ -69,9 +82,9 @@ public class RequestDataStepTest {
 
   @Test
   public void shouldRequestDistinctHashesForTasks() {
-    final StubTask task1 = StubTask.forHash(HASH1);
-    final StubTask task2 = StubTask.forHash(HASH2);
-    final StubTask task3 = StubTask.forHash(HASH1);
+    final StubTask task1 = stubTaskForHash(HASH1);
+    final StubTask task2 = stubTaskForHash(HASH2);
+    final StubTask task3 = stubTaskForHash(HASH1);
     final List<Task<NodeDataRequest>> tasks = asList(task1, task2, task3);
 
     when(getNodeDataTaskFactory.apply(asList(HASH1, HASH2), BLOCK_NUMBER)).thenReturn(ethTask);
@@ -95,7 +108,7 @@ public class RequestDataStepTest {
 
   @Test
   public void shouldReportNoProgressWhenRequestCompletesWithNoData() {
-    final StubTask task1 = StubTask.forHash(HASH1);
+    final StubTask task1 = stubTaskForHash(HASH1);
     final List<Task<NodeDataRequest>> tasks = singletonList(task1);
 
     when(getNodeDataTaskFactory.apply(singletonList(HASH1), BLOCK_NUMBER)).thenReturn(ethTask);
@@ -115,7 +128,7 @@ public class RequestDataStepTest {
 
   @Test
   public void shouldNotReportNoProgressWhenTaskFails() {
-    final StubTask task1 = StubTask.forHash(HASH1);
+    final StubTask task1 = stubTaskForHash(HASH1);
     final List<Task<NodeDataRequest>> tasks = singletonList(task1);
 
     when(getNodeDataTaskFactory.apply(singletonList(HASH1), BLOCK_NUMBER)).thenReturn(ethTask);
@@ -135,7 +148,7 @@ public class RequestDataStepTest {
 
   @Test
   public void shouldTrackOutstandingTasks() {
-    final StubTask task1 = StubTask.forHash(HASH1);
+    final StubTask task1 = stubTaskForHash(HASH1);
     final List<Task<NodeDataRequest>> tasks = singletonList(task1);
 
     when(getNodeDataTaskFactory.apply(singletonList(HASH1), BLOCK_NUMBER)).thenReturn(ethTask);
@@ -145,5 +158,11 @@ public class RequestDataStepTest {
 
     getDataFuture.complete(emptyMap());
     verify(downloadState).removeOutstandingTask(ethTask);
+  }
+
+  private StubTask stubTaskForHash(final Hash hash) {
+    return useClassicalRequest
+        ? StubTask.forHash(hash)
+        : new StubTask(NodeDataRequest.createUniNodeValueDataRequest(hash));
   }
 }

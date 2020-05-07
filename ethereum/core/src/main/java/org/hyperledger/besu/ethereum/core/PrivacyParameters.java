@@ -20,6 +20,7 @@ import org.hyperledger.besu.crypto.KeyPairUtil;
 import org.hyperledger.besu.crypto.SECP256K1;
 import org.hyperledger.besu.enclave.Enclave;
 import org.hyperledger.besu.enclave.EnclaveFactory;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivacyStorageProvider;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateStateStorage;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Optional;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 
 public class PrivacyParameters {
@@ -180,6 +182,7 @@ public class PrivacyParameters {
     private Path privacyKeyStorePasswordFile;
     private Path privacyTlsKnownEnclaveFile;
     private boolean onchainPrivacyGroupsEnabled;
+    private MerkleAwareProvider merkleAwareProvider;
 
     public Builder setPrivacyAddress(final Integer privacyAddress) {
       this.privacyAddress = privacyAddress;
@@ -198,6 +201,11 @@ public class PrivacyParameters {
 
     public Builder setStorageProvider(final PrivacyStorageProvider privateStorageProvider) {
       this.storageProvider = privateStorageProvider;
+      return this;
+    }
+
+    public Builder setMerkleAwareProvider(final MerkleAwareProvider merkleAwareProvider) {
+      this.merkleAwareProvider = merkleAwareProvider;
       return this;
     }
 
@@ -239,12 +247,15 @@ public class PrivacyParameters {
     public PrivacyParameters build() {
       final PrivacyParameters config = new PrivacyParameters();
       if (enabled) {
+        Preconditions.checkNotNull(merkleAwareProvider, "Merkle aware provider must be non null");
+
         final WorldStateStorage privateWorldStateStorage =
             storageProvider.createWorldStateStorage();
         final WorldStatePreimageStorage privatePreimageStorage =
             storageProvider.createWorldStatePreimageStorage();
         final WorldStateArchive privateWorldStateArchive =
-            new WorldStateArchive(privateWorldStateStorage, privatePreimageStorage);
+            new WorldStateArchive(
+                privateWorldStateStorage, privatePreimageStorage, merkleAwareProvider);
 
         final PrivateStateStorage privateStateStorage = storageProvider.createPrivateStateStorage();
 

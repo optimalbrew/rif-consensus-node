@@ -48,9 +48,9 @@ import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolFactory;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.p2p.config.SubProtocolConfiguration;
 import org.hyperledger.besu.ethereum.storage.StorageProvider;
-import org.hyperledger.besu.ethereum.worldstate.MarkSweepPruner;
 import org.hyperledger.besu.ethereum.worldstate.Pruner;
 import org.hyperledger.besu.ethereum.worldstate.PrunerConfiguration;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
@@ -89,6 +89,7 @@ public abstract class BesuControllerBuilder<C> {
   protected boolean isRevertReasonEnabled;
   GasLimitCalculator gasLimitCalculator;
   private StorageProvider storageProvider;
+  private MerkleAwareProvider merkleAwareProvider;
   private boolean isPruningEnabled;
   private PrunerConfiguration prunerConfiguration;
   Map<String, String> genesisConfigOverrides;
@@ -96,6 +97,12 @@ public abstract class BesuControllerBuilder<C> {
 
   public BesuControllerBuilder<C> storageProvider(final StorageProvider storageProvider) {
     this.storageProvider = storageProvider;
+    return this;
+  }
+
+  public BesuControllerBuilder<C> merkleAwareProvider(
+      final MerkleAwareProvider merkleAwareProvider) {
+    this.merkleAwareProvider = merkleAwareProvider;
     return this;
   }
 
@@ -196,6 +203,7 @@ public abstract class BesuControllerBuilder<C> {
   }
 
   public BesuController<C> build() {
+    checkNotNull(merkleAwareProvider, "Missing Merkle aware provider");
     checkNotNull(genesisConfig, "Missing genesis config");
     checkNotNull(syncConfig, "Missing sync config");
     checkNotNull(ethereumWireProtocolConfiguration, "Missing ethereum protocol configuration");
@@ -208,14 +216,19 @@ public abstract class BesuControllerBuilder<C> {
     checkNotNull(transactionPoolConfiguration, "Missing transaction pool configuration");
     checkNotNull(nodeKeys, "Missing node keys");
     checkNotNull(storageProvider, "Must supply a storage provider");
+    checkNotNull(merkleAwareProvider, "Must define Merkle aware provider");
     checkNotNull(gasLimitCalculator, "Missing gas limit calculator");
 
     prepForBuild();
 
+    LOG.info("Merkle aware provider is: {}", merkleAwareProvider);
+
     final ProtocolSchedule<C> protocolSchedule = createProtocolSchedule();
-    final GenesisState genesisState = GenesisState.fromConfig(genesisConfig, protocolSchedule);
+    final GenesisState genesisState =
+        GenesisState.fromConfig(genesisConfig, protocolSchedule, merkleAwareProvider);
     final ProtocolContext<C> protocolContext =
         ProtocolContext.init(
+            merkleAwareProvider,
             storageProvider,
             genesisState,
             protocolSchedule,
@@ -237,7 +250,7 @@ public abstract class BesuControllerBuilder<C> {
         maybePruner =
             Optional.of(
                 new Pruner(
-                    new MarkSweepPruner(
+                    merkleAwareProvider.createMarkSweepPruner(
                         protocolContext.getWorldStateArchive().getWorldStateStorage(),
                         blockchain,
                         storageProvider.createPruningStorage(),
@@ -282,6 +295,7 @@ public abstract class BesuControllerBuilder<C> {
 
     final Synchronizer synchronizer =
         new DefaultSynchronizer<>(
+            merkleAwareProvider,
             syncConfig,
             protocolSchedule,
             protocolContext,

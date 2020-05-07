@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.tests.acceptance.dsl;
 
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.tests.acceptance.dsl.account.Accounts;
 import org.hyperledger.besu.tests.acceptance.dsl.blockchain.Blockchain;
 import org.hyperledger.besu.tests.acceptance.dsl.condition.admin.AdminConditions;
@@ -89,6 +90,8 @@ public class AcceptanceTestBase {
   protected final TxPoolTransactions txPoolTransactions;
 
   protected AcceptanceTestBase() {
+    MerkleStorageMode merkleStorageMode = merkleStorageMode();
+
     ethTransactions = new EthTransactions();
     accounts = new Accounts(ethTransactions);
     adminTransactions = new AdminTransactions();
@@ -111,11 +114,12 @@ public class AcceptanceTestBase {
     priv = new PrivConditions(privacyTransactions);
     admin = new AdminConditions(adminTransactions);
     web3 = new Web3Conditions(new Web3Transactions());
-    besu = new BesuNodeFactory();
+    besu = new BesuNodeFactory(merkleStorageMode);
     txPoolTransactions = new TxPoolTransactions();
     txPoolConditions = new TxPoolConditions(txPoolTransactions);
+
     contractVerifier = new ContractVerifier(accounts.getPrimaryBenefactor());
-    permissionedNodeBuilder = new PermissionedNodeBuilder();
+    permissionedNodeBuilder = new PermissionedNodeBuilder().merkleStorageMode(merkleStorageMode);
   }
 
   @Rule public final TestName name = new TestName();
@@ -165,5 +169,10 @@ public class AcceptanceTestBase {
   @After
   public void tearDownAcceptanceTestBase() {
     cluster.close();
+  }
+
+  private MerkleStorageMode merkleStorageMode() {
+    String merkleStorageParam = System.getProperty("merkle.storage.mode", "classic");
+    return MerkleStorageMode.fromString(merkleStorageParam);
   }
 }

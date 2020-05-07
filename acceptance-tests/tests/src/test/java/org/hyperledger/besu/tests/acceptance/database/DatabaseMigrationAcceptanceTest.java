@@ -19,6 +19,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Wei;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
 import org.hyperledger.besu.tests.acceptance.dsl.AcceptanceTestBase;
 import org.hyperledger.besu.tests.acceptance.dsl.blockchain.Amount;
 import org.hyperledger.besu.tests.acceptance.dsl.node.BesuNode;
@@ -45,6 +46,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,6 +102,9 @@ public class DatabaseMigrationAcceptanceTest extends AcceptanceTestBase {
 
   @Before
   public void setUp() throws Exception {
+    // This test ingests serialized data from Ropsten, so it only makes sense for classic storage
+    Assume.assumeTrue(besu.getMerkleStorageMode() == MerkleStorageMode.CLASSIC);
+
     final URL rootURL = DatabaseMigrationAcceptanceTest.class.getResource(dataPath);
     hostDataPath = copyDataDir(rootURL);
     final Path databaseArchive =

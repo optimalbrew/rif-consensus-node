@@ -15,6 +15,10 @@
 package org.hyperledger.besu.ethereum.vm.operations;
 
 import org.hyperledger.besu.ethereum.mainnet.ConstantinopleFixGasCalculator;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.ethereum.vm.BlockHashLookup;
 import org.hyperledger.besu.ethereum.vm.MessageFrame;
 
@@ -37,13 +41,17 @@ public class BlockHashOperationBenchmark {
   })
   public long blockNumber;
 
+  @Param({"CLASSIC", "UNITRIE"})
+  public MerkleStorageMode merkleStorageMode;
+
   private OperationBenchmarkHelper operationBenchmarkHelper;
   private BlockHashOperation operation;
   private MessageFrame frame;
 
   @Setup
   public void prepare() throws Exception {
-    operationBenchmarkHelper = OperationBenchmarkHelper.create();
+    MerkleAwareProvider merkleAwareProvider = createMerkleAwareProvider(merkleStorageMode);
+    operationBenchmarkHelper = OperationBenchmarkHelper.create(merkleAwareProvider);
     operation = new BlockHashOperation(new ConstantinopleFixGasCalculator());
     frame = operationBenchmarkHelper.createMessageFrame();
   }
@@ -70,5 +78,15 @@ public class BlockHashOperationBenchmark {
     cleanFrame.pushStackItem(UInt256.valueOf(blockNumber).toBytes());
     operation.execute(cleanFrame);
     return cleanFrame.popStackItem();
+  }
+
+  private MerkleAwareProvider createMerkleAwareProvider(final MerkleStorageMode merkleStorageMode) {
+    switch (merkleStorageMode) {
+      case UNITRIE:
+        return new UniTrieMerkleAwareProvider();
+      case CLASSIC:
+      default:
+        return new ClassicMerkleAwareProvider();
+    }
   }
 }

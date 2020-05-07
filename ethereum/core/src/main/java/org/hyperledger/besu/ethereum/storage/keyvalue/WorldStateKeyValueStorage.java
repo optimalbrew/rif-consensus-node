@@ -155,6 +155,13 @@ public class WorldStateKeyValueStorage implements WorldStateStorage {
     }
 
     @Override
+    public Updater rawPut(final Bytes32 nodeHash, final Bytes node) {
+      addedNodes.add(nodeHash);
+      transaction.put(nodeHash.toArrayUnsafe(), node.toArrayUnsafe());
+      return this;
+    }
+
+    @Override
     public void commit() {
       nodeAddedListeners.forEach(listener -> listener.onNodesAdded(addedNodes));
       transaction.commit();

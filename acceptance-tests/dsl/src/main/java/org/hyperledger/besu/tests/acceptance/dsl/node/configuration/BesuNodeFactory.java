@@ -17,6 +17,14 @@ package org.hyperledger.besu.tests.acceptance.dsl.node.configuration;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
+import io.vertx.core.Vertx;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import org.hyperledger.besu.enclave.EnclaveFactory;
 import org.hyperledger.besu.ethereum.api.jsonrpc.JsonRpcConfiguration;
 import org.hyperledger.besu.ethereum.api.jsonrpc.RpcApi;
@@ -26,47 +34,52 @@ import org.hyperledger.besu.ethereum.core.MiningParameters;
 import org.hyperledger.besu.ethereum.core.MiningParametersTestBuilder;
 import org.hyperledger.besu.ethereum.core.PrivacyParameters;
 import org.hyperledger.besu.ethereum.core.Wei;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleStorageMode;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.tests.acceptance.dsl.node.BesuNode;
 import org.hyperledger.besu.tests.acceptance.dsl.node.Node;
 import org.hyperledger.besu.tests.acceptance.dsl.node.RunnableNode;
 import org.hyperledger.besu.tests.acceptance.dsl.node.configuration.genesis.GenesisConfigurationFactory;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
-import io.vertx.core.Vertx;
 
 public class BesuNodeFactory {
 
   private final GenesisConfigurationFactory genesis = new GenesisConfigurationFactory();
   private final NodeConfigurationFactory node = new NodeConfigurationFactory();
 
+  private final MerkleStorageMode merkleStorageMode;
+
+  public BesuNodeFactory(final MerkleStorageMode merkleStorageMode) {
+    this.merkleStorageMode = merkleStorageMode;
+  }
+
+  public MerkleStorageMode getMerkleStorageMode() {
+    return merkleStorageMode;
+  }
+
   public BesuNode create(final BesuNodeConfiguration config) throws IOException {
     return new BesuNode(
-        config.getName(),
-        config.getDataPath(),
-        config.getMiningParameters(),
-        config.getJsonRpcConfiguration(),
-        config.getWebSocketConfiguration(),
-        config.getMetricsConfiguration(),
-        config.getPermissioningConfiguration(),
-        config.getKeyFilePath(),
-        config.isDevMode(),
-        config.getGenesisConfigProvider(),
-        config.isP2pEnabled(),
-        config.getNetworkingConfiguration(),
-        config.isDiscoveryEnabled(),
-        config.isBootnodeEligible(),
-        config.isRevertReasonEnabled(),
-        config.getPlugins(),
-        config.getExtraCLIOptions(),
-        config.getStaticNodes(),
-        config.getPrivacyParameters());
+            config.getName(),
+            config.getDataPath(),
+            config.getMiningParameters(),
+            config.getJsonRpcConfiguration(),
+            config.getWebSocketConfiguration(),
+            config.getMetricsConfiguration(),
+            config.getPermissioningConfiguration(),
+            config.getKeyFilePath(),
+            config.isDevMode(),
+            config.getGenesisConfigProvider(),
+            config.isP2pEnabled(),
+            config.getNetworkingConfiguration(),
+            config.isDiscoveryEnabled(),
+            config.isBootnodeEligible(),
+            config.isRevertReasonEnabled(),
+            config.getPlugins(),
+            config.getExtraCLIOptions(),
+            config.getStaticNodes(),
+            config.getPrivacyParameters())
+        .withMerkleStorageMode(merkleStorageMode);
   }
 
   public BesuNode createMinerNode(final String name) throws IOException {
@@ -203,6 +216,7 @@ public class BesuNodeFactory {
             .setEnclaveUrl(URI.create(enclaveUrl))
             .setPrivateKeyPath(
                 Paths.get(ClassLoader.getSystemResource(privTransactionSigningKey).toURI()))
+            .setMerkleAwareProvider(createMerkleAwareProvider(merkleStorageMode))
             .build();
 
     final MiningParameters miningParameters =
@@ -358,5 +372,15 @@ public class BesuNodeFactory {
             .staticNodes(staticNodesUrls)
             .bootnodeEligible(false)
             .build());
+  }
+
+  private MerkleAwareProvider createMerkleAwareProvider(final MerkleStorageMode merkleStorageMode) {
+    switch (merkleStorageMode) {
+      case UNITRIE:
+        return new UniTrieMerkleAwareProvider();
+      case CLASSIC:
+      default:
+        return new ClassicMerkleAwareProvider();
+    }
   }
 }

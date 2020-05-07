@@ -36,6 +36,9 @@ import org.hyperledger.besu.ethereum.core.Wei;
 import org.hyperledger.besu.ethereum.eth.EthProtocolConfiguration;
 import org.hyperledger.besu.ethereum.eth.sync.SynchronizerConfiguration;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPoolConfiguration;
+import org.hyperledger.besu.ethereum.merkleutils.ClassicMerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
+import org.hyperledger.besu.ethereum.merkleutils.UniTrieMerkleAwareProvider;
 import org.hyperledger.besu.metrics.noop.NoOpMetricsSystem;
 import org.hyperledger.besu.testutil.TestClock;
 
@@ -62,20 +65,29 @@ public abstract class JsonBlockImporterTest {
 
   @Rule public final TemporaryFolder folder = new TemporaryFolder();
 
-  protected final String consensusEngine;
-  protected final GenesisConfigFile genesisConfigFile;
-  protected final boolean isEthash;
+  private final String consensusEngine;
+  final MerkleAwareProvider merkleAwareProvider;
+  final GenesisConfigFile genesisConfigFile;
+  final boolean isEthash;
 
-  public JsonBlockImporterTest(final String consensusEngine) throws IOException {
+  JsonBlockImporterTest(final String consensusEngine, final MerkleAwareProvider merkleAwareProvider)
+      throws IOException {
     this.consensusEngine = consensusEngine;
+    this.merkleAwareProvider = merkleAwareProvider;
     final String genesisData = getFileContents("genesis.json");
     this.genesisConfigFile = GenesisConfigFile.fromConfig(genesisData);
     this.isEthash = genesisConfigFile.getConfigOptions().isEthHash();
   }
 
+  @RunWith(Parameterized.class)
   public static class SingletonTests extends JsonBlockImporterTest {
-    public SingletonTests() throws IOException {
-      super("unsupported");
+    public SingletonTests(final MerkleAwareProvider merkleAwareProvider) throws IOException {
+      super("unsupported", merkleAwareProvider);
+    }
+
+    @Parameters(name = "Name: {0}")
+    public static Collection<MerkleAwareProvider> getParameters() {
+      return Arrays.asList(new ClassicMerkleAwareProvider(), new UniTrieMerkleAwareProvider());
     }
 
     @Test
@@ -96,13 +108,20 @@ public abstract class JsonBlockImporterTest {
   @RunWith(Parameterized.class)
   public static class ParameterizedTests extends JsonBlockImporterTest {
 
-    public ParameterizedTests(final String consensusEngine) throws IOException {
-      super(consensusEngine);
+    public ParameterizedTests(
+        final String consensusEngine, final MerkleAwareProvider merkleAwareProvider)
+        throws IOException {
+      super(consensusEngine, merkleAwareProvider);
     }
 
-    @Parameters(name = "Name: {0}")
+    @Parameters(name = "Name: {0}[{1}]")
     public static Collection<Object[]> getParameters() {
-      final Object[][] params = {{"ethash"}, {"clique"}};
+      final Object[][] params = {
+        {"ethash", new ClassicMerkleAwareProvider()},
+        {"clique", new ClassicMerkleAwareProvider()},
+        {"ethash", new UniTrieMerkleAwareProvider()},
+        {"clique", new UniTrieMerkleAwareProvider()},
+      };
       return Arrays.asList(params);
     }
 
@@ -388,31 +407,34 @@ public abstract class JsonBlockImporterTest {
     }
   }
 
-  protected Block getBlockAt(final Blockchain blockchain, final long blockNumber) {
+  Block getBlockAt(final Blockchain blockchain, final long blockNumber) {
     final BlockHeader header = blockchain.getBlockHeader(blockNumber).get();
     final BlockBody body = blockchain.getBlockBody(header.getHash()).get();
     return new Block(header, body);
   }
 
-  protected String getFileContents(final String filename) throws IOException {
+  String getFileContents(final String filename) throws IOException {
     return getFileContents(consensusEngine, filename);
   }
 
-  protected String getFileContents(final String folder, final String filename) throws IOException {
+  String getFileContents(final String folder, final String filename) throws IOException {
     final String filePath = folder + "/" + filename;
     final URL fileURL = this.getClass().getResource(filePath);
     return Resources.toString(fileURL, UTF_8);
   }
 
-  protected BesuController<?> createController() throws IOException {
-    return createController(genesisConfigFile);
+  BesuController<?> createController() throws IOException {
+    return createController(merkleAwareProvider, genesisConfigFile);
   }
 
-  protected BesuController<?> createController(final GenesisConfigFile genesisConfigFile)
+  private BesuController<?> createController(
+      final MerkleAwareProvider merkleAwareProvider, final GenesisConfigFile genesisConfigFile)
       throws IOException {
+
     final Path dataDir = folder.newFolder().toPath();
     return new BesuController.Builder()
         .fromGenesisConfig(genesisConfigFile)
+        .merkleAwareProvider(merkleAwareProvider)
         .synchronizerConfiguration(SynchronizerConfiguration.builder().build())
         .ethProtocolConfiguration(EthProtocolConfiguration.defaultConfig())
         .storageProvider(new InMemoryStorageProvider())

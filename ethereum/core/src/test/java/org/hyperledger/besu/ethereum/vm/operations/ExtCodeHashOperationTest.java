@@ -15,6 +15,7 @@
 package org.hyperledger.besu.ethereum.vm.operations;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryUniTrieWorldStateArchive;
 import static org.hyperledger.besu.ethereum.core.InMemoryStorageProvider.createInMemoryWorldStateArchive;
 import static org.mockito.Mockito.mock;
 
@@ -36,24 +37,46 @@ import org.hyperledger.besu.ethereum.vm.MessageFrame;
 import org.hyperledger.besu.ethereum.vm.Words;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateArchive;
 
+import java.util.Arrays;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt256;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class ExtCodeHashOperationTest {
+
+  @Parameters
+  public static Iterable<WorldStateArchive> data() {
+    return Arrays.asList(defaultWorldStateArchive(), uniTrieWorldStateArchive());
+  }
+
+  private static WorldStateArchive defaultWorldStateArchive() {
+    return createInMemoryWorldStateArchive();
+  }
+
+  private static WorldStateArchive uniTrieWorldStateArchive() {
+    return createInMemoryUniTrieWorldStateArchive();
+  }
 
   private static final Address REQUESTED_ADDRESS = AddressHelpers.ofValue(22222222);
 
   private final Blockchain blockchain = mock(Blockchain.class);
 
-  private final WorldStateArchive worldStateArchive = createInMemoryWorldStateArchive();
-  private final WorldUpdater worldStateUpdater = worldStateArchive.getMutable().updater();
-
   private final ExtCodeHashOperation operation =
       new ExtCodeHashOperation(new ConstantinopleGasCalculator());
   private final ExtCodeHashOperation operationIstanbul =
       new ExtCodeHashOperation(new IstanbulGasCalculator());
+
+  public ExtCodeHashOperationTest(final WorldStateArchive worldStateArchive) {
+    this.worldStateUpdater = worldStateArchive.getMutable().updater();
+  }
+
+  private final WorldUpdater worldStateUpdater;
 
   @Test
   public void shouldCharge400Gas() {

@@ -171,6 +171,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
    */
   public static class UpdateTrackingAccount<A extends Account> implements MutableAccount {
     private final Address address;
+    private final Hash addressHash;
 
     @Nullable private final A account; // null if this is a new account.
 
@@ -190,6 +191,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     UpdateTrackingAccount(final Address address) {
       checkNotNull(address);
       this.address = address;
+      this.addressHash = Hash.hash(this.address);
       this.account = null;
 
       this.nonce = 0;
@@ -200,10 +202,14 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
       this.updatedStorage = new TreeMap<>();
     }
 
-    UpdateTrackingAccount(final A account) {
+    UpdateTrackingAccount(@Nullable final A account) {
       checkNotNull(account);
 
       this.address = account.getAddress();
+      this.addressHash =
+          (account instanceof UpdateTrackingAccount)
+              ? ((UpdateTrackingAccount<?>) account).addressHash
+              : Hash.hash(this.address);
       this.account = account;
 
       this.nonce = account.getNonce();
@@ -250,7 +256,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
 
     @Override
     public Hash getAddressHash() {
-      return Hash.hash(getAddress());
+      return addressHash;
     }
 
     @Override
@@ -295,6 +301,16 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     }
 
     @Override
+    public Bytes32 getCodeSize() {
+      if (updatedCode == null) {
+        // Note that we set code for new account, so it's only null if account isn't.
+        return account.getCodeSize();
+      } else {
+        return UInt256.valueOf(updatedCode.size()).toBytes();
+      }
+    }
+
+    @Override
     public boolean hasCode() {
       // Note that we set code for new account, so it's only null if account isn't.
       return updatedCode == null ? account.hasCode() : !updatedCode.isEmpty();
@@ -303,6 +319,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
     @Override
     public void setCode(final Bytes code) {
       this.updatedCode = code;
+      this.updatedCodeHash = null;
     }
 
     @Override

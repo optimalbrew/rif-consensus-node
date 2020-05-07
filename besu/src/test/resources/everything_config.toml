@@ -138,6 +138,9 @@ revert-reason-enabled=false
 # Storage plugin to use
 key-value-storage="rocksdb"
 
+# trie storage mode
+merkle-storage-mode="classic"
+
 # Gas limit
 target-gas-limit=8000000
 

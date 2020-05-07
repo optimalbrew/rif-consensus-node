@@ -24,6 +24,7 @@ import org.hyperledger.besu.ethereum.eth.sync.worldstate.NodeDataRequest;
 import org.hyperledger.besu.ethereum.eth.sync.worldstate.WorldStateDownloader;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduleBasedBlockHeaderFunctions;
+import org.hyperledger.besu.ethereum.merkleutils.MerkleAwareProvider;
 import org.hyperledger.besu.ethereum.worldstate.WorldStateStorage;
 import org.hyperledger.besu.metrics.BesuMetricCategory;
 import org.hyperledger.besu.plugin.services.MetricsSystem;
@@ -42,6 +43,7 @@ public class FastDownloaderFactory {
   private static final Logger LOG = LogManager.getLogger();
 
   public static <C> Optional<FastSyncDownloader<C>> create(
+      final MerkleAwareProvider merkleAwareProvider,
       final SynchronizerConfiguration syncConfig,
       final Path dataDirectory,
       final ProtocolSchedule<C> protocolSchedule,
@@ -75,6 +77,7 @@ public class FastDownloaderFactory {
             syncConfig.getWorldStateTaskCacheSize());
     final WorldStateDownloader worldStateDownloader =
         new WorldStateDownloader(
+            merkleAwareProvider,
             ethContext,
             worldStateStorage,
             taskCollection,
