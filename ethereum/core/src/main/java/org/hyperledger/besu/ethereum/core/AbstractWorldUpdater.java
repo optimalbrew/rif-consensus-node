@@ -202,7 +202,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
       this.updatedStorage = new TreeMap<>();
     }
 
-    UpdateTrackingAccount(final A account) {
+    UpdateTrackingAccount(@Nullable final A account) {
       checkNotNull(account);
 
       this.address = account.getAddress();
@@ -256,7 +256,7 @@ public abstract class AbstractWorldUpdater<W extends WorldView, A extends Accoun
 
     @Override
     public Hash getAddressHash() {
-      return Hash.hash(getAddress());
+      return addressHash;
     }
 
     @Override

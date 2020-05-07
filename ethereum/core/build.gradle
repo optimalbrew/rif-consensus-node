@@ -61,8 +61,6 @@ dependencies {
   testImplementation 'org.assertj:assertj-core'
   testImplementation 'org.mockito:mockito-core'
 
-  testImplementation group: 'org.openjdk.jol', name: 'jol-core', version: '0.10'
-
   integrationTestImplementation project(path: ':config', configuration: 'testSupportArtifacts')
   integrationTestImplementation project(':testutil')
 
