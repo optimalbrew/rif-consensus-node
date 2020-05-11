@@ -17,15 +17,17 @@ package org.hyperledger.besu.ethereum.vm;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
-import org.apache.tuweni.units.bigints.UInt256;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
 import org.hyperledger.besu.ethereum.core.MutableAccount;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
+
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+
+import org.apache.tuweni.units.bigints.UInt256;
 import org.junit.Test;
 
 public class UniTrieStorageIntegrationTest {

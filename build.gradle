@@ -80,8 +80,8 @@ def bintrayPackage = bintray.pkg {
   name = 'besu'
   userOrg = 'hyperledger-org'
   licenses = ['Apache-2.0']
-  websiteUrl = 'https://github.com/hyperledger/besu'
-  vcsUrl = 'https://github.com/hyperledger/besu.git'
+  websiteUrl = 'https://github.com/rootstock/rsk-private'
+  vcsUrl = 'https://github.com/rootstock/rsk-private.git'
 
   version {
     name = project.version
@@ -349,7 +349,7 @@ subprojects {
           }
           pom {
             name = "Besu - ${project.name}"
-            url = 'http://github.com/hyperledger/besu'
+            url = 'http://github.com/rootstock/rsk-private'
             licenses {
               license {
                 name = 'The Apache License, Version 2.0'
@@ -357,9 +357,9 @@ subprojects {
               }
             }
             scm {
-              connection = 'scm:git:git://github.com/hyperledger/besu.git'
-              developerConnection = 'scm:git:ssh://github.com/hyperledger/besu.git'
-              url = 'https://github.com/hyperledger/besu'
+              connection = 'scm:git:git://github.com/rootstock/rsk-private.git'
+              developerConnection = 'scm:git:ssh://github.com/rootstock/rsk-private.git'
+              url = 'https://github.com/rootstock/rsk-private'
             }
           }
         }
@@ -542,7 +542,7 @@ tasks.register("dockerDistUntar") {
 task distDocker(type: Exec) {
   dependsOn dockerDistUntar
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "hyperledger/besu"
+  def imageName = "rif/enterprise"
   def image = "${imageName}:${dockerBuildVersion}"
   def dockerBuildDir = "build/docker-besu/"
   workingDir "${dockerBuildDir}"
@@ -558,10 +558,27 @@ task distDocker(type: Exec) {
   args "-c", "docker build --build-arg BUILD_DATE=${buildTime()} --build-arg VERSION=${dockerBuildVersion} --build-arg VCS_REF=${getCheckedOutGitCommitHash()} -t ${image} ."
 }
 
+task runDockerExample(type: Exec) {
+  dependsOn distDocker
+  def dockerTmpDir = System.getProperty("user.dir") + "/tmp"
+
+  def target = "/var/lib/besu"
+  def dataPath = "/var/lib/besu"
+  def minerCoinbase = "fe3b557e8fb62b89f4916b721be55ceb828dbd73"
+  def tmpFile = new File(dockerTmpDir)
+  if( tmpFile.exists() ) {
+    tmpFile.delete()
+  }
+  tmpFile.mkdir()
+  executable "sh"
+  args "-c", "docker run -p 8545:8545 -p 8546:8546 --mount type=bind,source=${tmpFile.absolutePath},target=${target} rif/enterprise:0.1.0 --miner-enabled --miner-coinbase ${minerCoinbase} --rpc-ws-enabled --rpc-http-enabled --network=dev --data-path=${dataPath}"
+
+}
+
 task testDocker(type: Exec) {
   dependsOn distDocker
   def dockerReportsDir = "docker/reports/"
-  def image = project.hasProperty('release.releaseVersion') ? "hyperledger/besu:" + project.property('release.releaseVersion') : "hyperledger/besu:${project.version}"
+  def image = project.hasProperty('release.releaseVersion') ? "rif/enterprise:" + project.property('release.releaseVersion') : "rif/enterprise:${project.version}"
   workingDir "docker"
 
   doFirst {
@@ -575,7 +592,7 @@ task testDocker(type: Exec) {
 task dockerUpload(type: Exec) {
   dependsOn distDocker
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "hyperledger/besu"
+  def imageName = "rif/enterprise"
   def azureImageName = "hyperledger.azurecr.io/besu"
   def image = "${imageName}:${dockerBuildVersion}"
   def cmd = "docker push '${image}'"
