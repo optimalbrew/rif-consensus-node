@@ -14,7 +14,7 @@
  */
 
 apply plugin: 'java-library'
-
+group = 'besu.consensus.ibft'
 jar {
   archiveBaseName = 'besu-ibft'
   manifest {

@@ -12,6 +12,7 @@
  */
 
 apply plugin: 'java-library'
+group = 'besu.retesteth'
 
 jar {
   archiveBaseName = 'besu-retesteth'

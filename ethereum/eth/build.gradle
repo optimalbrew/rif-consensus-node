@@ -14,6 +14,7 @@
  */
 
 apply plugin: 'java-library'
+group = 'besu.eth'
 
 jar {
   archiveBaseName = 'besu-eth'
