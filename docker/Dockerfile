@@ -1,8 +1,8 @@
 
 FROM openjdk:11.0.2-jre-slim-stretch
 
-COPY besu /opt/besu/
-WORKDIR /opt/besu
+COPY rif-enterprise /opt/rif-enterprise/
+WORKDIR /opt/rif-enterprise
 
 # Expose services ports
 # 8545 HTTP JSON-RPC
@@ -16,15 +16,15 @@ ENV BESU_RPC_HTTP_HOST 0.0.0.0
 ENV BESU_RPC_WS_HOST 0.0.0.0
 ENV BESU_GRAPHQL_HTTP_HOST 0.0.0.0
 
-ENV PATH="/opt/besu/bin:${PATH}"
-ENTRYPOINT ["besu"]
+ENV PATH="/opt/rif-enterprise/bin:${PATH}"
+ENTRYPOINT ["rif-enterprise"]
 
 # Build-time metadata as defined at http://label-schema.org
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="Besu" \
+      org.label-schema.name="RIF Enterprise" \
       org.label-schema.description="Enterprise Ethereum client" \
       org.label-schema.url="https://besu.hyperledger.org/" \
       org.label-schema.vcs-ref=$VCS_REF \
