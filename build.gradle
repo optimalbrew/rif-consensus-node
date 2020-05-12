@@ -76,8 +76,8 @@ apply plugin: 'com.jfrog.bintray'
 def bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
 def bintrayKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
 def bintrayPackage = bintray.pkg {
-  repo = 'besu-repo'
-  name = 'besu'
+  repo = 'rif-enterprise-repo'
+  name = 'rif-enterprise'
   userOrg = 'hyperledger-org'
   licenses = ['Apache-2.0']
   websiteUrl = 'https://github.com/rootstock/rsk-private'
@@ -461,7 +461,7 @@ run {
   args project.hasProperty("besu.run.args") ? project.property("besu.run.args").toString().split("\\s+") : []
   doFirst {
     applicationDefaultJvmArgs = applicationDefaultJvmArgs.collect {
-      it.replace('BESU_HOME', "$buildDir/besu")
+      it.replace('BESU_HOME', "$buildDir/rif-enterprise")
     }
   }
 }
@@ -525,7 +525,7 @@ distZip {
 tasks.register("dockerDistUntar") {
   dependsOn distTar
   dependsOn distZip
-  def dockerBuildDir = "build/docker-besu/"
+  def dockerBuildDir = "build/docker-rif-enterprise/"
   def distTarFile = distTar.outputs.files.singleFile
   def distTarFileName = distTar.outputs.files.singleFile.name.replace(".tar.gz", "")
 
@@ -535,7 +535,7 @@ tasks.register("dockerDistUntar") {
       from tarTree(distTarFile)
       into(dockerBuildDir)
     }
-    file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/besu")
+    file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/rif-enterprise")
   }
 }
 
@@ -544,7 +544,7 @@ task distDocker(type: Exec) {
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
   def imageName = "rif/enterprise"
   def image = "${imageName}:${dockerBuildVersion}"
-  def dockerBuildDir = "build/docker-besu/"
+  def dockerBuildDir = "build/docker-rif-enterprise/"
   workingDir "${dockerBuildDir}"
 
   doFirst {
@@ -593,7 +593,7 @@ task dockerUpload(type: Exec) {
   dependsOn distDocker
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
   def imageName = "rif/enterprise"
-  def azureImageName = "hyperledger.azurecr.io/besu"
+  def azureImageName = "hyperledger.azurecr.io/rif-enterprise"
   def image = "${imageName}:${dockerBuildVersion}"
   def cmd = "docker push '${image}'"
   def additionalTags = []
