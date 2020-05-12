@@ -12,6 +12,7 @@
  */
 
 apply plugin: 'java-library'
+group = 'besu.plugin.rocksdb'
 
 jar {
   archiveBaseName = 'besu-plugin-rocksdb'

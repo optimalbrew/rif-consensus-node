@@ -14,6 +14,7 @@
  */
 
 apply plugin: 'java-library'
+group = 'besu.nat'
 
 jar {
   archiveBaseName = 'besu-nat'

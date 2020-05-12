@@ -72,8 +72,7 @@ import org.mockito.Mock;
 
 public class EthGetFilterChangesIntegrationTest extends MerkleAwareTest {
 
-  @Mock
-  private TransactionBatchAddedListener batchAddedListener;
+  @Mock private TransactionBatchAddedListener batchAddedListener;
   @Mock private TransactionBatchAddedListener pendingBatchAddedListener;
   private MutableBlockchain blockchain;
   private final String ETH_METHOD = "eth_getFilterChanges";

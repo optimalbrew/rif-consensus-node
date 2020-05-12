@@ -14,6 +14,7 @@
  */
 
 apply plugin: 'java-library'
+group = 'besu.trie'
 
 jar {
   archiveBaseName = 'besu-trie'

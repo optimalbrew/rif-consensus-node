@@ -16,14 +16,6 @@
 
 package org.hyperledger.besu.ethereum.worldstate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.util.Strings;
-import org.apache.tuweni.bytes.Bytes;
 import org.hyperledger.besu.ethereum.core.Address;
 import org.hyperledger.besu.ethereum.core.Hash;
 import org.hyperledger.besu.ethereum.core.InMemoryStorageProvider;
@@ -33,6 +25,16 @@ import org.hyperledger.besu.ethereum.core.WorldState;
 import org.hyperledger.besu.ethereum.core.WorldUpdater;
 import org.hyperledger.besu.ethereum.unitrie.NullUniNode;
 import org.hyperledger.besu.ethereum.unitrie.UniNode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.logging.log4j.util.Strings;
+import org.apache.tuweni.bytes.Bytes;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;

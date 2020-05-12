@@ -1,4 +1,5 @@
 apply plugin: 'java-library'
+group = 'besu.ibftlegacy'
 
 jar {
   archiveBaseName = 'besu-ibftlegacy'

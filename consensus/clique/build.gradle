@@ -14,7 +14,7 @@
  */
 
 plugins { id 'java' }
-
+group = 'besu.consensus.clique'
 jar {
   archiveBaseName = 'besu-clique'
   manifest {
