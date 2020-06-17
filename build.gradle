@@ -30,7 +30,7 @@ plugins {
 }
 
 if (!JavaVersion.current().java11Compatible) {
-  throw new GradleException("Java 11 or later is required to build RIF Enterprise.\n" +
+  throw new GradleException("Java 11 or later is required to build RIF Consensus Node.\n" +
   "  Detected version ${JavaVersion.current()}")
 }
 
@@ -76,12 +76,12 @@ apply plugin: 'com.jfrog.bintray'
 def bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
 def bintrayKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
 def bintrayPackage = bintray.pkg {
-  repo = 'rif-enterprise-repo'
-  name = 'rif-enterprise'
-  userOrg = 'hyperledger-org'
+  repo = 'rif-consensus-node-repo'
+  name = 'rif-consensus-node'
+  userOrg = 'rsksmart'
   licenses = ['Apache-2.0']
-  websiteUrl = 'https://github.com/rootstock/rsk-private'
-  vcsUrl = 'https://github.com/rootstock/rsk-private.git'
+  websiteUrl = 'https://github.com/rsksmart/rif-consensus-node'
+  vcsUrl = 'https://github.com/rsksmart/rif-consensus-node.git'
 
   version {
     name = project.version
@@ -332,7 +332,7 @@ subprojects {
     publishing {
       publications {
         mavenJava(MavenPublication) {
-          groupId "rif.enterprise.internal"
+          groupId "rif.consensus.node.internal"
           version "${project.version}"
           if (sourceSetIsPopulated("main")) {
             from components.java
@@ -348,8 +348,8 @@ subprojects {
             usage('java-runtime') { fromResolutionResult() }
           }
           pom {
-            name = "RIF Enterprise - ${project.name}"
-            url = 'http://github.com/rootstock/rsk-private'
+            name = "RIF Consensus Node - ${project.name}"
+            url = 'http://github.com/rsksmart/rif-consensus-node'
             licenses {
               license {
                 name = 'The Apache License, Version 2.0'
@@ -357,9 +357,9 @@ subprojects {
               }
             }
             scm {
-              connection = 'scm:git:git://github.com/rootstock/rsk-private.git'
-              developerConnection = 'scm:git:ssh://github.com/rootstock/rsk-private.git'
-              url = 'https://github.com/rootstock/rsk-private'
+              connection = 'scm:git:git://github.com/rsksmart/rif-consensus-node.git'
+              developerConnection = 'scm:git:ssh://github.com/rsksmart/rif-consensus-node.git'
+              url = 'https://github.com/rsksmart/rif-consensus-node'
             }
           }
         }
@@ -461,7 +461,7 @@ run {
   args project.hasProperty("besu.run.args") ? project.property("besu.run.args").toString().split("\\s+") : []
   doFirst {
     applicationDefaultJvmArgs = applicationDefaultJvmArgs.collect {
-      it.replace('BESU_HOME', "$buildDir/rif-enterprise")
+      it.replace('BESU_HOME', "$buildDir/rif-consensus-node")
     }
   }
 }
@@ -525,7 +525,7 @@ distZip {
 tasks.register("dockerDistUntar") {
   dependsOn distTar
   dependsOn distZip
-  def dockerBuildDir = "build/docker-rif-enterprise/"
+  def dockerBuildDir = "build/docker-rif-consensus-node/"
   def distTarFile = distTar.outputs.files.singleFile
   def distTarFileName = distTar.outputs.files.singleFile.name.replace(".tar.gz", "")
 
@@ -535,16 +535,16 @@ tasks.register("dockerDistUntar") {
       from tarTree(distTarFile)
       into(dockerBuildDir)
     }
-    file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/rif-enterprise")
+    file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/rif-consensus-node")
   }
 }
 
 task distDocker(type: Exec) {
   dependsOn dockerDistUntar
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "rif/enterprise"
+  def imageName = "rif/consensus-node"
   def image = "${imageName}:${dockerBuildVersion}"
-  def dockerBuildDir = "build/docker-rif-enterprise/"
+  def dockerBuildDir = "build/docker-rif-consensus-node/"
   workingDir "${dockerBuildDir}"
 
   doFirst {
@@ -571,14 +571,14 @@ task runDockerExample(type: Exec) {
   }
   tmpFile.mkdir()
   executable "sh"
-  args "-c", "docker run -p 8545:8545 -p 8546:8546 --mount type=bind,source=${tmpFile.absolutePath},target=${target} rif/enterprise:0.1.0 --miner-enabled --miner-coinbase ${minerCoinbase} --rpc-ws-enabled --rpc-http-enabled --network=dev --data-path=${dataPath}"
+  args "-c", "docker run -p 8545:8545 -p 8546:8546 --mount type=bind,source=${tmpFile.absolutePath},target=${target} rif/consensus-node:0.1.0 --miner-enabled --miner-coinbase ${minerCoinbase} --rpc-ws-enabled --rpc-http-enabled --network=dev --data-path=${dataPath}"
 
 }
 
 task testDocker(type: Exec) {
   dependsOn distDocker
   def dockerReportsDir = "docker/reports/"
-  def image = project.hasProperty('release.releaseVersion') ? "rif/enterprise:" + project.property('release.releaseVersion') : "rif/enterprise:${project.version}"
+  def image = project.hasProperty('release.releaseVersion') ? "rif/consensus-node:" + project.property('release.releaseVersion') : "rif/consensus-node:${project.version}"
   workingDir "docker"
 
   doFirst {
@@ -592,8 +592,8 @@ task testDocker(type: Exec) {
 task dockerUpload(type: Exec) {
   dependsOn distDocker
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "rif/enterprise"
-  def azureImageName = "hyperledger.azurecr.io/rif-enterprise"
+  def imageName = "rif/consensus-node"
+  //def azureImageName = "hyperledger.azurecr.io/rif-consensus-node"
   def image = "${imageName}:${dockerBuildVersion}"
   def cmd = "docker push '${image}'"
   def additionalTags = []
@@ -609,7 +609,7 @@ task dockerUpload(type: Exec) {
 
   additionalTags.each { tag ->
     cmd += " && docker tag '${image}' '${imageName}:${tag.trim()}' && docker push '${imageName}:${tag.trim()}'"
-    cmd += " && docker tag '${image}' '${azureImageName}:${tag.trim()}' && docker push '${azureImageName}:${tag.trim()}'"
+    //cmd += " && docker tag '${image}' '${azureImageName}:${tag.trim()}' && docker push '${azureImageName}:${tag.trim()}'"
   }
   executable "sh"
   args "-c", cmd

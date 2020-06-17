@@ -1,15 +1,12 @@
-# Besu Ethereum Client
- [![CircleCI](https://circleci.com/gh/hyperledger/besu/tree/master.svg?style=svg)](https://circleci.com/gh/hyperledger/besu/tree/master)
- [![Total alerts](https://img.shields.io/lgtm/alerts/g/hyperledger/besu.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/hyperledger/besu/alerts/)
- [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/hyperledger/besu.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/hyperledger/besu/context:java)
- [![Documentation Status](https://readthedocs.org/projects/hyperledger-besu/badge/?version=latest)](https://besu.hyperledger.org/en/latest/?badge=latest)
+# RIF Consensus Node Client
+ [![CircleCI](https://circleci.com/gh/rif/consensus-node/tree/master.svg?style=svg)](https://circleci.com/gh/rif/consensus-node/tree/master)
  [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3174/badge)](https://bestpractices.coreinfrastructure.org/projects/3174)
- [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PegasysEng/besu/blob/master/LICENSE)
- [ ![Download](https://api.bintray.com/packages/hyperledger-org/besu-repo/besu/images/download.svg) ](https://bintray.com/hyperledger-org/besu-repo/besu/_latestVersion)
- [![RocketChat chat](https://open.rocket.chat/images/join-chat.svg)](https://chat.hyperledger.org/channel/besu)
+ [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/rsksmart/rif-consensus-node/blob/master/LICENSE)
+ [ ![Download](https://api.bintray.com/packages/rif-org/consensus-node-repo/rif-consensus-node/images/download.svg) ](https://api.bintray.com/packages/rif-org/consensus-node-repo/rif-consensus-node/_latestVersion)
 
 
-Besu is an Apache 2.0 licensed, MainNet compatible, Ethereum client written in Java.
+RIF Enterprise is an Apache 2.0 licensed, MainNet compatible, Ethereum client written in Java.
+
 
 ## Useful Links
 

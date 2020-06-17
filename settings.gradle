@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-rootProject.name='rif-enterprise'
+rootProject.name='rif-consensus-node'
 include 'acceptance-tests:dsl'
 include 'acceptance-tests:tests'
 include 'config'
