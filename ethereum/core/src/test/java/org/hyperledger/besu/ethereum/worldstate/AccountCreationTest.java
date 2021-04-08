@@ -1,3 +1,4 @@
+
 /*
  * Copyright ConsenSys AG.
  *
@@ -86,20 +87,23 @@ public class AccountCreationTest {
 
   @Before
   public void setup() {
-    String accountsProp = System.getProperty("stress.accounts");
-    String alphaProp = System.getProperty("stress.alpha");
+    String accountsProp = System.getProperty("stress.accounts", "100000");
+    String alphaProp = System.getProperty("stress.alpha","0.25");
 
     size = Strings.isBlank(accountsProp) ? 0 : Integer.parseInt(accountsProp.replace("_", ""));
     alpha = Strings.isBlank(alphaProp) ? 0 : Double.parseDouble(alphaProp);
-
+    
+    String myme = System.getProperty("me","peteC"); 
+    System.out.println(myme);
+    System.out.println("\nwhere size = " + size + " and alpha = " + alpha + "\n");
     progress = 0;
     hits = true;
   }
 
   @Test
   public void test_account_creation() {
+    
     Assume.assumeTrue("No # of accounts passed, skipping test", size > 0);
-
     long start = java.lang.System.currentTimeMillis();
 
     System.out.printf("Inserting %d accounts\n", size);

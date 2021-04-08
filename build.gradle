@@ -51,6 +51,7 @@ gradle.startParameter.taskNames.each {
 }
 gradle.startParameter.taskNames = expandedTaskList.flatten()
 
+
 // Gets an integer command argument, passed with -Pname=x, or the default if not provided.
 def _intCmdArg(name, defaultValue) {
   return project.hasProperty(name) ? project.property(name) as int : defaultValue
@@ -197,9 +198,9 @@ allprojects {
         check('Finally', CheckSeverity.OFF)
       }
       // This check is broken after Java 12.  See https://github.com/google/error-prone/issues/1352
-      if (JavaVersion.current() > JavaVersion.VERSION_12) {
+      //if (JavaVersion.current() > JavaVersion.VERSION_12) {
         check('TypeParameterUnusedInFormals', CheckSeverity.OFF)
-      }
+      //}
 
       check('FieldCanBeFinal', CheckSeverity.WARN)
       check('InsecureCryptoUsage', CheckSeverity.WARN)
@@ -234,7 +235,11 @@ allprojects {
    * - 'root.log.level' and 'evm.log.level': allow to control the log level used during the tests.
    */
   test {
-    jvmArgs = [
+        testLogging {
+         showStandardStreams = true
+       }
+
+	jvmArgs = [
       '-Xmx4g',
       '-XX:-UseGCOverheadLimit',
       // Mockito and jackson-databind do some strange reflection during tests.
@@ -247,6 +252,8 @@ allprojects {
       'java.base/java.util.concurrent.atomic=ALL-UNNAMED'
     ]
     Set toImport = [
+      'stress.alpha',
+      'stress.accounts',
       'test.ethereum.include',
       'test.ethereum.state.eip',
       'root.log.level',
@@ -258,6 +265,7 @@ allprojects {
         systemProperty name, System.getProperty(name)
       }
     }
+
   }
 
   javadoc {
